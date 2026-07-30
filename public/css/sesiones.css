@@ -1,0 +1,203 @@
+/* ============================================= */
+/* SESIONES ACTIVAS — estilos específicos de sesiones.html */
+/* ============================================= */
+
+/* TARJETAS RESUMEN */
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.25rem;
+  margin-bottom: 1.5rem;
+  min-width: 0;
+  width: 100%;
+}
+
+.summary-card {
+  background: var(--bg-card);
+  border-radius: var(--radius);
+  padding: 1.1rem 1.4rem;
+  border: 1px solid var(--border);
+}
+
+.summary-label { font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.4rem; }
+.summary-value { font-size: 1.8rem; font-weight: 700; color: var(--Marron); }
+.summary-value.alert { color: #93650b; }
+
+/* BARRA DE FILTROS */
+.filter-bar {
+  display: flex;
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
+  flex-wrap: wrap;
+}
+
+.filter-chip {
+  padding: 0.45rem 1rem;
+  border-radius: 20px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  color: var(--text-mid);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.filter-chip.active { background: var(--Verde1); color: white; border-color: var(--Verde1); }
+
+/* GRID DE SESIONES */
+.session-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.25rem;
+}
+
+.session-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.25rem 1.4rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start; /* <--- Fuerza a que todo se pegue arriba */
+  gap: 0.8rem;                /* <--- Reduce este valor al espacio vertical que prefieras (ej. 0.6rem a 0.8rem) */
+  height: auto;
+}
+
+.session-card.alert-card { border-color: #e8c873; background: #fffaf0; }
+
+.session-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+  width: 100%;
+}
+
+.session-id {
+  font-weight: 700;
+  font-size: 1rem;
+  color: var(--Marron);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.session-device {
+  font-weight: 400;
+  color: var(--text-muted);
+  font-size: 0.8rem;
+}
+
+.session-species {
+  font-size: 0.82rem;
+  color: var(--text-mid);
+  margin-top: 0.2rem;
+}
+
+.status-pill-sm {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.3rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.status-pill-sm.measuring { background: var(--status-green-bg); color: white; }
+.status-pill-sm.alert { background: #fbeec9; color: #93650b; }
+
+.status-pill-sm svg { width: 11px; height: 11px; }
+
+.pulse-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: white;
+  animation: pulse 1.4s infinite;
+}
+
+@keyframes pulse {
+  0% { opacity: 1; }
+  50% { opacity: 0.35; }
+  100% { opacity: 1; }
+}
+
+.session-meta {
+  display: flex;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+  width: 100%;
+}
+
+.session-meta-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.session-meta-label { font-size: 0.72rem; color: var(--text-muted); }
+.session-meta-value { font-size: 1.15rem; font-weight: 700; color: var(--Marron); }
+.session-meta-value.temp-alert { color: #b3261e; }
+
+.session-chart-wrap {
+  width: 100%;
+  height: 90px;
+}
+
+.session-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  border-top: 1px solid var(--border);
+  padding-top: 0.85rem;
+  margin-top: auto;
+  width: 100%;
+}
+
+.session-alert-msg {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.78rem;
+  color: #93650b;
+  font-weight: 600;
+}
+
+.session-alert-msg svg { width: 15px; height: 15px; flex-shrink: 0; }
+
+.session-actions {
+  display: flex;
+  gap: 0.6rem;
+}
+
+/* ESTADO VACÍO */
+.empty-state {
+  text-align: center;
+  padding: 3rem 1.5rem;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+/* RESPONSIVE — SESIONES */
+@media (max-width: 1100px) {
+  .session-grid { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 900px) {
+  .summary-grid { grid-template-columns: 1fr 1fr; }
+}
+
+@media (max-width: 480px) {
+  .summary-grid { grid-template-columns: 1fr 1fr; }
+  .session-footer { flex-direction: column; align-items: flex-start; }
+  .session-actions { width: 100%; }
+  .btn-action { flex: 1; text-align: center; }
+}

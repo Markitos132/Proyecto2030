@@ -1,0 +1,514 @@
+/* ==========================================================================
+   1. RESET GENERAL, FUENTES Y VARIABLES GLOBALES
+   ========================================================================== */
+*, *::before, *::after { 
+  box-sizing: border-box; 
+  margin: 0; 
+  padding: 0; 
+}
+
+@font-face {
+  font-family: 'RadioCanadaBig';
+  src: url('../fonts/RadioCanadaBig.ttf') format('truetype');
+  font-style: normal;
+}
+
+:root {
+  --Marron: #303300;
+  --Verde1: #1e581e;
+  --Verde1bis: #0a460a;
+  --Verde2: #4f8200;
+  --Verde3: #3f6900;
+  --Amarillo: #dede3e;
+  --crema: #ffffd7;
+
+  --green-mid: #3a8a4a;
+  --green-light: #5cb86c;
+  --green-pale: #eaf6ec;
+  --bg-page: #eceeec;
+  --bg-card: #fff;
+  --text-mid: #444;
+  --text-muted: #6b6f63;
+  --border: #dcdfd9;
+  --radius: 14px;
+  --radius-lg: 22px;
+  --error: #b3261e;
+}
+
+/* ==========================================================================
+   2. ESTILOS DE ESTRUCTURA BASE (BODY, LAYOUT, ENLACES)
+   ========================================================================== */
+body {
+  background-image: linear-gradient(to bottom, #DEDE3E 0%, #4F8200 100%);
+  background-size: cover;
+  background-repeat: no-repeat;
+  font-family: 'RadioCanadaBig';
+  color: var(--Marron);
+  min-height: 100vh;
+}
+
+a { color: inherit; }
+img { max-width: 100%; display: block; }
+
+.auth-layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* ==========================================================================
+   3. PANEL IZQUIERDO (Sección de Marca e Ilustraciones)
+   ========================================================================== */
+.auth-brand {
+  background-color: transparent;
+  background-position: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  gap: 7rem;
+  padding: 2.5rem 2.5rem 2.5rem 4rem;
+  position: relative;
+  overflow: visible;
+}
+
+.auth-brand-logo img { height: 40px; }
+
+.auth-brand-body {
+  max-width: 500px;
+}
+
+.auth-brand-body h2 {
+  font-family: 'RadioCanadaBig';
+  font-size: clamp(1.6rem, 3.5vw, 2rem);
+  line-height: 1.3;
+  color: var(--Verde1bis);
+  margin-bottom: 1rem;
+}
+
+.auth-brand-body p {
+  font-size: 1rem;
+  color: var(--Marron);
+  line-height: 1.6;
+}
+
+.auth-brand-stats {
+  display: flex;
+  gap: 1.75rem;
+  margin-top: 1.75rem;
+}
+
+.auth-brand-stat strong {
+  display: block;
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: var(--Verde1bis);
+}
+
+.auth-brand-stat span {
+  font-size: 0.78rem;
+  color: var(--Marron);
+  opacity: 0.85;
+}
+
+.auth-brand-footer {
+  position: absolute;
+  font-size: 1rem;
+  font-weight: bold;
+  color: var(--Verde1bis);
+  opacity: 0.75;
+  bottom: 40px;
+}
+
+.brand-image {
+  width: 180px;
+  margin-top: -20px;
+  margin-bottom: 20px;
+}
+
+/* Ilustraciones e imágenes de fondo */
+.decoracion-grupo {
+  position: absolute;
+  bottom: 12%;
+  right: -15%;
+  width: 380px;
+  height: 380px;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.auth-brand-blob {
+  position: absolute;
+  width: 250px;
+  height: auto;
+  bottom: 15%;
+  right: -25%;
+  z-index: 1;
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.huellas {
+  position: absolute;
+  width: 65%;
+  bottom: -15%;
+  right: 5%;
+  transform: rotate(-10deg);
+  z-index: 5;
+}
+
+/* ==========================================================================
+   4. PANEL DERECHO (Formularios e Inputs Comunes)
+   ========================================================================== */
+.auth-form-side {
+  position: relative;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2.5rem;
+  padding-right: 10%;
+}
+
+/* --- ELEMENTOS DE FORMULARIO COMUNES --- */
+.form-group {
+  margin-bottom: 1.2rem;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.input-wrap {
+  position: relative;
+}
+
+.input-wrap > svg {
+  position: absolute;
+  left: 0.9rem;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 17px;
+  height: 17px;
+  color: var(--text-muted);
+  pointer-events: none;
+}
+
+.input-wrap input,
+.input-wrap select {
+  width: 100%;
+  padding: 0.75rem 0.9rem 0.75rem 2.6rem;
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  font-family: 'Inter', sans-serif;
+  font-size: 1rem;
+  background: var(--bg-card);
+  color: var(--Marron);
+  transition: border-color 0.15s;
+}
+
+.input-wrap input:focus,
+.input-wrap select:focus {
+  outline: none;
+  border-color: var(--green-mid);
+}
+
+.input-wrap .toggle-pass {
+  position: absolute;
+  top: 50%;
+  right: 15px;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+}
+
+.toggle-pass svg {
+  position: static;
+  left: auto;
+  top: auto;
+  transform: none;
+  width: 18px;
+  height: 18px;
+  pointer-events: none;
+}
+
+.field-hint {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin-top: 0.35rem;
+}
+
+.field-error {
+  font-size: 0.75rem;
+  color: var(--error);
+  margin-top: 0.35rem;
+  display: none;
+}
+
+.input-wrap.has-error input { border-color: var(--error); }
+.input-wrap.has-error + .field-error,
+.form-group.has-error .field-error { display: block; }
+
+.form-options {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+  font-size: 0.85rem;
+}
+
+.checkbox-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--text-mid);
+}
+
+.checkbox-wrap input { 
+  accent-color: var(--Verde1bis); 
+  width: 16px; 
+  height: 16px; 
+}
+
+.link-muted {
+  color: var(--Verde1bis);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.link-muted:hover { text-decoration: underline; }
+
+.btn-submit {
+  width: 65%;
+  background: var(--Verde1bis);
+  color: var(--crema);
+  border: none;
+  border-radius: 10px;
+  padding: 0.85rem;
+  font-size: 0.95rem;
+  font-weight: 700;
+  font-family: 'Inter', sans-serif;
+  cursor: pointer;
+  transition: background 0.15s, transform 0.15s;
+  margin: 0 auto 1.25rem;
+  display: block;
+}
+
+.btn-submit:hover { 
+  background: var(--Marron); 
+  transform: translateY(-1px); 
+}
+
+.auth-switch {
+  text-align: center;
+  font-size: 0.88rem;
+  color: var(--text-mid);
+}
+
+.auth-divider {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin: 1.5rem 0;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+.auth-divider::before,
+.auth-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+.back-to-home {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--Verde1bis);
+  text-decoration: none;
+  margin-bottom: 0.5rem;
+  top: 0px;
+  left: 0px;
+}
+
+.back-to-home svg { width: 16px; height: 16px; }
+
+/* ==========================================================================
+   5. UNIFICACIÓN DE LAS TARJETAS (LOGIN VS REGISTRO)
+   ========================================================================== */
+
+/* --- Base compartida de las Tarjetas --- */
+.auth-form-card {
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+  position: relative;
+  width: 100%;
+  z-index: 5;
+}
+
+/* Títulos y Subtítulos de las tarjetas */
+.auth-form-card h1 {
+  font-size: 1.5rem;
+  font-weight: 800;
+  margin-bottom: 0.4rem;
+}
+
+.auth-form-card .auth-subtitle {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  margin-bottom: 1rem;
+}
+
+/* --- 🔹 VARIACIÓN A: PÁGINA DE LOGIN 🔹 --- */
+.login-page .auth-form-card {
+  max-width: 500px;            /* Tu medida exacta de Login */
+  padding: 3rem 2.5rem 2.5rem; /* Tu padding exacto de Login */
+  transform: translateY(20px);
+}
+
+.login-page .form-group label {
+  font-size: 1rem;            /* Tu tamaño exacto de label en Login */
+  display: block;
+  font-weight: 700;
+  margin-bottom: 0.4rem;
+  color: var(--Marron);
+}
+
+/* --- 🔸 VARIACIÓN B: PÁGINA DE REGISTRO 🔸 --- */
+.register-page .auth-form-card {
+  max-width: 600px;            /* Tu medida exacta de Registro */
+  padding: 2.2rem 2rem 2rem;   /* Tu padding exacto de Registro */
+  transform: translateY(0%);
+}
+
+.register-page .form-group label {
+  font-size: 0.9rem;          /* Tu tamaño exacto de label en Registro */
+  display: block;
+  font-weight: 700;
+  margin-bottom: 0.4rem;
+  color: var(--Marron);
+}
+
+/* ==========================================================================
+   6. COMPORTAMIENTO RESPONSIVE (MEDIA QUERIES ESTANDARIZADAS)
+   ========================================================================== */
+
+/* ─── 1. ANCHO MÍNIMO GLOBAL Y ALTURA ─── */
+body {
+  min-width: 320px; /* Evita que el diseño se rompa en teléfonos ultra viejos */
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ─── 2. ESTADO TABLETA (Cualquier pantalla menor a 992px) ─── */
+@media (max-width: 992px) {
+  /* Ocultamos el panel de la izquierda (BIONEA se mostrará arriba del form) */
+  .auth-brand {
+    display: none !important;
+  }
+
+  /* ─── EL LOGO EN MÓVIL ─── */
+  /* En escritorio no queremos ver este duplicado del logo */
+  .mobile-logo-container {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    margin-bottom: 1.5rem; /* Separación con la tarjeta blanca */
+  }
+
+  .mobile-brand-logo {
+    max-width: 180px; /* Tamaño del logo del Figma */
+    height: auto;
+  }
+
+  /* 🎯 CENTRADO ABSOLUTO DEL LAYOUT:
+     Cambiamos a flex-direction: column y usamos justify-content: center y align-items: center.
+     Además, nos aseguramos de que ocupe todo el alto disponible (100vh) */
+  .auth-layout {
+    display: flex;
+    flex-direction: column;
+    justify-content: center; /* Centra el form si hay espacio de sobra */
+    align-items: center;
+    width: 100%;
+    
+    /* 🚨 ESTOS TRES CAMBIOS ACTIVAN EL SCROLL: */
+    height: auto !important;       /* 1. Quitamos el alto fijo estricto de escritorio */
+    min-height: 100vh;             /* 2. Sigue ocupando toda la pantalla como mínimo */
+    overflow-y: auto !important;   /* 3. Habilita el scroll vertical si el form se desfasa */
+    
+    padding: 3rem 1.5rem; /* Margen para que respire arriba y abajo al scrollear */
+    box-sizing: border-box;
+  
+  }
+
+  /* Quitamos paddings excesivos en el contenedor del formulario */
+  .auth-form-side {
+    padding: 0 !important; /* Eliminamos paddings de escritorio */
+    width: 100%;
+    
+    /* 🎯 CLAVE: Forzamos la alineación en columna para que el logo quede ARRIBA de la tarjeta */
+    display: flex;
+    flex-direction: column; 
+    justify-content: center;
+    align-items: center;
+  }
+  /* Controlamos que en tablets la tarjeta no se estire al 100% del ancho */
+  .login-page .auth-form-card,
+  .register-page .auth-form-card {
+    max-width: 550px; /* Ancho máximo ideal para una tablet */
+    width: 100%;
+    padding: 2.5rem;
+    border-radius: 20px;
+    margin: 0 auto; /* Centrado horizontal clásico */
+    
+    /* 🚨 CLAVE: Quitamos cualquier translate o margen antiguo que pueda estar descentrando la tarjeta */
+    transform: none !important; 
+    top: auto !important;
+    left: auto !important;
+  }
+}
+
+@media (min-width: 993px) {
+  .mobile-logo-container {
+    display: none !important; /* En computadoras usamos el panel izquierdo, así que este se oculta */
+  }
+}
+
+/* ─── 3. ESTADO CELULAR (Cualquier pantalla menor a 576px) ─── */
+@media (max-width: 576px) {
+  .auth-layout {
+    padding: 1.5rem 1rem; /* Margen más pequeño en los bordes del celular */
+  }
+
+  /* La tarjeta ahora sí aprovecha casi todo el ancho del celular */
+  .login-page .auth-form-card,
+  .register-page .auth-form-card {
+    padding: 2rem 1.25rem; /* Ajustamos padding interno para ganar espacio */
+  }
+
+  /* "Nombre" y "Apellido" se apilan verticalmente */
+  .form-row { 
+    grid-template-columns: 1fr; 
+    gap: 0; 
+  }
+
+  /* El botón de enviar ocupa un poco más de ancho para tocarlo fácil con el pulgar */
+  .btn-submit {
+    width: 85%;
+  }
+}

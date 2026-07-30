@@ -1,0 +1,46 @@
+/* ============================================= */
+/* INDIVIDUOS.CSS — estilos específicos           */
+/* de la sección "Individuos"                     */
+/* Depende de las variables definidas en          */
+/* style_admin.css (:root) — cargar ese archivo   */
+/* primero en el <head>.                          */
+/* ============================================= */
+
+
+.status-ind-activo {
+  background: var(--status-green-bg);
+  color: white;
+}
+
+.status-ind-recapturado {
+  background: var(--Amarillo);
+  color: var(--Marron);
+}
+
+.status-ind-liberado {
+  background: var(--status-gray-bg);
+  color: var(--text-mid);
+}
+
+/* RESPONSIVE — INDIVIDUOS */
+@media (max-width: 1091px) {
+  .page-title-row { flex-direction: column; align-items: stretch; }
+  .btn-individuo-primary { width: 100%; justify-content: center; }
+}
+
+@media (max-width: 600px) {
+  /* Apilamos el título y el botón solo en este header */
+  .individuos-header-top {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+  }
+
+  /* Hacemos que SOLO este botón ocupe todo el ancho de pared a pared */
+  .individuos-header-top #btn-nuevo-individuo,
+  .individuos-header-top .btn-add {
+    width: 100%;
+    justify-content: center;
+    margin-top: 0.25rem;
+  }
+}

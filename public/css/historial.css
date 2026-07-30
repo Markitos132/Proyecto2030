@@ -1,0 +1,188 @@
+/* ============================================= */
+/* HISTORIAL — estilos específicos de historial.html */
+/* ============================================= */
+
+/* HEADER & EXPORT BLOCK (Base Desktop) */
+.historial-header-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.historial-title-group .page-sub {
+  margin-top: 1rem;
+}
+
+.historial-export-block {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  width: auto;
+}
+
+.historial-export-block .btn-add,
+.historial-export-block #exportar-csv {
+  margin-left: 0; 
+}
+
+.contador-pill {
+  display: none; /* JS cambia a display: flex o inline-flex */
+  background: var(--Verde2);
+  color: white;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 0.3rem 0.8rem;
+  border-radius: 20px;
+  white-space: nowrap;
+}
+
+
+/* TABLA — paneles y celdas */
+.table-panel {
+  background: var(--bg-card);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  overflow: hidden;
+  min-width: 0;
+  width: 100%;
+}
+
+.table-scroll {
+  overflow-x: auto;
+  width: 100%;
+  max-width: 100%;
+  -webkit-overflow-scrolling: touch;
+}
+
+.table-panel table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 920px;
+  table-layout: auto;
+}
+
+.table-panel thead th {
+  text-align: left;
+  padding: 1rem 1.25rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-mid);
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+  background: var(--bg-card-soft);
+}
+
+.table-panel tbody td {
+  padding: 0.9rem 1.25rem;
+  font-size: 0.88rem;
+  color: var(--Marron);
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+
+.table-panel tbody tr:last-child td { border-bottom: none; }
+.table-panel tbody tr:hover td { background: var(--green-pale); }
+
+.link-graph {
+  color: var(--Verde1bis);
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.link-graph:hover { text-decoration: underline; }
+
+/* NOTA INFORMATIVA */
+.info-note {
+  display: flex;
+  gap: 0.6rem;
+  align-items: flex-start;
+  text-align: left;
+  background: var(--bg-card-soft);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 0.9rem 1.1rem;
+  margin-top: 1.5rem;
+  font-size: 0.82rem;
+  color: var(--text-mid);
+  line-height: 1.6;
+}
+
+.info-note svg { 
+  width: 18px; 
+  height: 18px; 
+  flex-shrink: 0; 
+  color: var(--Verde2); 
+  margin-top: 1px; 
+}
+/* Barra "Seleccionar todos" para Mobile */
+.mobile-select-all-bar {
+  display: none; /* En desktop se oculta porque ya está en el <th> de la tabla */
+}
+
+/* ============================================= */
+/* RESPONSIVE — MEDIA QUERIES (De mayor a menor) */
+/* ============================================= */
+
+@media (max-width: 1090px) {
+  .table-panel tbody tr:last-child td {
+    border-bottom: 1px dashed var(--border);
+  }
+
+  .mobile-select-all-bar {
+    display: flex;
+    align-items: center;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 0.75rem 1rem;
+    margin-bottom: 1rem;
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: var(--Marron);
+  }
+
+  .mobile-select-all-bar .checkbox-container {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.65rem;
+    cursor: pointer;
+    user-select: none;
+  }
+
+  .mobile-select-all-bar input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--Verde2);
+    cursor: pointer;
+  }
+}
+
+@media (max-width: 900px) {
+  .table-panel table { min-width: 760px; }
+  .history-filters { gap: 0.9rem; }
+  .filter-field { min-width: 0; flex: 1 1 auto; }
+
+  /* Adaptación de cabecera para Tablet / Mobile */
+  .historial-header-top {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+  }
+
+  .historial-export-block {
+    display: flex;
+    width: 100%;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 0.5rem;
+    margin-left: 0;
+    margin-right: 0;
+    flex-grow: 0;
+  }
+}

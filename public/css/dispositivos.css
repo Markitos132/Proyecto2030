@@ -1,0 +1,151 @@
+/* ============================================= */
+/* DISPOSITIVOS — estilos específicos de dispositivos.html */
+/* ============================================= */
+
+/* TARJETAS RESUMEN */
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.25rem;
+  margin-bottom: 1.5rem;
+  min-width: 0;
+  width: 100%;
+}
+
+.summary-card {
+  background: var(--bg-card);
+  border-radius: var(--radius);
+  padding: 1.1rem 1.4rem;
+  border: 1px solid var(--border);
+}
+
+.summary-label { font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.4rem; }
+.summary-value { font-size: 1.8rem; font-weight: 700; color: var(--Marron); }
+
+.summary-value.dot-online::before,
+.summary-value.dot-warning::before,
+.summary-value.dot-offline::before {
+  content: '';
+  display: inline-block;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  margin-right: 8px;
+  vertical-align: middle;
+}
+
+.summary-value.dot-online::before { background: var(--Verde2); }
+.summary-value.dot-warning::before { background: var(--Amarillo); }
+.summary-value.dot-offline::before { background: #a8a878; }
+
+/* BARRA DE FILTROS */
+.filter-bar {
+  display: flex;
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
+  flex-wrap: wrap;
+}
+
+.filter-chip {
+  padding: 0.45rem 1rem;
+  border-radius: 20px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  color: var(--text-mid);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.filter-chip.active { background: var(--Verde1); color: white; border-color: var(--Verde1); }
+
+/* LISTA DE DISPOSITIVOS */
+.device-list { display: flex; flex-direction: column; gap: 0.85rem; }
+
+.device-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.1rem 1.4rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.device-left { display: flex; align-items: center; gap: 1rem; min-width: 0; flex: 1; }
+
+.status-dot { width: 11px; height: 11px; border-radius: 50%; flex-shrink: 0; }
+.status-dot.online { background: var(--Verde2); }
+.status-dot.warning { background: var(--Amarillo); }
+.status-dot.offline { background: #a8a878; }
+
+.device-info { min-width: 0; }
+
+.device-id {
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: var(--Marron);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.device-mac { font-weight: 400; color: var(--text-muted); font-size: 0.82rem; }
+
+.device-detail {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  margin-top: 0.2rem;
+}
+
+.device-right { display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; }
+
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.35rem 0.85rem;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
+.status-badge.online { background: #dff3df; color: #1d6b1d; }
+.status-badge.warning { background: #fbeec9; color: #93650b; }
+.status-badge.offline { background: var(--status-gray-bg); color: var(--text-mid); }
+
+/* NOTA INFORMATIVA */
+.info-note {
+  display: flex;
+  gap: 0.6rem;
+  align-items: flex-start;
+  background: var(--bg-card-soft);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 0.9rem 1.1rem;
+  margin: 1rem 0;
+  font-size: 0.82rem;
+  color: var(--text-mid);
+  line-height: 1.6;
+}
+
+.info-note svg { width: 18px; height: 18px; flex-shrink: 0; color: var(--Verde2); margin-top: 1px; }
+
+/* RESPONSIVE — DISPOSITIVOS */
+@media (max-width: 900px) {
+  .summary-grid { grid-template-columns: 1fr 1fr; }
+  .device-card { flex-direction: column; align-items: flex-start; }
+  .device-right { width: 100%; justify-content: space-between; }
+}
+
+@media (max-width: 480px) {
+  .summary-grid { grid-template-columns: 1fr 1fr; }
+  .device-right { flex-direction: column; align-items: flex-start; width: 100%; }
+  .btn-action, .status-badge { width: 100%; justify-content: center; text-align: center; }
+}

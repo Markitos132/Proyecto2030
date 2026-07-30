@@ -1,0 +1,430 @@
+/* ACÁ EMPIEZA LO NUEVO QUE HICE */
+
+  @font-face {
+    font-family: 'Titulofuente';
+    src: url('../fonts/Titulofuente.ttf') format('truetype');
+    font-style: normal;
+  }
+
+  @font-face {
+    font-family: 'CONSOLE';
+    src: url('../fonts/CONSOLE.ttf') format('truetype');
+    font-style: normal;
+  }
+
+  @font-face {
+    font-family: 'RadioCanadaBig';
+    src: url('../fonts/RadioCanadaBig.ttf') format('truetype');
+    font-style: normal;
+  }
+  
+  :root {
+      --green-dark: #2d4a1e;
+      --green-mid: #4a7c2f;
+      --green-light: #c8e66e;
+      --green-pale: #e8f5b0;
+      --green-hero-top: #6b8f2a;
+      --green-hero-bot: #3a5a18;
+      --yellow-card: #f0f7b2;
+      --yellow-accent: #d4e84a;
+      --text-dark: #1a1a1a;
+      --text-mid: #3a3a3a;
+      --text-muted: #666;
+      --white: #fff;
+      --border: #d0d8c0;
+      --radius: 12px;
+    }
+
+    body {
+        margin: 0;
+        padding: 0;
+        font-family: 'Inter', sans-serif;
+        color: var(--text-dark);
+        background: var(--white);
+        line-height: 1.6;
+    }
+
+    /* NAV */
+    nav {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0.5rem 2rem; /* Un pelín más compacto verticalmente */
+        
+        /* Posicionamiento fijo correcto */
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0; /* Esto reemplaza al width: 100% y evita que se desborde con el padding */
+        z-index: 1000;
+
+        /* Efecto Glassmorphism (Fondo semitransparente con desenfoque) */ 
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+
+        transition: all 0.3s ease;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      text-decoration: none;
+    }
+
+    .logo-img {
+      height: 42px; /* Ajustá la altura a tu gusto para que calce bien en el nav */
+      width: auto;  /* Mantiene la proporción horizontal automáticamente */
+      display: block;
+    }
+
+    .logo-text { display: flex; flex-direction: column; line-height: 1.1; }
+    .logo-text span:first-child { font-size: 0.95rem; font-weight: 700; }
+    .logo-text span:last-child { font-size: 0.65rem; font-weight: 400; letter-spacing: 0.05em; color: var(--green-mid); }
+
+    .nav-links { display: flex; gap: 2rem; list-style: none; }
+    .nav-links a { text-decoration: none; color: #1a1a1a; font-family: RadioCanadaBig; font-size: large; font-weight: 500; transition: color 0.2s; }
+    .nav-links a:hover { color: var(--green-dark); }
+
+    .nav-toggle { display: none; background: none; border: none; cursor: pointer; flex-direction: column; gap: 5px; }
+    .nav-toggle span { display: block; width: 22px; height: 2px; background: var(--text-dark); border-radius: 2px; }
+
+    /* HERO */
+    .hero {
+        min-height:100svh;
+        background: linear-gradient(to bottom, #DEDE3E 0%, #4F8200 100%);
+        color: white;
+        padding: 10rem 2rem 4rem !important;
+        text-align: center;
+    }
+
+    .heroh1TG {
+      font-family: Titulofuente;
+      font-size: clamp(1.4rem, 5vw, 3.2rem);
+      font-weight: 400;
+      line-height: 1.2; /* ← Cambiado de 0 a 1.2 para que no se encime */
+      max-width: 1000px;
+      margin: 0 auto 0.5rem; /* ← Ajustado el margen inferior */
+      color: #1a1a1a;
+      text-align: center;
+    }
+
+    .heroh1TM {
+      font-family: RadioCanadaBig;
+      font-size: clamp(2rem, 5vw, 3.2rem);
+      font-weight: 400;
+      line-height: 1.15;
+      max-width: 800px;
+      margin: 0 auto 1.25rem;
+      color: #1a1a1a;
+      text-align: center;
+    }
+
+    .hero p {
+      font-family: Titulofuente;
+      font-size: clamp(0.9rem, 2vw, 1.05rem);
+      max-width: 700px;
+      margin: 0 auto 2rem;
+      opacity: 0.88;
+      line-height: 1.7;
+      color: #1a1a1a;
+    }
+
+    .hero-buttons { display: flex; gap: 1rem; row-gap: 0.75rem; justify-content: center; flex-wrap: wrap; }
+
+    .btn {
+      font-family: CONSOLE;
+      display: inline-flex;
+      align-items: center;
+      white-space:nowrap;
+      gap: 0.4rem;
+      padding: 0.65rem 1.4rem;
+      border-radius: 6px;
+      font-size: 0.875rem;
+      font-weight: 500;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.2s;
+      border: 1.5px solid transparent;
+    }
+
+    .btn img{
+      width:20px;
+      height:20px;
+    }
+
+    .btn-dark {
+      background: var(--text-dark);
+      color: white;
+      border-color: var(--text-dark);
+      font-size: medium;
+    }
+
+    .btn-dark:hover { background: #333; }
+
+    .btn-outline {
+      background: transparent;
+      color: #1a1a1a;
+      border-color: #1a1a1a;
+      font-size: medium;
+    }
+
+    .btn-outline:hover { background: rgba(255,255,255,0.12); }
+
+    .btn-green {
+      background: var(--green-mid);
+      color: white;
+      border-color: var(--green-mid);
+    }
+
+    .btn-green:hover { background: var(--green-dark); }
+
+    /* DASHBOARD MOCKUP */
+    .hero-mockup {
+      margin: 3rem auto 0;
+      max-width: 680px;
+      background: white;
+      border-radius: 14px;
+      padding: 1.5rem;
+      box-shadow: 0 4px 32px rgba(0,0,0,0.2);
+      color: var(--text-dark);
+      text-align: left;
+    }
+
+    .mockup-header p:first-child { font-size: 0.85rem; font-weight: 600; color: #222; }
+    .mockup-header p:last-child { font-size: 0.75rem; color: var(--text-muted); }
+
+    .mockup-stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1rem;
+      margin: 1rem 0;
+    }
+
+    .stat-card {
+      background: #f7f9f0;
+      border-radius: 8px;
+      padding: 0.75rem 1rem;
+    }
+
+    .stat-card .label { font-size: 0.7rem; color: var(--text-muted); margin-bottom: 4px; }
+    .stat-card .value { font-size: 1.3rem; font-weight: 700; color: var(--text-dark); }
+    .stat-card .sub { font-size: 0.7rem; color: var(--green-mid); }
+
+    .stat-card.yellow { background: var(--yellow-card); }
+
+    .chart-area {
+      background: #f9faf5;
+      border-radius: 8px;
+      padding: 0.75rem;
+      margin-top: 0.5rem;
+    }
+
+    .chart-label { font-size: 0.7rem; color: var(--text-muted); margin-bottom: 8px; }
+
+    .chart-bars {
+      display: flex;
+      align-items: flex-end;
+      gap: 3px;
+      height: 60px;
+    }
+
+    .bar {
+      flex: 1;
+      background: #c8e08a;
+      border-radius: 2px 2px 0 0;
+      transition: background 0.2s;
+    }
+
+    .bar.highlight { background: var(--yellow-accent); }
+
+    /* SECTION UTILITIES */
+    section { padding: 4rem 2rem; }
+    .container { max-width: 960px; margin: 0 auto; }
+    .container p { font-family: Titulofuente; max-width: 960px; margin: 0 auto; }
+    .section-tag { font-size: 0.8rem; font-weight: 600; letter-spacing: 0.08em; color: var(--green-mid); text-transform: uppercase; margin-bottom: 0.5rem; }
+    .section-title { font-size: clamp(1.5rem, 3.5vw, 2.2rem); font-weight: 700; line-height: 1.2; color: var(--text-dark); margin-bottom: 1rem; }
+    .section-sub { font-size: 0.95rem; color: var(--text-muted); max-width: 520px; line-height: 1.7; }
+
+    /* FEATURES SPLIT */
+    .features { background: white; }
+
+    .features-header { text-align: center; margin-bottom: 3rem; }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit,minmax(320px,1fr));
+      gap: 3rem;
+      align-items: start;
+    }
+
+    .features-left h2 {
+      font-size: clamp(1.6rem, 3vw, 2.2rem);
+      font-weight: 700;
+      line-height: 1.2;
+      color: var(--text-dark);
+    }
+
+    .feature-cards { display: flex; flex-direction: column; gap: 1rem; }
+
+    
+    .feature-card{
+    padding: 1.3rem 0;
+    border-bottom: 1px solid #d9d9d9;
+    background: transparent;
+    border-radius: 0;
+    }
+
+    .feature-card-header {
+      font-family: RadioCanadaBig;
+      font-weight: bold;
+      font-size: larger; 
+      display: flex;
+      align-items: center;
+      gap: .6rem;
+      margin-bottom: 0.4rem;
+    }
+
+    .feature-card p{
+      font-family: Titulofuente;
+      margin-left:18px;
+      color:#555;
+      line-height:1.6;
+    }
+
+    .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .dot-green { background: var(--green-mid); }
+    .dot-yellow { background: #b8c820; }
+    .dot-orange { background: #d4882a; }
+
+    .feature-card p { font-size: 0.875rem; color: var(--text-mid); line-height: 1.6; }
+
+    /* DESIGNED FOR */
+    .designed { background-color: #f5f7e8; background-image: url('../imagenes/seccion 2.png'); padding: 7rem 2rem 4rem; position: relative; overflow: hidden; }
+
+    .designed-title {
+      text-align: center;
+      font-size: clamp(2rem, 5vw, 3rem);
+      font-weight: 700;
+      color: var(--text-dark);
+      margin-bottom: 3rem;
+      font-style: italic;
+    }
+
+    .designed-cards {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.5rem;
+    }
+
+    .designed-card {
+      background: white;
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      border: 1px solid var(--border);
+    }
+
+    .designed-card-icon {
+      width: 40px;
+      height: 40px;
+      margin-bottom: 1rem;
+      color: var(--green-mid);
+    }
+
+    .designed-card h3 { font-size: 1rem; font-weight: 600; margin-bottom: 0.5rem; }
+    .designed-card p { font-family: Titulofuente; font-size: 1rem; color: var(--text-muted); line-height: 1.6; }
+
+    /* CASE / TESTIMONIAL */
+    .case { background: white; }
+
+    .case-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit,minmax(320px,1fr));
+      gap: 3rem;
+      align-items: center;
+    }
+
+    .case-img {
+      border-radius: var(--radius);
+      overflow: hidden;
+      background: #ddeeff;
+      aspect-ratio: 4/3;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .case-img-placeholder {
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(135deg, #b8d4f0 0%, #8ab8e8 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.8rem;
+      color: #4a6fa5;
+      font-style: italic;
+      text-align: center;
+      padding: 2rem;
+    }
+
+    .case-content h3 { font-size: 1.4rem; font-weight: 700; margin-bottom: 1rem; }
+    .case-content p { font-family: Titulofuente; font-size: 1rem; color: var(--text-muted); line-height: 1.8; margin-bottom: 1.5rem; }
+
+    .card-icon{
+      width:42px;
+      height:42px;
+    }
+
+    /* CTA */
+    .cta {
+      background: white;
+      text-align: center;
+      border-top: 1px solid var(--border);
+    }
+
+    .cta h2 { font-size: clamp(1.8rem, 4vw, 2.8rem); font-weight: 700; margin-bottom: 1rem; }
+    .cta p { font-size: 1rem; color: var(--text-muted); max-width: 480px; margin: 0 auto 2rem; line-height: 1.7; }
+
+    /* FOOTER */
+    footer {
+      font-family: RadioCanadaBig;
+      background: #4F8200;
+      color: rgba(255,255,255,0.7);
+      text-align: center;
+      padding: 1.5rem 2rem;
+      font-size: large;
+    }
+
+    footer strong { color: white; }
+
+    /* RESPONSIVE */
+    @media (max-width: 768px) {
+      nav { padding: 1rem 1.25rem; }
+      .nav-links { display: none; flex-direction: column; gap: 1rem; position: absolute; top: 64px; left: 0; right: 0; background: #f7fae8; padding: 1.5rem 1.25rem; border-bottom: 1px solid var(--border); }
+      .nav-links.open { display: flex; }
+      .nav-toggle { display: flex; }
+
+      .hero { padding: 3rem 1.25rem 3rem; }
+
+      .mockup-stats { grid-template-columns: 1fr 1fr; }
+      .mockup-stats .stat-card:last-child { display: none; }
+
+      .features-grid { grid-template-columns: 1fr; gap: 2rem; }
+      .designed-cards { grid-template-columns: 1fr; }
+      .case-grid { grid-template-columns: 1fr; }
+      .case-img { aspect-ratio: 16/9; }
+
+      section { padding: 3rem 1.25rem; }
+    }
+
+    @media (max-width: 480px) {
+      .heroh1TG, .heroh1TM { font-size: 1.75rem; }
+      .hero-buttons { flex-direction: column; align-items: center; }
+      .mockup-stats { grid-template-columns: 1fr; }
+    }

@@ -1,0 +1,252 @@
+/* ============================================= */
+/* CONFIGURACIÓN — estilos específicos de configuracion.html */
+/* ============================================= */
+
+/* TABS DE NAVEGACIÓN INTERNA */
+.settings-tabs {
+  display: flex;
+  gap: 0.5rem;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+}
+
+.settings-tab {
+  background: none;
+  border: none;
+  padding: 0.75rem 0.25rem;
+  margin-right: 1.5rem;
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.settings-tab svg { width: 17px; height: 17px; }
+
+.settings-tab.active {
+  color: var(--Verde1bis);
+  border-bottom-color: var(--Verde1bis);
+}
+
+.settings-tab:hover:not(.active) { color: var(--Marron); }
+
+/* PANELES */
+.settings-panel { display: none; }
+.settings-panel.active { display: block; }
+
+.settings-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.75rem 2rem;
+  margin-bottom: 1.5rem;
+  max-width: 640px;
+}
+
+.settings-card-header {
+  margin-bottom: 1.5rem;
+}
+
+.settings-card-header h2 {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--Marron);
+  margin-bottom: 0.3rem;
+}
+
+.settings-card-header p {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+/* AVATAR */
+.profile-avatar-row {
+  display: flex;
+  align-items: center;
+  gap: 1.1rem;
+  margin-bottom: 1.75rem;
+}
+
+.profile-avatar-lg {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: var(--Verde2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: white;
+  flex-shrink: 0;
+}
+
+.profile-avatar-actions { display: flex; flex-direction: column; gap: 0.4rem; }
+
+
+/* FORM */
+.settings-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.1rem;
+}
+
+.settings-form-grid .form-field.full { grid-column: 1 / -1; }
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.form-field label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--Marron);
+}
+
+.form-field input,
+.form-field select {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.65rem 0.85rem;
+  font-size: 0.9rem;
+  font-family: 'Inter', sans-serif;
+  color: var(--Marron);
+  background: white;
+}
+
+.form-field input:focus,
+.form-field select:focus {
+  outline: none;
+  border-color: var(--Verde2);
+}
+
+.form-field input:disabled {
+  background: var(--bg-card-soft);
+  color: var(--text-muted);
+  cursor: not-allowed;
+}
+
+.field-hint {
+  font-size: 0.76rem;
+  color: var(--text-muted);
+}
+
+/* TOGGLE ROWS (conectividad / notificaciones) */
+.toggle-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.1rem 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.toggle-row:last-child { border-bottom: none; padding-bottom: 0; }
+.toggle-row:first-child { padding-top: 0; }
+
+.toggle-row-text strong {
+  display: block;
+  font-size: 0.92rem;
+  color: var(--Marron);
+  margin-bottom: 0.2rem;
+}
+
+.toggle-row-text span {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  line-height: 1.45;
+  display: block;
+  max-width: 420px;
+}
+
+/* SWITCH */
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 42px;
+  height: 24px;
+  flex-shrink: 0;
+}
+
+.switch input { opacity: 0; width: 0; height: 0; }
+
+.switch-slider {
+  position: absolute;
+  cursor: pointer;
+  inset: 0;
+  background-color: #d0d4cc;
+  border-radius: 24px;
+  transition: 0.2s;
+}
+
+.switch-slider::before {
+  position: absolute;
+  content: '';
+  height: 18px;
+  width: 18px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  border-radius: 50%;
+  transition: 0.2s;
+}
+
+.switch input:checked + .switch-slider { background-color: var(--Verde2); }
+.switch input:checked + .switch-slider::before { transform: translateX(18px); }
+
+/* ESTADO DE CONEXIÓN WIFI */
+.wifi-status-row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  background: var(--green-pale);
+  border-radius: 10px;
+  padding: 0.85rem 1.1rem;
+  margin-bottom: 1.5rem;
+  font-size: 0.85rem;
+  color: var(--Verde1bis);
+  font-weight: 600;
+}
+
+.wifi-status-row svg { width: 18px; height: 18px; flex-shrink: 0; }
+
+/* FOOTER DE ACCIONES */
+.settings-actions {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+}
+
+.save-confirm {
+  display: none;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.85rem;
+  color: var(--Verde1bis);
+  font-weight: 600;
+  margin-left: 0.4rem;
+}
+
+.save-confirm.show { display: flex; }
+.save-confirm svg { width: 16px; height: 16px; }
+
+/* RESPONSIVE */
+@media (max-width: 700px) {
+  .settings-form-grid { grid-template-columns: 1fr; }
+  .settings-card { padding: 1.4rem 1.5rem; }
+  .toggle-row { flex-direction: row; align-items: center; }
+}
+
+@media (max-width: 480px) {
+  .settings-tabs { gap: 0; }
+  .settings-tab { margin-right: 1rem; font-size: 0.85rem; }
+  .settings-actions { flex-direction: column; }
+  .save-confirm { margin-left: 0; margin-top: 0.5rem; }
+}
