@@ -5,14 +5,14 @@
 
   <h1 class="page-title">
     Sesión {{ $sesion->id_sesion }} —
-    <b>{{ $sesion->individuo->codigo_individuo ?? 'S/A' }}</b>
-    <em style="font-weight:400;">{{ $sesion->individuo->especie ?? '' }}</em>
+    <b>{{ $sesion->individuo?->codigo_individuo ?? 'S/A' }}</b>
+    <em style="font-weight:400;">{{ $sesion->individuo?->especie ?? '' }}</em>
   </h1>
 
   <div class="metrics-grid">
     <div class="metric-card">
       <div class="metric-header">Dispositivo</div>
-      <div class="metric-value">{{ $sesion->dispositivo->nombre ?? '—' }}</div>
+      <div class="metric-value">{{ $sesion->dispositivo?->nombre ?? '—' }}</div>
     </div>
     <div class="metric-card">
       <div class="metric-header">Mediciones</div>

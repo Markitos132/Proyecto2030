@@ -194,11 +194,11 @@
             <div class="ficha-device-current-info">
               <span class="status-dot online"></span>
               <div>
-                <div class="ficha-device-current-id">{{ $individuo->sesionActiva->dispositivo?->nombre }}</div>
-                <div class="ficha-device-current-detail">Asignado desde {{ $individuo->sesionActiva->fecha_inicio?->diffForHumans() }} · midiendo actualmente</div>
+                <div class="ficha-device-current-id">{{ $individuo->sesionActiva?->dispositivo?->nombre }}</div>
+                <div class="ficha-device-current-detail">Asignado desde {{ $individuo->sesionActiva?->fecha_inicio?->diffForHumans() }} · midiendo actualmente</div>
               </div>
             </div>
-            <a href="{{ route('sesiones.show', $individuo->sesionActiva->id_sesion) }}" class="link-graph">Ver sesión en curso →</a>
+            <a href="{{ route('sesiones.show', $individuo->sesionActiva?->id_sesion) }}" class="link-graph">Ver sesión en curso →</a>
           </div>
         @else
           {{-- Si no tiene dispositivo asignado, mostrar en su lugar: --}}
@@ -262,7 +262,7 @@
                   <tr>
                     <td>{{ $sesion->fecha_inicio?->format('d/m/Y H:i') }}</td>
                     <td>{{ $sesion->dispositivo?->nombre ?? 'N/A' }}</td>
-                    <td>{{ $sesion->fecha_inicio->diff($sesion->fecha_fin) }}</td>
+                    <td>{{ $sesion->fecha_inicio?->diff($sesion->fecha_fin) }}</td>
                     <td>{{ $sesion->mediciones->avg('temperatura') }}</td>
                     <td><a href="{{ route('sesiones.show', $sesion->id_sesion) }}" class="link-graph">Ver Gráfico</a></td>
                   </tr>

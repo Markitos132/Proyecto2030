@@ -143,11 +143,11 @@
             <div class="ficha-device-current-info">
               <span class="status-dot online"></span>
               <div>
-                <div class="ficha-device-current-id">{{ $dispositivo->sesionActiva->individuo->codigo_individuo }}</div>
-                <div class="ficha-device-current-detail">Sesión iniciada hace {{ $dispositivo->sesionActiva->fecha_inicio->diffForHumans() }}</div>
+                <div class="ficha-device-current-id">{{ $dispositivo->sesionActiva?->individuo?->codigo_individuo }}</div>
+                <div class="ficha-device-current-detail">Sesión iniciada hace {{ $dispositivo->sesionActiva?->fecha_inicio?->diffForHumans() }}</div>
               </div>
             </div>
-            <a href="{{ route('sesiones.show', $dispositivo->sesionActiva->id_sesion) }}" class="link-graph">Ver sesión en curso →</a>
+            <a href="{{ route('sesiones.show', $dispositivo->sesionActiva?->id_sesion) }}" class="link-graph">Ver sesión en curso →</a>
           </div>
         @elseif($dispositivo->estado_calculado === 'offline' || $dispositivo->estado_calculado === 'warning')
           {{-- No tiene sesión y además está desconectado o sin señal --}}

@@ -200,33 +200,33 @@
         @forelse ($sesionesActivas as $sesion)
           <div class="session-card" 
             data-id-sesion="{{ $sesion->id_sesion }}"
-            data-individuo="{{ $sesion->individuo->codigo_individuo }}" 
-            data-especie="{{ $sesion->individuo->especie }}" 
-            data-dispositivo="{{ $sesion->dispositivo->nombre }}" 
-            data-temp-actual="{{ $sesion->ultimaMedicion->temperatura ?? '--' }} °C"
+            data-individuo="{{ $sesion->individuo?->codigo_individuo }}" 
+            data-especie="{{ $sesion->individuo?->especie }}" 
+            data-dispositivo="{{ $sesion->dispositivo?->nombre }}" 
+            data-temp-actual="{{ $sesion->ultimaMedicion?->temperatura ?? '--' }} °C"
             data-lecturas="{{ $sesion->mediciones()->count() }}" 
-            data-duracion="{{ $sesion->fecha_inicio->diffInMinutes() }} min" 
-            data-estadio="{{ $sesion->individuo->estadio }}" 
-            data-sexo="{{ $sesion->individuo->sexo }}" 
-            data-preñez="{{ $sesion->individuo->estado_reproductivo }}" 
+            data-duracion="{{ $sesion->fecha_inicio?->diffInMinutes() }} min" 
+            data-estadio="{{ $sesion->individuo?->estadio }}" 
+            data-sexo="{{ $sesion->individuo?->sexo }}" 
+            data-preñez="{{ $sesion->individuo?->estado_reproductivo }}" 
             data-trend="{{ $sesion->mediciones->pluck('temperatura')->implode(',') }}" 
-            data-minutos-restantes="{{ $sesion->duracion_sesion - $sesion->fecha_inicio->diffInMinutes() }}" >
+            data-minutos-restantes="{{ $sesion->duracion_sesion - $sesion->fecha_inicio?->diffInMinutes() }}" >
 
             <div class="session-top">
               <div>
-                <div class="session-id">{{ $sesion->individuo->codigo_individuo}} <span class="session-device">· {{ $sesion->dispositivo->nombre }}</span></div>
-                <div class="session-species"><em>{{ $sesion->individuo->especie}}</em></div>
+                <div class="session-id">{{ $sesion->individuo?->codigo_individuo}} <span class="session-device">· {{ $sesion->dispositivo?->nombre }}</span></div>
+                <div class="session-species"><em>{{ $sesion->individuo?->especie}}</em></div>
               </div>
               <span class="status-pill-sm measuring"><span class="pulse-dot"></span>MIDIENDO</span>
             </div>
             <div class="session-meta">
               <div class="session-meta-item">
                 <span class="session-meta-label">Temp. actual</span>
-                <span class="session-meta-value">{{ $sesion->ultimaMedicion->temperatura ?? '--' }}°C</span>
+                <span class="session-meta-value">{{ $sesion->ultimaMedicion?->temperatura ?? '--' }}°C</span>
               </div>
               <div class="session-meta-item">
                 <span class="session-meta-label">Duración</span>
-                <span class="session-meta-value">{{ $sesion->fecha_inicio->diffInMinutes() }} min</span>
+                <span class="session-meta-value">{{ $sesion->fecha_inicio?->diffInMinutes() }} min</span>
               </div>
               <div class="session-meta-item">
                 <span class="session-meta-label">Lecturas</span>
@@ -234,7 +234,7 @@
               </div>
             </div>
             <div class="session-footer">
-              <span style="font-size:0.78rem; color:var(--text-muted);">Última lectura hace {{ $sesion->ultimaMedicion->fecha_hora->diffForHumans(null, true) ?? '--' }}</span>
+              <span style="font-size:0.78rem; color:var(--text-muted);">Última lectura hace {{ $sesion->ultimaMedicion?->fecha_hora?->diffForHumans(null, true) ?? '--' }}</span>
               <div class="session-actions">
                 <button class="btn-action verdetalle">Ver detalle</button>
                 <button class="btn-action danger">Finalizar</button>

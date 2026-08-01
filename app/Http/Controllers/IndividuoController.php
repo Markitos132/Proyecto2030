@@ -9,8 +9,15 @@ use Illuminate\Routing\Controller;
 
 class IndividuoController extends Controller
 {
-    /** Estados posibles de un individuo, tal como los ofrece la UI. */
-    private const ESTADOS = ['activo', 'liberado', 'Liberado/Perdido'];
+    /**
+     * Estados posibles de un individuo.
+     *
+     * La UI es inconsistente: el desplegable de la ficha ofrece
+     * 'activo' / 'recapturado' / 'liberado', pero varias vistas comparan
+     * contra 'Liberado/Perdido'. Se aceptan todos para no romper datos
+     * existentes; convendria unificarlo mas adelante.
+     */
+    private const ESTADOS = ['activo', 'recapturado', 'liberado', 'Liberado/Perdido'];
 
     public function index(Request $request)
     {

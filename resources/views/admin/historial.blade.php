@@ -71,15 +71,15 @@
             <tbody>
               @forelse($sesionesFinalizadas as $sesion)
                 @php
-                  $duracion = $sesion->fecha_inicio->diff($sesion->fecha_fin);
+                  $duracion = $sesion->fecha_inicio?->diff($sesion->fecha_fin);
                   $temperaturaProm = $sesion->mediciones->avg('temperatura');
                 @endphp
                 <tr>
                   <td><input type="checkbox" class="fila-checkbox" data-sesion-id="{{ $sesion->id_sesion }}"></td>
-                  <td data-label="Fecha">{{ $sesion->fecha_inicio->format('d/m/Y') }}</td>
-                  <td data-label="Individuo">{{ $sesion->individuo->codigo_individuo }}</td>
-                  <td data-label="Especie"><em>{{ $sesion->individuo->especie }}</em></td>
-                  <td data-label="Dispositivo">{{ $sesion->dispositivo->nombre }}</td>
+                  <td data-label="Fecha">{{ $sesion->fecha_inicio?->format('d/m/Y') }}</td>
+                  <td data-label="Individuo">{{ $sesion->individuo?->codigo_individuo }}</td>
+                  <td data-label="Especie"><em>{{ $sesion->individuo?->especie }}</em></td>
+                  <td data-label="Dispositivo">{{ $sesion->dispositivo?->nombre }}</td>
                   <td data-label="Duración">{{ $duracion->h }} h {{ $duracion->i }} min</td>
                   <td data-label="Temp. prom.">{{ isset($temperaturaProm) ? number_format($temperaturaProm, 1) . ' °C' : '-- °C' }}</td>
                   <td><a href="#" class="link-graph">Ver Gráfico</a></td>

@@ -95,10 +95,10 @@
                 </div>
                 <div class="device-detail">
                   @if($dispositivo->sesionActiva)
-                    Asignado a {{ $dispositivo->sesionActiva->individuo->codigo_individuo }}
-                    · <em>{{ $dispositivo->sesionActiva->individuo->especie }}</em>
-                    @if($dispositivo->sesionActiva->ultimaMedicion)
-                      última lectura hace {{ $dispositivo->sesionActiva->ultimaMedicion->fecha_hora->diffForHumans(null, true) }}
+                    Asignado a {{ $dispositivo->sesionActiva?->individuo?->codigo_individuo }}
+                    · <em>{{ $dispositivo->sesionActiva?->individuo?->especie }}</em>
+                    @if($dispositivo->sesionActiva?->ultimaMedicion)
+                      última lectura hace {{ $dispositivo->sesionActiva?->ultimaMedicion?->fecha_hora?->diffForHumans(null, true) }}
                     @else 
                       esperando primera lectura
                     @endif
@@ -106,7 +106,7 @@
                     Disponible · sin asignar
                     -
                     @if($dispositivo->ultima_conexion)
-                      última vez visto hace {{ $dispositivo->ultima_conexion->diffForHumans(null, true) }}
+                      última vez visto hace {{ $dispositivo->ultima_conexion?->diffForHumans(null, true) }}
                     @else
                       nunca conectado
                     @endif
@@ -122,7 +122,7 @@
               <a href="/dispositivos/{{ $dispositivo->id_dispositivo }}" class="btn-action">Ver Ficha</a>
             
               @if($dispositivo->sesionActiva)
-                <a href="{{ route('sesiones.show', $dispositivo->sesionActiva->id_sesion) }}" class="btn-action primary">Ver Sesión Activa</a>
+                <a href="{{ route('sesiones.show', $dispositivo->sesionActiva?->id_sesion) }}" class="btn-action primary">Ver Sesión Activa</a>
               @elseif($dispositivo->estado_calculado === 'online')
                 <a href="/sesionesactivas?dispositivo={{ $dispositivo->nombre }}" class="btn-action primary">Comenzar a medir</a>
               @else
