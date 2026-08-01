@@ -1,21 +1,22 @@
 <?php
 
-namespace App;
+namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class NotasDisp extends Model
+/** Tabla `notas_campo_disp`. */
+class NotaDispositivo extends Model
 {
-    public $timestamps = false;    
-    
-    protected $table = 'NOTAS_CAMPO_DISP';
+    protected $table      = 'notas_campo_disp';
     protected $primaryKey = 'id_nota_campo';
+
+    public $timestamps = false;
 
     protected $fillable = [
         'id_dispositivo',
         'id_usuario',
         'fecha_alta',
-        'contenido'
+        'contenido',
     ];
 
     protected $casts = [
