@@ -107,8 +107,10 @@ class SesionController extends Controller
         $sesion->update([
             'fecha_fin'       => $fin,
             'estado'          => Sesion::ESTADO_FINALIZADA,
+            // Carbon 3 devuelve un float en diffInMinutes; la columna es
+            // entera y Postgres rechaza el decimal.
             'duracion_sesion' => $sesion->fecha_inicio
-                                    ? $sesion->fecha_inicio->diffInMinutes($fin)
+                                    ? (int) round($sesion->fecha_inicio->diffInMinutes($fin))
                                     : null,
         ]);
 

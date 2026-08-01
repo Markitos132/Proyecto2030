@@ -156,8 +156,9 @@ class IngestaController extends Controller
         $sesion->update([
             'fecha_fin'       => $momento,
             'estado'          => Sesion::ESTADO_FINALIZADA,
+            // Carbon 3 devuelve un float; la columna es entera.
             'duracion_sesion' => $sesion->fecha_inicio
-                                    ? $sesion->fecha_inicio->diffInMinutes($momento)
+                                    ? (int) round($sesion->fecha_inicio->diffInMinutes($momento))
                                     : null,
         ]);
 
