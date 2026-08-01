@@ -384,21 +384,10 @@ if (especieSelect) {
   });
 }
 
-// Manejo desplegable de "Otro estadio"
-const estadioSelect = document.getElementById('estadio_select');
-const estadioOtroInput = document.getElementById('estadio_otro');
-
-if (estadioSelect) {
-  estadioSelect.addEventListener('change', function() {
-    if (this.value === 'otro') {
-      estadioOtroInput.style.display = 'block';
-      estadioOtroInput.required = true;
-    } else {
-      estadioOtroInput.style.display = 'none';
-      estadioOtroInput.required = false;
-    }
-  });
-}
+{{-- Acá había una segunda copia idéntica del bloque de "Otro estadio".
+     Redeclarar un const es un error de sintaxis, y eso impedía que se
+     ejecutara TODO el script de la ficha: por eso no respondían ni el
+     botón de editar ni el de eliminar. --}}
 
 // Mostrar "Estado reproductivo" SOLO si es Hembra
 const sexoSelect = document.getElementById('sexo');
