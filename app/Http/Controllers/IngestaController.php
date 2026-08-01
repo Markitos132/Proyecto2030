@@ -9,6 +9,7 @@ use App\Models\Sesion;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Throwable;
@@ -29,6 +30,9 @@ use Throwable;
  */
 class IngestaController extends Controller
 {
+    /** Segundos mínimos entre dos escrituras de ultima_conexion. */
+    private const FRECUENCIA_LATIDO = 60;
+
     public function guardar(Request $request): JsonResponse
     {
         $datos = $request->validate([
@@ -56,9 +60,14 @@ class IngestaController extends Controller
         }
 
         try {
-            return DB::transaction(fn () => $datos['tipo'] === 'medicion'
+            // Sin transacción en el camino de la medición: cada BEGIN/COMMIT
+            // son dos viajes extra a la base, y con ~800 ms de latencia hacia
+            // Supabase eso duplicaba el tiempo de respuesta. El INSERT de una
+            // medición ya es atómico por sí solo, y el UPDATE de
+            // ultima_conexion no necesita ser atómico con él.
+            return $datos['tipo'] === 'medicion'
                 ? $this->registrarMedicion($datos, $momento)
-                : $this->finalizarSesion($datos, $momento));
+                : DB::transaction(fn () => $this->finalizarSesion($datos, $momento));
         } catch (Throwable $e) {
             Log::error('[Ingesta ESP32] '.$e->getMessage(), [
                 'session_id' => $datos['session_id'],
@@ -114,9 +123,13 @@ class IngestaController extends Controller
         // siempre en null y el accessor estado_calculado reporta 'offline'
         // aunque el equipo esté midiendo: era lo que pasaba con la API Node,
         // que nunca tocaba esta columna.
+        //
+        // No hace falta escribirlo en cada medición: estado_calculado solo
+        // distingue con granularidad de minutos. Actualizarlo cada
+        // FRECUENCIA_LATIDO segundos ahorra un viaje a la base en la
+        // mayoría de las peticiones.
         if ($sesion->id_dispositivo) {
-            Dispositivo::whereKey($sesion->id_dispositivo)
-                ->update(['ultima_conexion' => $momento, 'estado' => 'activo']);
+            $this->registrarLatido($sesion->id_dispositivo, $momento);
         }
 
         return response()->json([
@@ -191,6 +204,25 @@ class IngestaController extends Controller
             ['codigo_individuo' => $codigo],
             ['especie' => $datos['especie'] ?? null, 'estado' => 'activo']
         );
+    }
+
+    /**
+     * Actualiza ultima_conexion como mucho una vez cada minuto por
+     * dispositivo. El marcador vive en el cache de la aplicación, no en la
+     * base, así que el caso frecuente no cuesta ninguna consulta.
+     */
+    private function registrarLatido(int $idDispositivo, \DateTimeInterface $momento): void
+    {
+        $clave = "latido:dispositivo:{$idDispositivo}";
+
+        if (Cache::store('file')->has($clave)) {
+            return;
+        }
+
+        Dispositivo::whereKey($idDispositivo)
+            ->update(['ultima_conexion' => $momento, 'estado' => 'activo']);
+
+        Cache::store('file')->put($clave, true, self::FRECUENCIA_LATIDO);
     }
 
     private function dispositivoPorDefecto(): ?Dispositivo
