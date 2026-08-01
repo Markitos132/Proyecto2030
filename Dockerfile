@@ -24,6 +24,15 @@ RUN install-php-extensions \
         intl \
         zip
 
+# La imagen base le asigna cap_net_bind_service al binario de FrankenPHP
+# para poder escuchar en el puerto 80. Render ejecuta el contenedor sin
+# los privilegios necesarios para aplicar esas file capabilities, y el
+# exec falla con "Operation not permitted" (status 126) antes de arrancar.
+#
+# No hacen falta: Render asigna un puerto alto (10000), y para puertos
+# por encima de 1024 no se requiere ninguna capacidad especial.
+RUN setcap -r /usr/local/bin/frankenphp 2>/dev/null || true
+
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
 WORKDIR /app
