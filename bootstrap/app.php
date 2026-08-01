@@ -12,10 +12,16 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        //
+        // El ESP32 no tiene sesión ni puede obtener un token CSRF:
+        // manda un POST plano desde el firmware.
+        $middleware->validateCsrfTokens(except: [
+            'bionea/guardar',
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(
-            fn (Request $request) => $request->is('api/*'),
+            fn (Request $request) => $request->is('api/*')
+                || $request->is('bionea/*')
+                || $request->expectsJson(),
         );
     })->create();

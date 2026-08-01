@@ -4,6 +4,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DispositivoController;
 use App\Http\Controllers\HistorialController;
+use App\Http\Controllers\IngestaController;
 use App\Http\Controllers\IndividuoController;
 use App\Http\Controllers\NotaController;
 use App\Http\Controllers\SesionController;
@@ -17,6 +18,13 @@ use Illuminate\Support\Facades\Route;
 
 // ── Público ────────────────────────────────────────────────
 Route::view('/', 'landing')->name('landing');
+
+// ── Ingesta del ESP32 ──────────────────────────────────────
+// Misma ruta y mismo contrato JSON que el server.js del repo
+// bionea/BioNEA-Organiks, para que el firmware no tenga que cambiar.
+// Sin autenticación todavía: pendiente agregar una API key.
+Route::post('/bionea/guardar', [IngestaController::class, 'guardar']);
+Route::get('/bionea/health',   [IngestaController::class, 'health']);
 
 // ── Autenticación ──────────────────────────────────────────
 Route::middleware('guest')->group(function () {
@@ -66,4 +74,8 @@ Route::middleware('auth')->group(function () {
     // ── Historial y configuración ──────────────────────────
     Route::get('/historial', [HistorialController::class, 'index'])->name('historial');
     Route::view('/configuracion', 'admin.configuracion')->name('configuracion');
+
+    // Simulador del ESP32, para probar la ingesta sin hardware.
+    // Detrás de auth: inyecta mediciones reales en la base.
+    Route::view('/simulador', 'admin.simulador')->name('simulador');
 });
