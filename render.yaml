@@ -11,7 +11,9 @@
 
 services:
   - type: web
-    name: bionea-organiks
+    # Debe coincidir con el nombre del servicio ya creado en Render, para
+    # que el Blueprint lo adopte en vez de crear uno nuevo (y cambiar la URL).
+    name: proyecto2030
     runtime: docker
     dockerfilePath: ./Dockerfile
     plan: free
