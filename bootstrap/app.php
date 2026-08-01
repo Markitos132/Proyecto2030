@@ -28,6 +28,10 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->validateCsrfTokens(except: [
             'bionea/guardar',
         ]);
+
+        $middleware->alias([
+            'clave.ingesta' => \App\Http\Middleware\VerificarClaveIngesta::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(

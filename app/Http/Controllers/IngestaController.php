@@ -91,6 +91,9 @@ class IngestaController extends Controller
                 'db'               => 'conectada',
                 'hora_servidor'    => $ahora,
                 'sesiones_activas' => Sesion::activas()->count(),
+                // Visible a propósito: es la forma de darse cuenta de que
+                // la clave quedó sin configurar y el endpoint sigue abierto.
+                'ingesta_protegida' => filled(config('bionea.clave_ingesta')),
             ]);
         } catch (Throwable $e) {
             return response()->json([

@@ -67,3 +67,10 @@ services:
       # Poner en true solo cuando se quiera aplicar migraciones en el deploy.
       - key: RUN_MIGRATIONS
         value: false
+
+      # Clave que el ESP32 manda en la cabecera X-API-Key.
+      # Definirla SOLO despues de grabarla en el firmware: mientras este
+      # vacia el endpoint acepta todo, que es como funciono hasta ahora.
+      # Generar con: php -r "echo bin2hex(random_bytes(24)), PHP_EOL;"
+      - key: BIONEA_API_KEY
+        sync: false

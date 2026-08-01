@@ -85,7 +85,18 @@ retomar una sesión aunque el servidor se reinicie.
 Si el individuo no está cargado, se crea automáticamente a partir de su código
 para no perder la medición; después se completa la ficha a mano.
 
-`GET /bionea/health` responde el estado de la app y de la base.
+El endpoint exige la cabecera `X-API-Key` con el valor de `BIONEA_API_KEY`
+(también acepta `Authorization: Bearer`). Dos escapes deliberados:
+
+- **Si `BIONEA_API_KEY` está vacía, el endpoint acepta todo.** Es el
+  comportamiento histórico, y permite desplegar el cambio sin cortar la ingesta
+  mientras el firmware todavía no manda la clave. El orden correcto es:
+  desplegar, grabar la clave en el ESP32, y recién entonces definir la variable.
+- **Un usuario autenticado pasa sin clave.** Es lo que mantiene funcionando el
+  simulador de `/simulador` sin incrustar la clave en una página web.
+
+`GET /bionea/health` responde el estado de la app y de la base, e incluye
+`ingesta_protegida` para poder verificar de un vistazo si la clave quedó puesta.
 
 Hay un simulador del dispositivo en `/simulador`, detrás de login porque inyecta
 datos reales.
@@ -155,9 +166,6 @@ Las migraciones no se aplican solas en cada despliegue. Para hacerlo, poner
 
 ## Pendientes conocidos
 
-- **El endpoint `/bionea/guardar` no tiene autenticación.** Cualquiera que
-  conozca la URL puede inyectar mediciones falsas. Falta una API key compartida
-  con el firmware.
 - **No hay sistema de roles.** Todo usuario autenticado tiene acceso completo al
   panel. El alta de usuarios está restringida a `/usuarios/nuevo`, ya autenticado.
 - El estado de un individuo se escribe de dos formas en distintas vistas

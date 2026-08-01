@@ -23,9 +23,14 @@ Route::view('/', 'landing')->name('landing');
 // ── Ingesta del ESP32 ──────────────────────────────────────
 // Misma ruta y mismo contrato JSON que el server.js del repo
 // bionea/BioNEA-Organiks, para que el firmware no tenga que cambiar.
-// Sin autenticación todavía: pendiente agregar una API key.
-Route::post('/bionea/guardar', [IngestaController::class, 'guardar']);
-Route::get('/bionea/health',   [IngestaController::class, 'health']);
+//
+// El middleware exige la cabecera X-API-Key, pero solo si BIONEA_API_KEY
+// está definida: sin ella el endpoint queda abierto, como funcionó hasta
+// ahora. Eso permite desplegar antes de grabar la clave en el firmware.
+Route::post('/bionea/guardar', [IngestaController::class, 'guardar'])
+    ->middleware('clave.ingesta');
+
+Route::get('/bionea/health', [IngestaController::class, 'health']);
 
 // ── Autenticación ──────────────────────────────────────────
 Route::middleware('guest')->group(function () {
