@@ -6,7 +6,10 @@ import tailwindcss from '@tailwindcss/vite';
 export default defineConfig({
     plugins: [
         laravel({
-            input: ['resources/css/app.css', 'resources/js/app.js'],
+            // resources/css/app.css no existe: el CSS del proyecto se sirve
+            // estatico desde public/css. Dejarlo listado hacia fallar
+            // `npm run build` con "Could not resolve entry module".
+            input: ['resources/js/app.js'],
             refresh: true,
             fonts: [
                 bunny('Instrument Sans', {

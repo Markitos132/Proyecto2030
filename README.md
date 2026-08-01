@@ -1,63 +1,151 @@
-<<<<<<< HEAD
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# BioNEA Organiks
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Sistema de monitoreo térmico para investigación en ecofisiología de lagartijas.
+Un dispositivo ESP32 mide la temperatura de individuos en campo y la envía a una
+API; el panel web permite gestionar ejemplares, dispositivos y sesiones de
+medición, y consultar el historial.
 
-## About Laravel
+Desarrollado junto a investigadores del IIGHI–CONICET.
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## Stack
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+- **Laravel 13** sobre PHP 8.3
+- **PostgreSQL** alojado en Supabase
+- **Blade** para las vistas, CSS propio servido desde `public/css`
+- **Chart.js** por CDN para los gráficos de temperatura
+- Desplegado en **Render** como servicio Docker (FrankenPHP)
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+## Puesta en marcha
 
-## Learning Laravel
-
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
-
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
-
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
-
-## Agentic Development
-
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
+Requisitos: PHP 8.3 con las extensiones `pdo_pgsql` y `pgsql`, y Composer.
+En Windows, [Laravel Herd](https://herd.laravel.com/windows) trae todo.
 
 ```bash
-composer require laravel/boost --dev
-
-php artisan boost:install
+composer install
+cp .env.example .env
+php artisan key:generate
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+Completá `DB_URL` en el `.env` con la cadena de conexión de Supabase:
 
-## Contributing
+```
+DB_URL=postgresql://usuario:clave@host.pooler.supabase.com:5432/postgres?sslmode=require
+```
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+> **Usá el puerto 5432, no el 6543.** El 6543 es el pooler en modo transacción,
+> que rompe los prepared statements de PDO con errores intermitentes bajo carga.
+> El 5432 del mismo host es el pooler de sesión, compatible con Laravel.
 
-## Code of Conduct
+Después:
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+```bash
+php artisan migrate
+php artisan serve
+```
 
-## Security Vulnerabilities
+Las migraciones están protegidas con `Schema::hasTable()`: correrlas contra una
+base que ya tiene los datos es una operación inocua, y contra una base vacía
+construyen el esquema completo.
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+Para crear el primer usuario, `php artisan db:seed` deja uno en
+`admin@bionea.local`. **Cambiale la clave antes de usarlo.**
 
-## License
+### Nota sobre el servidor de desarrollo
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
-=======
-# Proyecto2030
-hola, bros proyecto2030
->>>>>>> 689d1ab34dc85f3a06bbbc393010f3553697b7c0
+`php artisan serve` atiende **una petición por vez**. Alcanza para navegar el
+panel, pero si además corrés el simulador del ESP32 se forma una cola y todo se
+vuelve lentísimo. Para ese caso conviene servir el proyecto con Herd
+(`herd link bionea`), que usa varios workers.
+
+## Arquitectura
+
+### Ingesta del ESP32
+
+El dispositivo hace `POST /bionea/guardar` con un JSON:
+
+```json
+{
+  "session_id": "49029357",
+  "tipo": "medicion",
+  "fecha": "31/07/2026",
+  "hora": "23:04:32",
+  "individuo": "LAG-001",
+  "especie": "Liolaemus chacoensis",
+  "temperatura": 28.4,
+  "temp_min": 20,
+  "temp_max": 38,
+  "alerta": "OK"
+}
+```
+
+`tipo` puede ser `medicion` o `fin_sesion`. El campo `session_id` lo genera el
+ESP32 con `millis()` y se guarda en `sesiones.sesion_externa`, lo que permite
+retomar una sesión aunque el servidor se reinicie.
+
+Si el individuo no está cargado, se crea automáticamente a partir de su código
+para no perder la medición; después se completa la ficha a mano.
+
+`GET /bionea/health` responde el estado de la app y de la base.
+
+Hay un simulador del dispositivo en `/simulador`, detrás de login porque inyecta
+datos reales.
+
+### Zona horaria
+
+Las columnas de fecha son `timestamp without time zone` y guardan la hora local
+que manda el ESP32. Por eso `APP_TIMEZONE` está en `America/Argentina/Buenos_Aires`:
+si la app corriera en UTC, los dispositivos aparecerían como desconectados y los
+promedios de temperatura saldrían vacíos.
+
+### Sesiones huérfanas
+
+El ESP32 avisa el fin de una sesión con un `fin_sesion`. Ese aviso no llega si el
+equipo se queda sin batería o pierde el WiFi, y la sesión quedaría abierta para
+siempre. `App\Services\CierreDeSesiones` las cierra cuando dejan de recibir
+mediciones durante tres veces su intervalo configurado (mínimo 15 minutos), y se
+dispara tanto desde una tarea programada como al cargar el panel.
+
+### Refresco del panel
+
+El dashboard consulta `GET /panel/estado` cada 15 segundos desde
+`public/js/panel-vivo.js`. Un solo temporizador por pestaña, que se detiene
+cuando la pestaña no está visible y espacia los reintentos ante fallos.
+
+## Base de datos
+
+Siete tablas de dominio: `usuarios`, `individuos`, `dispositivos`, `sesiones`,
+`mediciones`, `notas_campo_individuo` y `notas_campo_disp`.
+
+Todas tienen **Row Level Security activo sin políticas**. Es intencional: la
+aplicación se conecta con un rol que tiene `BYPASSRLS`, así que no se ve
+afectada, mientras que las claves `anon` y `authenticated` de Supabase quedan
+bloqueadas. Sin esto, cualquiera con la clave pública del proyecto podría leer y
+modificar toda la base desde el navegador.
+
+Los nombres van en minúscula a propósito: PostgreSQL pliega a minúscula todo
+identificador sin comillas, así que usar mayúsculas obligaría a citar cada tabla
+entre comillas dobles en cada consulta.
+
+## Despliegue
+
+El servicio corre en Render como contenedor Docker. Ver `render.yaml` para las
+variables de entorno; las credenciales se cargan a mano en el panel, nunca en el
+repositorio.
+
+```bash
+docker build -t bionea .
+docker run -p 8080:8080 -e PORT=8080 --env-file .env bionea
+```
+
+Las migraciones no se aplican solas en cada despliegue. Para hacerlo, poner
+`RUN_MIGRATIONS=true` en el entorno del servicio.
+
+## Pendientes conocidos
+
+- **El endpoint `/bionea/guardar` no tiene autenticación.** Cualquiera que
+  conozca la URL puede inyectar mediciones falsas. Falta una API key compartida
+  con el firmware.
+- **No hay sistema de roles.** Todo usuario autenticado tiene acceso completo al
+  panel. El alta de usuarios está restringida a `/usuarios/nuevo`, ya autenticado.
+- El estado de un individuo se escribe de dos formas en distintas vistas
+  (`liberado` y `Liberado/Perdido`); convendría unificarlo.
