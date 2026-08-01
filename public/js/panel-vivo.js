@@ -27,9 +27,33 @@
 
   let temporizador = null;
   let fallosSeguidos = 0;
-  let firmaSesiones = null;
+
+  // Firma de las sesiones que el servidor ya dibujó en esta página.
+  // Arrancar desde el DOM (y no desde null) permite detectar en la primera
+  // consulta que la tabla quedó vieja: si una sesión empezó justo después
+  // de renderizar, la fila no existe y hay que pedirle el HTML al servidor.
+  const firmaDelDom = () => Array.from(
+    document.querySelectorAll('[data-sesion-fila]')
+  ).map((el) => el.dataset.sesionFila).join(',');
+
+  let firmaSesiones = firmaDelDom();
 
   const $vivo = (nombre) => document.querySelector(`[data-vivo="${nombre}"]`);
+
+  /* Salvaguarda contra bucles de recarga: si por algún motivo el servidor
+     devolviera un conjunto de sesiones distinto en cada consulta, la
+     página entraría en un ciclo infinito de recargas. Se permite como
+     mucho una recarga automática cada 30 segundos. */
+  const CLAVE_RECARGA = 'panel-vivo:ultima-recarga';
+
+  function recargadoReciente() {
+    const sello = Number(sessionStorage.getItem(CLAVE_RECARGA) || 0);
+    return Date.now() - sello < 30000;
+  }
+
+  function marcarRecarga() {
+    sessionStorage.setItem(CLAVE_RECARGA, String(Date.now()));
+  }
 
   function pintarMetricas(m) {
     const online = $vivo('dispositivos');
@@ -103,7 +127,8 @@
       // Si aparecen o desaparecen sesiones, la tabla necesita filas nuevas
       // y eso lo resuelve mejor el servidor que este script.
       const firma = datos.sesiones.map((s) => s.id_sesion).join(',');
-      if (firmaSesiones !== null && firma !== firmaSesiones) {
+      if (firma !== firmaSesiones && !recargadoReciente()) {
+        marcarRecarga();
         window.location.reload();
         return;
       }
