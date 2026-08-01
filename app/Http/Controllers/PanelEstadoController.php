@@ -28,7 +28,11 @@ class PanelEstadoController extends Controller
         // pasada cada dos minutos, así que no encarece el polling.
         $cierre->revisarSiCorresponde();
 
-        $sesiones = Sesion::activas()
+        // Mismo scope que usa DashboardController para dibujar la tabla.
+        // Si acá se devolviera otro conjunto (por ejemplo solo las activas),
+        // el cliente vería una diferencia entre lo dibujado y lo consultado
+        // y recargaría la página una y otra vez.
+        $sesiones = Sesion::visiblesEnPanel()
             ->with(['individuo:id_individuo,codigo_individuo,especie',
                     'dispositivo:id_dispositivo,nombre',
                     'ultimaMedicion'])
@@ -44,7 +48,7 @@ class PanelEstadoController extends Controller
 
         return response()->json([
             'metricas' => [
-                'sesiones_activas'    => $sesiones->count(),
+                'sesiones_activas'    => $sesiones->where('estado', Sesion::ESTADO_ACTIVA)->count(),
                 'dispositivos_online' => $dispositivos
                                             ->filter(fn ($d) => $d->estado_calculado !== 'offline')
                                             ->count(),
@@ -55,6 +59,8 @@ class PanelEstadoController extends Controller
             ],
             'sesiones' => $sesiones->map(fn ($s) => [
                 'id_sesion'   => $s->id_sesion,
+                'activa'      => $s->estaActiva(),
+                'etiqueta'    => $s->etiqueta_estado,
                 'individuo'   => $s->individuo?->codigo_individuo,
                 'especie'     => $s->individuo?->especie,
                 'dispositivo' => $s->dispositivo?->nombre,

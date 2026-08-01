@@ -5,20 +5,20 @@ namespace App\Http\Controllers;
 use App\Models\Dispositivo;
 use App\Models\Medicion;
 use App\Models\Sesion;
+use App\Services\CierreDeSesiones;
 use Illuminate\Routing\Controller;
 
 class DashboardController extends Controller
 {
-    public function index()
+    public function index(CierreDeSesiones $cierre)
     {
-        // Sesiones de hoy mas cualquier sesion todavia activa, aunque haya
-        // empezado ayer: una medicion larga no deberia desaparecer del panel
-        // al cambiar la fecha.
-        $sesionesDelDia = Sesion::with(['individuo', 'dispositivo', 'ultimaMedicion'])
-            ->where(function ($q) {
-                $q->whereDate('fecha_inicio', today())
-                  ->orWhere('estado', Sesion::ESTADO_ACTIVA);
-            })
+        // Cierra sesiones que dejaron de reportar antes de contarlas.
+        $cierre->revisarSiCorresponde();
+
+        // Mismo conjunto que devuelve PanelEstadoController: el scope es
+        // compartido justamente para que no puedan divergir.
+        $sesionesDelDia = Sesion::visiblesEnPanel()
+            ->with(['individuo', 'dispositivo', 'ultimaMedicion'])
             ->orderByDesc('fecha_inicio')
             ->get();
 

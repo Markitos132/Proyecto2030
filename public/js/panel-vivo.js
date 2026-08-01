@@ -82,6 +82,16 @@
           : '-- °C';
         celdaTemp.classList.toggle('fuera-de-rango', s.alerta === 'FUERA DE RANGO');
       }
+
+      // Una sesión puede terminar sin que cambie el conjunto de filas:
+      // se actualiza en el lugar, sin recargar.
+      const celdaEstado = fila.querySelector('[data-vivo-celda="estado"]');
+      if (celdaEstado) {
+        const clase = s.activa ? 'status-measuring' : 'status-idle';
+        celdaEstado.innerHTML =
+          `<span class="status-pill ${clase}">${s.etiqueta}</span>`;
+        fila.classList.toggle('row-active', s.activa);
+      }
     });
   }
 

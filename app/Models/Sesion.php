@@ -79,6 +79,24 @@ class Sesion extends Model
         return $query->where('estado', self::ESTADO_FINALIZADA);
     }
 
+    /**
+     * Lo que muestra el dashboard: lo que arrancó hoy, mas cualquier
+     * sesion todavia en curso aunque haya empezado ayer, para que una
+     * medicion larga no desaparezca del panel al cambiar la fecha.
+     *
+     * Vive acá y no en el controlador porque el endpoint de refresco
+     * automatico tiene que devolver exactamente el mismo conjunto: si
+     * las dos consultas se separan, el panel entra en un ciclo de
+     * recargas al detectar diferencias entre lo dibujado y lo consultado.
+     */
+    public function scopeVisiblesEnPanel($query)
+    {
+        return $query->where(function ($q) {
+            $q->whereDate('fecha_inicio', today())
+              ->orWhere('estado', self::ESTADO_ACTIVA);
+        });
+    }
+
     public function estaActiva(): bool
     {
         return $this->estado === self::ESTADO_ACTIVA;

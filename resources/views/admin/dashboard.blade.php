@@ -53,7 +53,7 @@
                   <td data-label="Individuo">{{ $sesion->individuo?->codigo_individuo ?? 'S/A' }}</td>
                   <td data-label="Especie"><em>{{ $sesion->individuo?->especie ?? 'Sin especificar' }}</em></td>
                   <td data-label="Temp Actual" data-vivo-celda="temperatura">{{ $sesion->ultimaMedicion?->temperatura ?? '--' }} °C</td>
-                  <td data-label="Estado">
+                  <td data-label="Estado" data-vivo-celda="estado">
                     @if($sesion->estaActiva())
                       <span class="status-pill status-measuring">MIDIENDO</span>
                     @else
