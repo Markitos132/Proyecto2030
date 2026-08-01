@@ -1,6 +1,5 @@
-{{-- Simulador del ESP32. Copiado de bionea/BioNEA-Organiks, adaptado --}}
-{{-- para apuntar a esta app. Envuelto en @verbatim para que Blade no --}}
-{{-- toque las @media del CSS ni las plantillas del JS. --}}
+{{-- Simulador del ESP32, copiado de bionea/BioNEA-Organiks y adaptado a esta app. --}}
+{{-- El bloque de abajo esta sin procesar para que Blade no toque el CSS ni el JS. --}}
 @verbatim
 <!DOCTYPE html>
 <html lang="es">
