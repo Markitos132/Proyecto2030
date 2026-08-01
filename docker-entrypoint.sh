@@ -10,6 +10,30 @@ export SERVER_NAME=":${PORT:-8080}"
 
 echo "→ BioNEA Organiks arrancando en el puerto ${PORT:-8080}"
 
+# APP_URL mal formada tumba el contenedor entero: Laravel construye una
+# Request a partir de ella al arrancar la consola, y si el host no es
+# valido falla con "Invalid URI: Host is malformed" antes de ejecutar
+# ningun comando. Como es una variable cosmetica (solo afecta las URLs
+# absolutas que genera asset()), conviene avisar y seguir, no morir.
+case "${APP_URL}" in
+    "")
+        ;;
+    http://*|https://*)
+        case "${APP_URL}" in
+            *"<"*|*">"*|*" "*)
+                echo "!! APP_URL contiene caracteres invalidos: '${APP_URL}'"
+                echo "!! Se ignora. Corregila en el entorno del servicio."
+                unset APP_URL
+                ;;
+        esac
+        ;;
+    *)
+        echo "!! APP_URL no empieza con http:// ni https://: '${APP_URL}'"
+        echo "!! Se ignora. Corregila en el entorno del servicio."
+        unset APP_URL
+        ;;
+esac
+
 # Los directorios de storage no viajan en git (solo sus .gitignore),
 # y el disco de Render es efímero: hay que recrearlos en cada arranque.
 mkdir -p storage/framework/cache/data \
