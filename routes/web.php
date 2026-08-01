@@ -88,8 +88,4 @@ Route::middleware('auth')->group(function () {
     // ── Historial y configuración ──────────────────────────
     Route::get('/historial', [HistorialController::class, 'index'])->name('historial');
     Route::view('/configuracion', 'admin.configuracion')->name('configuracion');
-
-    // Simulador del ESP32, para probar la ingesta sin hardware.
-    // Detrás de auth: inyecta mediciones reales en la base.
-    Route::view('/simulador', 'admin.simulador')->name('simulador');
 });

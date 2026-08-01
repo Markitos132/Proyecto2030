@@ -95,11 +95,35 @@ El endpoint exige la cabecera `X-API-Key` con el valor de `BIONEA_API_KEY`
 - **Un usuario autenticado pasa sin clave.** Es lo que mantiene funcionando el
   simulador de `/simulador` sin incrustar la clave en una página web.
 
+`GET /bionea/sesion?mac=...` es lo que el dispositivo consulta al arrancar y
+cada 30 segundos: devuelve la sesión que le fue asignada desde el panel, o `204`
+sin cuerpo si no tiene ninguna. Cada consulta cuenta además como señal de vida,
+así que un equipo encendido figura online aunque no esté midiendo.
+
 `GET /bionea/health` responde el estado de la app y de la base, e incluye
 `ingesta_protegida` para poder verificar de un vistazo si la clave quedó puesta.
 
-Hay un simulador del dispositivo en `/simulador`, detrás de login porque inyecta
-datos reales.
+### Probar sin el hardware
+
+`herramientas/simular-esp32.ps1` se comporta igual que el firmware: pregunta por
+su sesión, la ejecuta y avisa cuando termina.
+
+```powershell
+.\herramientas\simular-esp32.ps1 -Clave "la-api-key" -Acelerar
+```
+
+Con `-Acelerar` los minutos se interpretan como segundos, así una sesión de 30
+minutos se completa en medio minuto.
+
+Antes de usarlo hay que dar de alta un dispositivo en el panel con la MAC que el
+script informa (por defecto `A0:B1:C2:D3:E4:F5`), igual que habría que hacer con
+un ESP32 real.
+
+Corre fuera del navegador y sin sesión iniciada, así que atraviesa la misma
+autenticación por `X-API-Key` que el dispositivo. El simulador anterior, que
+vivía en `/simulador`, se retiró: corría autenticado —con lo que no ejercitaba la
+clave— y seguía el flujo viejo en el que el dispositivo inventaba su propia
+sesión en vez de recibirla del panel.
 
 ### Zona horaria
 
