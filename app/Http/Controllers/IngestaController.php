@@ -12,6 +12,10 @@ use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+// Ojo: el Response de Symfony, no el de Illuminate. JsonResponse no hereda
+// del de Illuminate, y declararlo asi lanza un TypeError en tiempo de
+// ejecucion. Ya paso una vez con /panel/estado.
+use Symfony\Component\HttpFoundation\Response;
 use Throwable;
 
 /**
@@ -78,6 +82,66 @@ class IngestaController extends Controller
             // de la base a un endpoint que hoy no exige autenticación.
             return response()->json(['error' => 'Error interno del servidor'], 500);
         }
+    }
+
+    /**
+     * El dispositivo pregunta si tiene una sesión asignada.
+     *
+     * Se identifica por su MAC, que es lo único que el ESP32 conoce de sí
+     * mismo sin configuración previa. La sesión la crea una persona desde
+     * el panel; el dispositivo solo la ejecuta.
+     *
+     * Responde 204 sin cuerpo cuando no hay nada asignado, que es el caso
+     * frecuente: el equipo pregunta cada pocos minutos durante horas.
+     */
+    public function sesionAsignada(Request $request): Response
+    {
+        $mac = $request->query('mac');
+
+        if (! $mac) {
+            return response()->json(['error' => 'Falta el parámetro mac'], 422);
+        }
+
+        $dispositivo = Dispositivo::whereRaw('upper(mac_address) = ?', [strtoupper($mac)])->first();
+
+        if (! $dispositivo) {
+            return response()->json([
+                'error' => 'Dispositivo no registrado. Datelo de alta en el panel con esta MAC.',
+                'mac'   => $mac,
+            ], 404);
+        }
+
+        // Cada consulta cuenta como señal de vida. Sin esto, un equipo
+        // encendido pero sin medir figuraría como offline en el panel.
+        $this->registrarLatido($dispositivo->id_dispositivo, now());
+
+        $sesion = Sesion::activas()
+            ->where('id_dispositivo', $dispositivo->id_dispositivo)
+            ->with('individuo')
+            ->orderBy('fecha_inicio')
+            ->first();
+
+        if (! $sesion) {
+            return response()->noContent();
+        }
+
+        // La ingesta reconoce las sesiones por sesion_externa. Las que crea
+        // el panel no tienen ese campo, así que se completa acá con el id:
+        // sin esto, cada medición del dispositivo crearía una sesión nueva
+        // en lugar de sumarse a la que le fue asignada.
+        if (blank($sesion->sesion_externa)) {
+            $sesion->update(['sesion_externa' => (string) $sesion->id_sesion]);
+        }
+
+        return response()->json([
+            'session_id' => $sesion->sesion_externa,
+            'individuo'  => $sesion->individuo?->codigo_individuo ?? '',
+            'especie'    => $sesion->individuo?->especie ?? '',
+            'duracion'   => (int) ($sesion->duracion_sesion ?: 60),
+            'intervalo'  => (int) ($sesion->intervalo_minuto ?: 10),
+            'temp_min'   => $sesion->temp_min !== null ? (float) $sesion->temp_min : null,
+            'temp_max'   => $sesion->temp_max !== null ? (float) $sesion->temp_max : null,
+        ]);
     }
 
     /** Diagnóstico: confirma que la app y la base responden. */

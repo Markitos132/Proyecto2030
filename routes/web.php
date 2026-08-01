@@ -30,6 +30,11 @@ Route::view('/', 'landing')->name('landing');
 Route::post('/bionea/guardar', [IngestaController::class, 'guardar'])
     ->middleware('clave.ingesta');
 
+// El dispositivo pregunta si tiene una sesión asignada desde el panel.
+// Se identifica por su MAC: ?mac=AA:BB:CC:DD:EE:FF
+Route::get('/bionea/sesion', [IngestaController::class, 'sesionAsignada'])
+    ->middleware('clave.ingesta');
+
 Route::get('/bionea/health', [IngestaController::class, 'health']);
 
 // ── Autenticación ──────────────────────────────────────────

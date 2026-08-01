@@ -54,6 +54,20 @@
                 </div>
               </div>
 
+              {{-- Rango térmico: el dispositivo lo usa para marcar como
+                   FUERA DE RANGO las mediciones que se salgan. --}}
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="temp_min">Temp. mínima (°C)</label>
+                  <input type="number" id="temp_min" name="temp_min" placeholder="Ej: 20" step="0.5" value="20" required>
+                </div>
+
+                <div class="form-group">
+                  <label for="temp_max">Temp. máxima (°C)</label>
+                  <input type="number" id="temp_max" name="temp_max" placeholder="Ej: 40" step="0.5" value="40" required>
+                </div>
+              </div>
+
               <!-- Mensaje de advertencia o ayuda de límites -->
               <div class="info-note">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
