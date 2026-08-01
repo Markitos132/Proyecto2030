@@ -16,9 +16,14 @@ Route::view('/', 'landing')->name('landing');
 Route::middleware('guest')->group(function () {
     Route::get('/login',  [AuthController::class, 'mostrarLogin'])->name('login');
     Route::post('/login', [AuthController::class, 'login']);
+});
 
-    Route::get('/registro',  [AuthController::class, 'mostrarRegistro'])->name('registro');
-    Route::post('/registro', [AuthController::class, 'registro']);
+// El registro NO es público. Sin sistema de roles, cualquiera que llegara
+// a /registro se creaba una cuenta y entraba al panel completo.
+// Las altas se hacen desde el panel, ya autenticado.
+Route::middleware('auth')->group(function () {
+    Route::get('/usuarios/nuevo',  [AuthController::class, 'mostrarRegistro'])->name('registro');
+    Route::post('/usuarios/nuevo', [AuthController::class, 'registro']);
 });
 
 Route::post('/logout', [AuthController::class, 'logout'])

@@ -80,7 +80,8 @@
 
           <button type="submit" class="btn-submit">Ingresar</button>
 
-          <p class="auth-switch">¿No tenés una cuenta? <a href="{{ route('registro') }}" class="link-muted">Registrate</a></p>
+          {{-- El alta de usuarios se hace desde el panel, no desde acá. --}}
+          <p class="auth-switch">¿No tenés una cuenta? Pedile acceso a un administrador.</p>
         </form>
       </div>
     </div>

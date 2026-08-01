@@ -78,10 +78,10 @@ class AuthController extends Controller
             'password' => $datos['password'],
         ]);
 
-        Auth::login($usuario);
-        $request->session()->regenerate();
-
-        return redirect()->route('dashboard');
+        // No se hace Auth::login: quien crea la cuenta ya esta logueado
+        // y no queremos que la sesion salte al usuario recien creado.
+        return redirect()->route('configuracion')
+            ->with('exito', "Usuario {$usuario->nombre} creado correctamente.");
     }
 
     public function logout(Request $request): RedirectResponse
