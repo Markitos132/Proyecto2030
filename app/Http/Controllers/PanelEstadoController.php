@@ -7,8 +7,12 @@ use App\Models\Medicion;
 use App\Models\Sesion;
 use App\Services\CierreDeSesiones;
 use Illuminate\Http\Request;
-use Illuminate\Http\Response;
 use Illuminate\Routing\Controller;
+// Tipo de retorno de Symfony, no el de Illuminate: JsonResponse hereda de
+// Symfony\...\JsonResponse, no de Illuminate\Http\Response. Declarar el de
+// Illuminate hacia que devolver el JSON lanzara un TypeError y el endpoint
+// respondiera 500, con el panel mostrando "Sin conexión con el servidor".
+use Symfony\Component\HttpFoundation\Response;
 
 /**
  * Estado del panel en JSON, para el refresco automático.
