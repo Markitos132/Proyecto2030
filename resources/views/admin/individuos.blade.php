@@ -143,7 +143,8 @@
           <select id="filtroEstado" name="estado">
             <option value="">Todos</option>
             <option value="activo" {{ request('estado') == 'activo' ? 'selected' : '' }}>Activo</option>
-            <option value="liberado" {{ request('estado') == 'liberado' ? 'selected' : '' }} >Liberado / Perdido</option>
+            <option value="recapturado" {{ request('estado') == 'recapturado' ? 'selected' : '' }}>Recapturado</option>
+            <option value="liberado" {{ request('estado') == 'liberado' ? 'selected' : '' }}>Liberado / Perdido</option>
           </select>
         </div>
         <div class="filter-field">
@@ -182,7 +183,7 @@
                     @endif
                   </td>
                   <td data-label="Estado">
-                    @if ($individuo->estado === 'Liberado/Perdido')
+                    @if ($individuo->estado === 'liberado')
                       <span class="status-pill status-ind-inactivo">{{ $individuo->estado }}</span>
                     @else 
                       <span class="status-pill status-ind-activo">{{ $individuo->estado }}</span>
@@ -360,5 +361,12 @@ function limpiarEstilosValidacion() {
 
     });
   }
+
+@if ($errors->any() && old('codigo_individuo') !== null)
+  // El servidor rechazó el alta. Sin esto la página volvía con el modal
+  // cerrado y los datos cargados invisibles: parecía que no había pasado
+  // nada. Se reabre para que se vea el error y se pueda corregir.
+  abrirModal();
+@endif
 </script>
 @endpush

@@ -1097,3 +1097,35 @@ tbody tr.row-active td::before {
   color: #d32f2f;
   font-weight: 600;
 }
+
+/* ═══════════════════════════════════════════════════════════
+   Avisos de éxito y error
+
+   Antes no existían: una validación fallida devolvía al usuario a la
+   misma página sin ninguna señal de qué había pasado.
+   ═══════════════════════════════════════════════════════════ */
+.aviso {
+  margin-bottom: 20px;
+  padding: 14px 18px;
+  border-radius: 8px;
+  border-left: 4px solid;
+  font-size: 0.92rem;
+  line-height: 1.5;
+}
+
+.aviso ul {
+  margin: 6px 0 0;
+  padding-left: 20px;
+}
+
+.aviso-exito {
+  background: #e8f5e9;
+  border-color: #2e7d32;
+  color: #1b5e20;
+}
+
+.aviso-error {
+  background: #fdecec;
+  border-color: #d32f2f;
+  color: #a32d2d;
+}

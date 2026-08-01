@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Individuo;
+use App\Models\Sesion;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
@@ -12,18 +13,22 @@ class IndividuoController extends Controller
     /**
      * Estados posibles de un individuo.
      *
-     * La UI es inconsistente: el desplegable de la ficha ofrece
-     * 'activo' / 'recapturado' / 'liberado', pero varias vistas comparan
-     * contra 'Liberado/Perdido'. Se aceptan todos para no romper datos
-     * existentes; convendria unificarlo mas adelante.
+     * Las vistas comparaban contra 'Liberado/Perdido' mientras el
+     * desplegable guardaba 'liberado', asi que la etiqueta de estado nunca
+     * se pintaba como inactiva. Se unifico en estos tres valores; ninguna
+     * fila de la base usaba el otro, asi que no hubo datos que migrar.
      */
-    private const ESTADOS = ['activo', 'recapturado', 'liberado', 'Liberado/Perdido'];
+    private const ESTADOS = ['activo', 'recapturado', 'liberado'];
 
     public function index(Request $request)
     {
         $individuos = Individuo::query()
             ->with('sesionActiva.dispositivo')
-            ->when($request->filled('especie'), fn ($q) => $q->where('especie', $request->especie))
+            // El filtro de especie es un campo de texto libre, no un
+            // desplegable: buscar por igualdad exacta hacia que escribir
+            // "Liolaemus" no encontrara "Liolaemus chacoensis".
+            ->when($request->filled('especie'), fn ($q) =>
+                $q->where('especie', 'ilike', '%'.$request->especie.'%'))
             ->when($request->filled('estado'),  fn ($q) => $q->where('estado', $request->estado))
             ->when($request->filled('codigo'),  fn ($q) =>
                 $q->where('codigo_individuo', 'ilike', '%'.$request->codigo.'%'))
@@ -74,30 +79,22 @@ class IndividuoController extends Controller
 
         $sesiones = $individuo->sesiones->sortByDesc('fecha_inicio');
 
-        // La vista ofrece un desplegable con especies y estadios conocidos,
-        // mas una opcion "otra". Si el valor guardado no esta en la lista,
-        // hay que preseleccionar "otra" y rellenar el campo de texto libre.
-        $especiesConocidas = ['Liolaemus chacoensis'];
-        $estadiosConocidos = ['Adulto', 'Juvenil', 'Indeterminado'];
-
-        $esOtraEspecie = $individuo->especie && ! in_array($individuo->especie, $especiesConocidas, true);
-        $esOtroEstadio = $individuo->estadio && ! in_array($individuo->estadio, $estadiosConocidos, true);
-
+        // La vista resuelve por su cuenta, con un bloque @php, qué opción
+        // del desplegable preseleccionar. No se pasan esos valores desde
+        // acá para no tener dos fuentes de verdad que puedan discrepar.
         return view('admin.individuo_ficha', [
             'individuo'           => $individuo,
             'sesiones'            => $sesiones,
-            'sesionesFinalizadas' => $sesiones->where('estado', \App\Models\Sesion::ESTADO_FINALIZADA),
-            'esOtraEspecie'       => $esOtraEspecie,
-            'esOtroEstadio'       => $esOtroEstadio,
-            'especieVal'          => $esOtraEspecie ? $individuo->especie : '',
-            'estadioVal'          => $esOtroEstadio ? $individuo->estadio : '',
+            'sesionesFinalizadas' => $sesiones->where('estado', Sesion::ESTADO_FINALIZADA),
         ]);
     }
 
     public function update(Request $request, Individuo $individuo): RedirectResponse
     {
         $request->validate([
-            'codigo'              => ['required', 'string', 'max:50'],
+            'codigo'              => ['required', 'string', 'max:50',
+                                      'unique:individuos,codigo_individuo,'
+                                          .$individuo->id_individuo.',id_individuo'],
             'especie_select'      => ['nullable', 'string', 'max:255'],
             'especie_otra'        => ['nullable', 'string', 'max:255'],
             'sexo'                => ['nullable', 'string', 'max:50'],
@@ -107,6 +104,9 @@ class IndividuoController extends Controller
             'svl'                 => ['nullable', 'numeric', 'min:0', 'max:9999'],
             'peso'                => ['nullable', 'numeric', 'min:0', 'max:9999'],
             'estado'              => ['nullable', 'string', 'in:'.implode(',', self::ESTADOS)],
+        ], [
+            'codigo.unique' => 'Ya existe otro ejemplar con ese código.',
+            'estado.in'     => 'El estado seleccionado no es válido.',
         ]);
 
         $individuo->update([
@@ -132,7 +132,7 @@ class IndividuoController extends Controller
         if ($individuo->sesiones()->exists()) {
             return back()->withErrors([
                 'individuo' => 'No se puede eliminar: el ejemplar tiene sesiones registradas. '
-                             . 'Marcalo como Liberado/Perdido en su lugar.',
+                             . 'Marcalo como Liberado / Perdido en su lugar.',
             ]);
         }
 
@@ -146,7 +146,10 @@ class IndividuoController extends Controller
     private function validarAlta(Request $request): array
     {
         return $request->validate([
-            'codigo_individuo'    => ['required', 'string', 'max:50'],
+            // El codigo tiene que ser unico: el ESP32 identifica al ejemplar
+            // por ese valor, y dos individuos con el mismo codigo harian que
+            // las mediciones fueran a parar a cualquiera de los dos.
+            'codigo_individuo'    => ['required', 'string', 'max:50', 'unique:individuos,codigo_individuo'],
             'especie'             => ['required', 'string', 'max:255'],
             'otra_especie'        => ['nullable', 'required_if:especie,otra', 'string', 'max:255'],
             'sexo'                => ['nullable', 'string', 'max:50'],
@@ -157,6 +160,7 @@ class IndividuoController extends Controller
             'peso'                => ['nullable', 'numeric', 'min:0', 'max:9999'],
             'observaciones'       => ['nullable', 'string', 'max:255'],
         ], [
+            'codigo_individuo.unique'  => 'Ya existe un ejemplar con ese código.',
             'otra_especie.required_if' => 'Indicá cuál es la especie.',
             'otro_estadio.required_if' => 'Indicá cuál es el estadio.',
         ]);

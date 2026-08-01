@@ -45,8 +45,16 @@
               <div class="form-group">
                 <label for="especie">Especie</label>
                 @php
-                  $especieVal = old('especie', $individuo->especie);
-                  $esOtraEspecie = !in_array($especieVal, ['Liolaemus chacoensis', 'Tropidurus etheridgei']);
+                  // La lista tiene que coincidir con las opciones de abajo:
+                  // antes incluía Tropidurus etheridgei, que no figura como
+                  // opción, así que un ejemplar de esa especie no marcaba
+                  // "otra" ni tenía dónde mostrarse, y al guardar se
+                  // convertía silenciosamente en Liolaemus chacoensis.
+                  $especiesConocidas = ['Liolaemus chacoensis'];
+                  $especieVal    = old('especie_select') === 'otra'
+                                     ? old('especie_otra')
+                                     : old('especie_select', $individuo->especie);
+                  $esOtraEspecie = filled($especieVal) && ! in_array($especieVal, $especiesConocidas);
                 @endphp
                 <select name="especie_select" id="especie_select" required>
                   <option value="Liolaemus chacoensis" {{ $especieVal == 'Liolaemus chacoensis' ? 'selected' : '' }}>Liolaemus chacoensis</option>
@@ -67,8 +75,10 @@
                 <div class="form-group">
                   <label for="estadio">Estadio</label>
                   @php
-                    $estadioVal = old('estadio', $individuo->estadio);
-                    $esOtroEstadio = !in_array($estadioVal, ['Adulto', 'Juvenil']);
+                    $estadioVal = old('estadio_select') === 'otro'
+                                    ? old('estadio_otro')
+                                    : old('estadio_select', $individuo->estadio);
+                    $esOtroEstadio = filled($estadioVal) && ! in_array($estadioVal, ['Adulto', 'Juvenil']);
                   @endphp
                   <select name="estadio_select" id="estadio_select" required>
                     <option value="Adulto" {{ $estadioVal == 'Adulto' ? 'selected' : '' }}>Adulto</option>
@@ -102,10 +112,14 @@
 
               <div class="form-group">
                 <label for="estado">Estado</label>
+                {{-- El "selected" estaba fijo en activo, así que abrir el
+                     formulario y guardar sin tocar nada devolvía a activo a
+                     un ejemplar liberado. --}}
+                @php $estadoVal = old('estado', $individuo->estado ?: 'activo'); @endphp
                 <select name="estado" id="estado" required>
-                  <option value="activo" selected>Activo</option>
-                  <option value="recapturado">Recapturado</option>
-                  <option value="liberado">Liberado / Perdido</option>
+                  <option value="activo"      {{ $estadoVal === 'activo' ? 'selected' : '' }}>Activo</option>
+                  <option value="recapturado" {{ $estadoVal === 'recapturado' ? 'selected' : '' }}>Recapturado</option>
+                  <option value="liberado"    {{ $estadoVal === 'liberado' ? 'selected' : '' }}>Liberado / Perdido</option>
                 </select>
               </div>
 
@@ -130,7 +144,7 @@
         <div class="page-header-top">
           <div class="ficha-title-block">
             <h1 class="page-title">{{ $individuo->codigo_individuo }}</h1>
-            @if($individuo->estado === 'Liberado/Perdido')
+            @if($individuo->estado === 'liberado')
               <span class="status-pill status-ind-inactivo ficha-status-pill">{{ $individuo->estado }}</span>
             @else
               <span class="status-pill status-ind-activo ficha-status-pill">{{ $individuo->estado }}</span>
@@ -400,5 +414,11 @@ if (sexoSelect) {
     }
   });
 }
+
+@if ($errors->any() && old('codigo') !== null)
+  // El servidor rechazó la edición: se reabre el modal con lo que se había
+  // escrito, en lugar de dejar la ficha como si nada hubiera pasado.
+  abrirModal();
+@endif
 </script>
 @endpush

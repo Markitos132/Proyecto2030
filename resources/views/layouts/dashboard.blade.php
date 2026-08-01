@@ -28,6 +28,7 @@
   <div class="main">
     @include('partials.topbar')
     <main class="content">
+      @include('partials.mensajes')
       @yield('content')
     </main>
   </div>
