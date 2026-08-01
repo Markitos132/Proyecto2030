@@ -27,6 +27,7 @@
 
   let temporizador = null;
   let fallosSeguidos = 0;
+  let enVuelo = false;
 
   // Firma de las sesiones que el servidor ya dibujó en esta página.
   // Arrancar desde el DOM (y no desde null) permite detectar en la primera
@@ -114,6 +115,12 @@
   }
 
   async function consultar() {
+    // Con una petición en curso no se lanza otra. Sin esto, volver a la
+    // pestaña mientras hay una consulta abierta arrancaba una segunda
+    // cadena de consultas en paralelo con la primera.
+    if (enVuelo) return;
+    enVuelo = true;
+
     try {
       const res = await fetch(URL, {
         headers: { 'Accept': 'application/json' },
@@ -149,6 +156,8 @@
       fallosSeguidos++;
       marcarError();
       console.warn('[panel-vivo]', e.message);
+    } finally {
+      enVuelo = false;
     }
 
     programar();
@@ -167,9 +176,12 @@
   }
 
   function alCambiarVisibilidad() {
-    if (document.hidden) {
-      clearTimeout(temporizador);
-    } else {
+    // Cancelar siempre el temporizador pendiente antes de decidir:
+    // al volver a la pestaña, dejarlo vivo y ademas consultar de
+    // inmediato dejaba dos ciclos solapados.
+    clearTimeout(temporizador);
+
+    if (! document.hidden) {
       consultar();
     }
   }
