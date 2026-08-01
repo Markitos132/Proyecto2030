@@ -107,9 +107,19 @@ dispara tanto desde una tarea programada como al cargar el panel.
 
 ### Refresco del panel
 
-El dashboard consulta `GET /panel/estado` cada 15 segundos desde
-`public/js/panel-vivo.js`. Un solo temporizador por pestaña, que se detiene
-cuando la pestaña no está visible y espacia los reintentos ante fallos.
+El dashboard consulta `GET /panel/estado` desde `public/js/panel-vivo.js`.
+Un solo temporizador por pestaña, que se detiene cuando la pestaña no está
+visible y espacia los reintentos ante fallos.
+
+El ritmo lo decide el servidor y viene en el campo `proximo_en`: **3 segundos**
+mientras hay una sesión midiendo, **60 segundos** en reposo. La respuesta lleva
+`ETag`, así que entre medición y medición el servidor contesta `304 Not Modified`
+sin cuerpo — eso es lo que hace barato consultar cada 3 segundos.
+
+No se usa SSE ni WebSockets a propósito: FrankenPHP arranca con dos hilos de PHP
+en el plan gratuito de Render, y cada conexión persistente ocupa uno mientras
+dura. Un par de pestañas del dashboard dejarían al ESP32 sin hilos donde
+entregar sus mediciones.
 
 ## Base de datos
 

@@ -6,7 +6,8 @@ use App\Models\Dispositivo;
 use App\Models\Medicion;
 use App\Models\Sesion;
 use App\Services\CierreDeSesiones;
-use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Routing\Controller;
 
 /**
@@ -16,13 +17,21 @@ use Illuminate\Routing\Controller;
  * persistente por pestaña y cada una lanzaba sus propias consultas cada
  * 2 segundos: con tres pestañas abiertas, tres pollers independientes.
  *
- * PHP-FPM además bloquea un worker por conexión abierta, así que un SSE
- * con varios clientes agota el pool de procesos. Acá se responde y se
- * corta; el cliente decide cuándo volver a preguntar.
+ * Un SSE tampoco es viable acá: FrankenPHP en el plan gratuito de Render
+ * arranca con dos hilos de PHP, y cada conexión abierta ocupa uno mientras
+ * dura. Dos pestañas del dashboard dejarían al ESP32 sin hilos donde
+ * entregar sus mediciones. Acá se responde y se corta; el cliente decide
+ * cuándo volver a preguntar, y el servidor le sugiere cada cuánto.
  */
 class PanelEstadoController extends Controller
 {
-    public function __invoke(CierreDeSesiones $cierre): JsonResponse
+    /** Segundos entre consultas cuando hay una sesión midiendo. */
+    private const RITMO_ACTIVO = 3;
+
+    /** Segundos entre consultas cuando no pasa nada. */
+    private const RITMO_REPOSO = 60;
+
+    public function __invoke(Request $request, CierreDeSesiones $cierre): Response
     {
         // Cierra sesiones que dejaron de reportar. Se autolimita a una
         // pasada cada dos minutos, así que no encarece el polling.
@@ -41,12 +50,14 @@ class PanelEstadoController extends Controller
 
         $dispositivos = Dispositivo::with('sesionActiva.ultimaMedicion')->get();
 
+        $hayActivas = $sesiones->contains(fn ($s) => $s->estaActiva());
+
         $tempPromedio = Medicion::query()
             ->whereHas('sesion', fn ($q) => $q->where('estado', Sesion::ESTADO_ACTIVA))
             ->where('fecha_hora', '>=', now()->subHour())
             ->avg('temperatura');
 
-        return response()->json([
+        $datos = [
             'metricas' => [
                 'sesiones_activas'    => $sesiones->where('estado', Sesion::ESTADO_ACTIVA)->count(),
                 'dispositivos_online' => $dispositivos
@@ -70,7 +81,23 @@ class PanelEstadoController extends Controller
                 'alerta'      => $s->ultimaMedicion?->alerta,
                 'medido_hace' => $s->ultimaMedicion?->fecha_hora?->diffForHumans(null, true),
             ])->values(),
-            'servidor' => now()->toIso8601String(),
-        ]);
+
+            // El servidor decide el ritmo: consultar seguido solo mientras
+            // hay algo midiendo. En reposo, una vez por minuto alcanza.
+            'proximo_en' => $hayActivas ? self::RITMO_ACTIVO : self::RITMO_REPOSO,
+        ];
+
+        // ETag sobre los datos, sin la hora del servidor: si no cambió nada,
+        // se responde 304 sin cuerpo. Es lo que hace barato consultar cada
+        // 3 segundos, porque entre medicion y medicion no hay novedades.
+        $etag = '"'.md5(json_encode($datos)).'"';
+
+        if (trim($request->header('If-None-Match', ''), 'W/') === $etag) {
+            return response('', 304)->header('ETag', $etag);
+        }
+
+        $datos['servidor'] = now()->toIso8601String();
+
+        return response()->json($datos)->header('ETag', $etag);
     }
 }
