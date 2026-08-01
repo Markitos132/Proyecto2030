@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Dispositivo;
 use App\Models\Medicion;
 use App\Models\Sesion;
+use App\Services\CierreDeSesiones;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Routing\Controller;
 
@@ -21,8 +22,12 @@ use Illuminate\Routing\Controller;
  */
 class PanelEstadoController extends Controller
 {
-    public function __invoke(): JsonResponse
+    public function __invoke(CierreDeSesiones $cierre): JsonResponse
     {
+        // Cierra sesiones que dejaron de reportar. Se autolimita a una
+        // pasada cada dos minutos, así que no encarece el polling.
+        $cierre->revisarSiCorresponde();
+
         $sesiones = Sesion::activas()
             ->with(['individuo:id_individuo,codigo_individuo,especie',
                     'dispositivo:id_dispositivo,nombre',

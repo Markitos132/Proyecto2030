@@ -1,8 +1,19 @@
 <?php
 
-use Illuminate\Foundation\Inspiring;
-use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Schedule;
 
-Artisan::command('inspire', function () {
-    $this->comment(Inspiring::quote());
-})->purpose('Display an inspiring quote');
+/*
+|--------------------------------------------------------------------------
+|  Tareas programadas
+|--------------------------------------------------------------------------
+|
+|  Requieren un proceso que ejecute `php artisan schedule:run` cada minuto.
+|  En Render, el plan gratuito no ofrece cron jobs, así que el cierre de
+|  sesiones también se dispara de forma oportunista al cargar el panel
+|  (ver App\Services\CierreDeSesiones::revisarSiCorresponde).
+|
+*/
+
+Schedule::command('bionea:cerrar-sesiones')
+    ->everyFiveMinutes()
+    ->withoutOverlapping();

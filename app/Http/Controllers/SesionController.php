@@ -5,14 +5,18 @@ namespace App\Http\Controllers;
 use App\Models\Dispositivo;
 use App\Models\Individuo;
 use App\Models\Sesion;
+use App\Services\CierreDeSesiones;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 
 class SesionController extends Controller
 {
-    public function index()
+    public function index(CierreDeSesiones $cierre)
     {
+        // Antes de listar, descartar las que dejaron de reportar.
+        $cierre->revisarSiCorresponde();
+
         $sesionesActivas = Sesion::activas()
             ->with(['individuo', 'dispositivo', 'ultimaMedicion', 'mediciones'])
             ->orderByDesc('fecha_inicio')
