@@ -35,13 +35,20 @@
         <h1>Crear Cuenta</h1>
         <p class="auth-subtitle">Completá tus datos para registrarte en el sistema.</p>
 
-        <form id="registerForm" novalidate>
+        @if ($errors->any())
+          <div class="alert-error" role="alert">
+            {{ $errors->first() }}
+          </div>
+        @endif
+
+        <form id="registerForm" method="POST" action="{{ route('registro') }}" novalidate>
+          @csrf
           <div class="form-row">
             <div class="form-group">
               <label for="nombre">Nombre</label>
               <div class="input-wrap" id="nombreWrap">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a7 7 0 0 1 14 0v1"/></svg>
-                <input type="text" id="nombre" name="nombre" placeholder="Tu nombre" autocomplete="given-name" required>
+                <input type="text" id="nombre" name="nombre" value="{{ old('nombre') }}" placeholder="Tu nombre" autocomplete="given-name" required>
               </div>
               <div class="field-error" id="nombreError">Ingresá tu nombre.</div>
             </div>
@@ -50,7 +57,7 @@
               <label for="apellido">Apellido</label>
               <div class="input-wrap" id="apellidoWrap">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a7 7 0 0 1 14 0v1"/></svg>
-                <input type="text" id="apellido" name="apellido" placeholder="Tu apellido" autocomplete="family-name" required>
+                <input type="text" id="apellido" name="apellido" value="{{ old('apellido') }}" placeholder="Tu apellido" autocomplete="family-name" required>
               </div>
               <div class="field-error" id="apellidoError">Ingresá tu apellido.</div>
             </div>
@@ -60,7 +67,7 @@
             <label for="email">Correo electrónico</label>
             <div class="input-wrap" id="emailWrap">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m2 6 8.5 6L20 6"/></svg>
-              <input type="email" id="email" name="email" placeholder="nombre@ejemplo.com" autocomplete="email" required>
+              <input type="email" id="email" name="email" value="{{ old('email') }}" placeholder="nombre@ejemplo.com" autocomplete="email" required>
             </div>
             <div class="field-error" id="emailError">Ingresá un correo electrónico válido.</div>
           </div>
@@ -82,7 +89,7 @@
               <label for="confirmPassword">Confirmar contraseña</label>
               <div class="input-wrap" id="confirmPasswordWrap">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="10" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-                <input type="password" id="confirmPassword" name="confirmPassword" placeholder="Repetí tu contraseña" autocomplete="new-password" required>
+                <input type="password" id="confirmPassword" name="password_confirmation" placeholder="Repetí tu contraseña" autocomplete="new-password" required>
               </div>
               <div class="field-error" id="confirmPasswordError">Las contraseñas no coinciden.</div>
             </div>
@@ -90,7 +97,7 @@
 
           <button type="submit" class="btn-submit">Crear Cuenta</button>
 
-          <p class="auth-switch">¿Ya tenés una cuenta? <a href="/login" class="link-muted">Iniciá sesión</a></p>
+          <p class="auth-switch">¿Ya tenés una cuenta? <a href="{{ route('login') }}" class="link-muted">Iniciá sesión</a></p>
         </form>
       </div>
     </div>
@@ -112,15 +119,15 @@
       document.getElementById(errorId).style.display = show ? 'block' : 'none';
     }
 
+    // Validación de cortesía; la que decide es la del servidor.
+    // La versión anterior leía #terms e "institucion", que no existen en
+    // este formulario: lanzaba una excepción y el submit no ocurría nunca.
     form.addEventListener('submit', (e) => {
-      e.preventDefault();
-
       const nombre = document.getElementById('nombre').value.trim();
       const apellido = document.getElementById('apellido').value.trim();
       const email = document.getElementById('email').value.trim();
       const password = document.getElementById('password').value;
       const confirmPassword = document.getElementById('confirmPassword').value;
-      const terms = document.getElementById('terms').checked;
 
       const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
       const passwordValid = password.length >= 8;
@@ -128,17 +135,14 @@
 
       setError('nombreWrap', 'nombreError', nombre.length === 0);
       setError('apellidoWrap', 'apellidoError', apellido.length === 0);
-      setError('institucionWrap', 'institucionError', institucion.length === 0);
       setError('emailWrap', 'emailError', !emailValid);
       setError('passwordWrap', 'passwordError', !passwordValid);
       setError('confirmPasswordWrap', 'confirmPasswordError', !passwordsMatch);
 
-      const allValid = nombre && apellido && institucion && emailValid && passwordValid && passwordsMatch && terms;
+      const todoValido = nombre && apellido && emailValid && passwordValid && passwordsMatch;
 
-      if (allValid) {
-        // Acá se conectará la lógica real de registro contra el backend.
-        // Por el momento, redirige al login como demostración del flujo.
-        window.location.href = 'login.html';
+      if (!todoValido) {
+        e.preventDefault();
       }
     });
   </script>

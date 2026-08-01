@@ -30,7 +30,7 @@
   <h1 class="heroh1TM">para investigación biológica</h1>
   <p>BIONEA permite registrar y visualizar la temperatura corporal de individuos ectotérmicos en tiempo real, con almacenamiento de datos y acceso remoto desde cualquier dispositivo.</p>
   <div class="hero-buttons">
-    <a href="/login" class="btn btn-dark">Iniciar Sesión</a>
+    <a href="{{ route('login') }}" class="btn btn-dark">Iniciar Sesión</a>
     <a href="#sistema" class="btn btn-outline"><img src="/icons/system.svg" alt="">Conocé el sistema</a>
   </div>
 
@@ -172,7 +172,7 @@
   <div class="container">
     <h2>¿Listo para comenzar?</h2>
     <p>Ingresá al sistema para gestionar sesiones, visualizar mediciones y consultar el historial de cada individuo.</p>
-    <a href="/login" class="btn btn-dark">INICIAR SESIÓN</a>
+    <a href="{{ route('login') }}" class="btn btn-dark">INICIAR SESIÓN</a>
   </div>
 </section>
 

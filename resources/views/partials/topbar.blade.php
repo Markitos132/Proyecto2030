@@ -1,3 +1,15 @@
+@php
+    $usuario = auth()->user();
+    $nombre  = $usuario->nombre ?? 'Invitado';
+
+    // Iniciales a partir del nombre: "Marcos Ortiz" -> "MO"
+    $iniciales = collect(preg_split('/\s+/', trim($nombre)))
+        ->filter()
+        ->take(2)
+        ->map(fn ($parte) => mb_strtoupper(mb_substr($parte, 0, 1)))
+        ->implode('') ?: '?';
+@endphp
+
 <header class="topbar">
     <button class="menu-toggle" id="menuToggle" aria-label="Abrir menú">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
@@ -7,31 +19,34 @@
     </div>
     <div class="topbar-user" id="userMenuBtn">
         <div class="topbar-avatar">
-            MO
+            {{ $iniciales }}
         </div>
         <div class="user-info user-name-desktop">
-            <span>Marcos Ortiz</span>
+            <span>{{ $nombre }}</span>
         </div>
         <svg class="chevron-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
-        
+
         <div class="user-menu" id="userMenu">
 
             <div class="user-info-mobile">
-                <span class="mobile-username">Marcos Ortiz</span>
+                <span class="mobile-username">{{ $nombre }}</span>
                 <hr>
             </div>
 
-            <a href="/configuracion">Mi perfil</a> 
-            <a href="/configuracion">
+            <a href="{{ route('configuracion') }}">Mi perfil</a>
+            <a href="{{ route('configuracion') }}">
                 Configuración
             </a>
-            <a href="/configuracion#Cambiar Contraseña">
+            <a href="{{ route('configuracion') }}#cambiar-contrasena">
                 Cambiar contraseña
             </a>
             <hr>
-            <a class="logout" href="/">
-                Cerrar sesión
-            </a>
+            {{-- Logout por POST: con un GET, cualquier enlace o imagen externa
+                 podria desloguear al usuario sin que lo pida (CSRF). --}}
+            <form method="POST" action="{{ route('logout') }}" class="logout-form">
+                @csrf
+                <button type="submit" class="logout">Cerrar sesión</button>
+            </form>
         </div>
     </div>
 </header>

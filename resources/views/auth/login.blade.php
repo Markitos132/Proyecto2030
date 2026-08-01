@@ -41,12 +41,19 @@
         <h1>Iniciar Sesión</h1>
         <p class="auth-subtitle">Ingresá tus credenciales para acceder al panel.</p>
 
-        <form id="loginForm" novalidate>
+        @if ($errors->any())
+          <div class="alert-error" role="alert">
+            {{ $errors->first() }}
+          </div>
+        @endif
+
+        <form id="loginForm" method="POST" action="{{ route('login') }}" novalidate>
+          @csrf
           <div class="form-group">
             <label for="email">Correo electrónico</label>
             <div class="input-wrap" id="emailWrap">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m2 6 8.5 6L20 6"/></svg>
-              <input type="email" id="email" name="email" placeholder="nombre@ejemplo.com" autocomplete="email" required>
+              <input type="email" id="email" name="email" value="{{ old('email') }}" placeholder="nombre@ejemplo.com" autocomplete="email" required>
             </div>
             <div class="field-error" id="emailError">Ingresá un correo electrónico válido.</div>
           </div>
@@ -65,7 +72,7 @@
 
           <div class="form-options">
             <label class="checkbox-wrap">
-              <input type="checkbox" id="remember">
+              <input type="checkbox" id="remember" name="remember" value="1">
               Recordarme
             </label>
             <a href="#" class="link-muted">¿Olvidaste tu contraseña?</a>
@@ -73,7 +80,7 @@
 
           <button type="submit" class="btn-submit">Ingresar</button>
 
-          <p class="auth-switch">¿No tenés una cuenta? <a href="/registro" class="link-muted">Registrate</a></p>
+          <p class="auth-switch">¿No tenés una cuenta? <a href="{{ route('registro') }}" class="link-muted">Registrate</a></p>
         </form>
       </div>
     </div>
@@ -95,8 +102,9 @@
       document.getElementById(errorId).style.display = show ? 'block' : 'none';
     }
 
+    // La validación de acá es solo para dar feedback inmediato.
+    // La validación que cuenta es la del servidor (AuthController).
     form.addEventListener('submit', (e) => {
-      e.preventDefault();
       const email = document.getElementById('email').value.trim();
       const password = document.getElementById('password').value;
       const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
@@ -104,10 +112,8 @@
       setError('emailWrap', 'emailError', !emailValid);
       setError('passwordWrap', 'passwordError', password.length === 0);
 
-      if (emailValid && password.length > 0) {
-        // Acá se conectará la lógica real de autenticación contra el backend.
-        // Por el momento, redirige al dashboard como demostración del flujo.
-        window.location.href = '../admin/dashboard.html';
+      if (!emailValid || password.length === 0) {
+        e.preventDefault();
       }
     });
   </script>

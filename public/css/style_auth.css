@@ -512,3 +512,18 @@ body {
     width: 85%;
   }
 }
+/* ═══════════════════════════════════════════════════════════
+   Mensajes de error devueltos por el servidor
+   (credenciales incorrectas, email ya registrado, etc.)
+   ═══════════════════════════════════════════════════════════ */
+.alert-error {
+  margin-bottom: 1.25rem;
+  padding: 0.75rem 1rem;
+  border: 1px solid #f5c2c2;
+  border-left: 3px solid #d32f2f;
+  border-radius: 6px;
+  background: #fdecec;
+  color: #a32d2d;
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
