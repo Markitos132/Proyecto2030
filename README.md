@@ -112,7 +112,10 @@ Un solo temporizador por pestaña, que se detiene cuando la pestaña no está
 visible y espacia los reintentos ante fallos.
 
 El ritmo lo decide el servidor y viene en el campo `proximo_en`: **3 segundos**
-mientras hay una sesión midiendo, **60 segundos** en reposo. La respuesta lleva
+mientras hay una sesión midiendo, **15 segundos** en reposo. Ese segundo número
+es, en el peor caso, lo que tarda el panel en enterarse de que arrancó una
+sesión: el servidor no puede despertar a un cliente dormido, el aviso solo llega
+en la consulta siguiente. La respuesta lleva
 `ETag`, así que entre medición y medición el servidor contesta `304 Not Modified`
 sin cuerpo — eso es lo que hace barato consultar cada 3 segundos.
 

@@ -32,8 +32,17 @@ class PanelEstadoController extends Controller
     /** Segundos entre consultas cuando hay una sesión midiendo. */
     private const RITMO_ACTIVO = 3;
 
-    /** Segundos entre consultas cuando no pasa nada. */
-    private const RITMO_REPOSO = 60;
+    /**
+     * Segundos entre consultas cuando no hay ninguna sesión activa.
+     *
+     * Este número es, en el peor caso, lo que tarda el panel en enterarse
+     * de que arrancó una sesión: el servidor no puede despertar a un
+     * cliente dormido, el aviso solo llega en la consulta siguiente.
+     *
+     * Estuvo en 60 y la espera se hacía notar. El ahorro no lo justificaba:
+     * una consulta en reposo es un 304 sin cuerpo y dos consultas livianas.
+     */
+    private const RITMO_REPOSO = 15;
 
     public function __invoke(Request $request, CierreDeSesiones $cierre): Response
     {
