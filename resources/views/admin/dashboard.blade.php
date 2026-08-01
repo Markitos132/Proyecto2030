@@ -45,13 +45,13 @@
             <tbody>
             <!-- Ejemplo para una fila activa (MIDIENDO) -->
               @forelse($sesionesDelDia as $sesion)
-                <tr class="{{ $sesion->estado == 'MIDIENDO' ? 'row-active' : '' }}">
-                  <td data-label="Dispositivo">{{ $sesion->dispositivo->codigo_disp ?? $sesion->id_dispositivo }}</td>
+                <tr class="{{ $sesion->estaActiva() ? 'row-active' : '' }}">
+                  <td data-label="Dispositivo">{{ $sesion->dispositivo->nombre ?? $sesion->id_dispositivo }}</td>
                   <td data-label="Individuo">{{ $sesion->individuo->codigo_individuo ?? 'S/A' }}</td>
                   <td data-label="Especie"><em>{{ $sesion->individuo->especie ?? 'Sin especificar' }}</em></td>
-                  <td data-label="Temp Actual">{{ $sesion->ultima_Medicion->temperatura ?? '--' }}°C ? $sesion->ultima_temperatura . ' °C' : '--°C' }}</td>
+                  <td data-label="Temp Actual">{{ $sesion->ultimaMedicion->temperatura ?? '--' }} °C</td>
                   <td data-label="Estado">
-                    @if($sesion->estado == 'MIDIENDO')
+                    @if($sesion->estaActiva())
                       <span class="status-pill status-measuring">MIDIENDO</span>
                     @else
                       <span class="status-pill status-idle">FINALIZADO</span>

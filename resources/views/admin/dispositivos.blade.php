@@ -90,8 +90,8 @@
               <span class="status-dot {{ $dispositivo->estado_calculado ?? 'offline' }}"></span>
               <div class="device-info">
                 <div class="device-id">
-                  {{ $dispositivo->codigo_disp }}
-                  <span class="device-mac">- MAC {{ $dispositivo->MAC }}</span>
+                  {{ $dispositivo->nombre }}
+                  <span class="device-mac">- MAC {{ $dispositivo->mac_address }}</span>
                 </div>
                 <div class="device-detail">
                   @if($dispositivo->sesionActiva)
@@ -124,7 +124,7 @@
               @if($dispositivo->sesionActiva)
                 <a href="{{ route('sesiones.show', $dispositivo->sesionActiva->id_sesion) }}" class="btn-action primary">Ver Sesión Activa</a>
               @elseif($dispositivo->estado_calculado === 'online')
-                <a href="/sesionesactivas?dispositivo={{ $dispositivo->codigo_disp }}" class="btn-action primary">Comenzar a medir</a>
+                <a href="/sesionesactivas?dispositivo={{ $dispositivo->nombre }}" class="btn-action primary">Comenzar a medir</a>
               @else
                 <button class="btn-action" disabled>Comenzar a medir</button>
               @endif

@@ -79,7 +79,7 @@
                   <td data-label="Fecha">{{ $sesion->fecha_inicio->format('d/m/Y') }}</td>
                   <td data-label="Individuo">{{ $sesion->individuo->codigo_individuo }}</td>
                   <td data-label="Especie"><em>{{ $sesion->individuo->especie }}</em></td>
-                  <td data-label="Dispositivo">{{ $sesion->dispositivo->codigo_disp }}</td>
+                  <td data-label="Dispositivo">{{ $sesion->dispositivo->nombre }}</td>
                   <td data-label="Duración">{{ $duracion->h }} h {{ $duracion->i }} min</td>
                   <td data-label="Temp. prom.">{{ isset($temperaturaProm) ? number_format($temperaturaProm, 1) . ' °C' : '-- °C' }}</td>
                   <td><a href="#" class="link-graph">Ver Gráfico</a></td>

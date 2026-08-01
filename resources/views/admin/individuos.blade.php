@@ -176,7 +176,7 @@
                   <td data-label="Sexo - Estadio">{{ $individuo->sexo }} - {{ $individuo->estadio }}</td>
                   <td data-label="Dispositivo Actual">
                     @if ($individuo->sesionActiva)
-                      <span class="badge-disp">Asignado a {{ $individuo->sesionActiva->dispositivo->codigo_disp }}</span>
+                      <span class="badge-disp">Asignado a {{ $individuo->sesionActiva->dispositivo->nombre }}</span>
                     @else
                       <span class="badge-disp">No posee ninguna sesión en curso.</span>  
                     @endif

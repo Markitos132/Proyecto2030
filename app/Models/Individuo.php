@@ -46,7 +46,7 @@ class Individuo extends Model
                     ->where('estado', Sesion::ESTADO_ACTIVA);
     }
 
-    public function notas()
+    public function notasIndividuo()
     {
         return $this->hasMany(NotaIndividuo::class, 'id_individuo');
     }

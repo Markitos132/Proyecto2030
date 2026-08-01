@@ -34,8 +34,9 @@
           <img src="{{ asset('/imagenes/CirculoPatita.png') }}" alt="Patita">
           <div class="pop-up-card">
             <div><h2>Editar ejemplar</h2></div>
-            <form action="#" method="POST" class="modal-form">
+            <form action="{{ route('individuos.update', $individuo->id_individuo) }}" method="POST" class="modal-form">
               @csrf
+              @method('PUT')
               <div class="form-group">
                 <label for="codigo">Código del individuo</label>
                 <input type="text" id="codigo" name="codigo" value="{{ old('codigo_individuo', $individuo->codigo_individuo) }}" required>
@@ -193,8 +194,8 @@
             <div class="ficha-device-current-info">
               <span class="status-dot online"></span>
               <div>
-                <div class="ficha-device-current-id">{{ $individuo->sesionActiva->dispositivo?->codigo_disp }}</div>
-                <div class="ficha-device-current-detail">Asignado desde {{ $individuo->sesionActiva->created_at?->diffForHumans() }} · midiendo actualmente</div>
+                <div class="ficha-device-current-id">{{ $individuo->sesionActiva->dispositivo?->nombre }}</div>
+                <div class="ficha-device-current-detail">Asignado desde {{ $individuo->sesionActiva->fecha_inicio?->diffForHumans() }} · midiendo actualmente</div>
               </div>
             </div>
             <a href="{{ route('sesiones.show', $individuo->sesionActiva->id_sesion) }}" class="link-graph">Ver sesión en curso →</a>
@@ -260,7 +261,7 @@
                 @forelse($sesiones as $sesion)
                   <tr>
                     <td>{{ $sesion->fecha_inicio?->format('d/m/Y H:i') }}</td>
-                    <td>{{ $sesion->dispositivo?->codigo_disp ?? 'N/A' }}</td>
+                    <td>{{ $sesion->dispositivo?->nombre ?? 'N/A' }}</td>
                     <td>{{ $sesion->fecha_inicio->diff($sesion->fecha_fin) }}</td>
                     <td>{{ $sesion->mediciones->avg('temperatura') }}</td>
                     <td><a href="{{ route('sesiones.show', $sesion->id_sesion) }}" class="link-graph">Ver Gráfico</a></td>

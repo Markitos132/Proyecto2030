@@ -11,7 +11,7 @@
       <div class="modal-wrapper" id="confirmarBorrarDisp">
         <div class="pop-up">
           <div class="pop-up-card">
-            <div><h2>¿Seguro de eliminar el dispositivo {{ $dispositivo->codigo_disp }}?</h2></div>
+            <div><h2>¿Seguro de eliminar el dispositivo {{ $dispositivo->nombre }}?</h2></div>
             <div class="modal-form">
               <p id="BorrarmensajeDisp">Esta acción no se podrá deshacer</p>
             </div>
@@ -41,13 +41,13 @@
               <!--Código de la unidad en letras y números-->
               <div class="form-group">
                 <label for="codigo_disp">Código de la unidad</label>
-                <input type="text" id="codigo_disp" name="codigo_disp" value="{{ old('codigo_disp', $dispositivo->codigo_disp)}}" pattern="^[a-zA-Z0-9\-_]+$" title="Solo se permiten letras, números, guiones y guiones bajos (sin espacios)." required>
+                <input type="text" id="codigo_disp" name="codigo_disp" value="{{ old('codigo_disp', $dispositivo->nombre)}}" pattern="^[a-zA-Z0-9\-_]+$" title="Solo se permiten letras, números, guiones y guiones bajos (sin espacios)." required>
               </div>
               
               <!--Dirección MAC-->
               <div class="form-group">
                 <label for="MAC">Dirección MAC</label>
-                <input type="text" id="MAC" name="MAC" value="{{ old('MAC', $dispositivo->MAC) }}" pattern="^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$" title="Debe ingresar una dirección MAC válida (ej: AA:BB:CC:DD:EE:FF o aa:bb:cc:dd:ee:ff)"required>
+                <input type="text" id="MAC" name="MAC" value="{{ old('MAC', $dispositivo->mac_address) }}" pattern="^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$" title="Debe ingresar una dirección MAC válida (ej: AA:BB:CC:DD:EE:FF o aa:bb:cc:dd:ee:ff)"required>
               </div>
 
               <!--Fecha de Alta-->
@@ -82,7 +82,7 @@
       <div>
         <div class="page-header-top">
           <div class="ficha-title-block">
-            <h1 class="page-title">{{ $dispositivo->codigo_disp}}</h1>
+            <h1 class="page-title">{{ $dispositivo->nombre}}</h1>
             <span class="status-pill 
             
             @if($dispositivo->estado_calculado == 'online') status-ind-activo
@@ -117,7 +117,7 @@
         <div class="ficha-data-grid ficha-data-grid-d">
           <div class="ficha-data-item">
             <span class="ficha-data-label">Dirección MAC</span>
-            <span class="ficha-data-value"><em>{{ $dispositivo->MAC }}</em></span>
+            <span class="ficha-data-value"><em>{{ $dispositivo->mac_address }}</em></span>
           </div>
           <div class="ficha-data-item">
             <span class="ficha-data-label">Fecha de alta del dispositivo</span>
@@ -144,7 +144,7 @@
               <span class="status-dot online"></span>
               <div>
                 <div class="ficha-device-current-id">{{ $dispositivo->sesionActiva->individuo->codigo_individuo }}</div>
-                <div class="ficha-device-current-detail">Sesión iniciada hace {{ $dispositivo->sesionActiva->created_at->diffForHumans() }}</div>
+                <div class="ficha-device-current-detail">Sesión iniciada hace {{ $dispositivo->sesionActiva->fecha_inicio->diffForHumans() }}</div>
               </div>
             </div>
             <a href="{{ route('sesiones.show', $dispositivo->sesionActiva->id_sesion) }}" class="link-graph">Ver sesión en curso →</a>

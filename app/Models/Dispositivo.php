@@ -45,7 +45,7 @@ class Dispositivo extends Model
                     ->where('estado', Sesion::ESTADO_ACTIVA);
     }
 
-    public function notas()
+    public function notasDisp()
     {
         return $this->hasMany(NotaDispositivo::class, 'id_dispositivo');
     }

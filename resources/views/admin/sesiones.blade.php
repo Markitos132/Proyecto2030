@@ -32,7 +32,7 @@
                 <select name="dispositivo_id" id="dispositivo_id" required>
                   <option value="" disabled selected>Seleccione un dispositivo</option>
                   @forelse ($dispositivosDisponibles as $dispositivo)
-                    <option value="{{ $dispositivo->id_dispositivo}}">{{ $dispositivo->codigo_disp }} (Online · Libre)</option>
+                    <option value="{{ $dispositivo->id_dispositivo}}">{{ $dispositivo->nombre }} (Online · Libre)</option>
                   @empty
                     <option value="">No hay ningun dispositivo que esté activo para comenzar a medir.</option>
                   @endforelse
@@ -83,10 +83,15 @@
             <!-- Botones de Acción -->
             <div class="modal-footer">
               <button type="button" class="btn-cancel" id="cancelarModalFinalizar">Cancelar</button>
-              <form id="formFinalizarSesion" action="#" method="PUT" style="display: inline;">
+              {{-- method="PUT" no existe en HTML: los formularios solo aceptan
+                   GET y POST. Laravel usa el campo oculto @method para simularlo.
+                   El @method('DELETE') anterior tampoco correspondía: finalizar
+                   una sesión la actualiza, no la borra. --}}
+              <form id="formFinalizarSesion" action="#" method="POST" style="display: inline;">
                 @csrf
-                @method('DELETE')
+                @method('PUT')
                 <button type="button" class="btn-primary" id="confirmarModalFinalizar">Si, finalizar</button>
+              </form>
             </div>
           </div>
         </div>
@@ -197,7 +202,7 @@
             data-id-sesion="{{ $sesion->id_sesion }}"
             data-individuo="{{ $sesion->individuo->codigo_individuo }}" 
             data-especie="{{ $sesion->individuo->especie }}" 
-            data-dispositivo="{{ $sesion->dispositivo->codigo_disp }}" 
+            data-dispositivo="{{ $sesion->dispositivo->nombre }}" 
             data-temp-actual="{{ $sesion->ultimaMedicion->temperatura ?? '--' }} °C"
             data-lecturas="{{ $sesion->mediciones()->count() }}" 
             data-duracion="{{ $sesion->fecha_inicio->diffInMinutes() }} min" 
@@ -209,7 +214,7 @@
 
             <div class="session-top">
               <div>
-                <div class="session-id">{{ $sesion->individuo->codigo_individuo}} <span class="session-device">· {{ $sesion->dispositivo->codigo_disp }}</span></div>
+                <div class="session-id">{{ $sesion->individuo->codigo_individuo}} <span class="session-device">· {{ $sesion->dispositivo->nombre }}</span></div>
                 <div class="session-species"><em>{{ $sesion->individuo->especie}}</em></div>
               </div>
               <span class="status-pill-sm measuring"><span class="pulse-dot"></span>MIDIENDO</span>
