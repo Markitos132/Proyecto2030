@@ -12,6 +12,17 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        // Render termina el TLS en su proxy y le pasa la petición al
+        // contenedor por HTTP plano, indicando el esquema original en la
+        // cabecera X-Forwarded-Proto. Sin confiar en el proxy, Laravel cree
+        // que la conexión es HTTP y asset() genera URLs http://, que el
+        // navegador bloquea por contenido mixto: el CSS y el JS no cargan
+        // (las imágenes sí, porque son contenido pasivo).
+        //
+        // Confiar en todos los proxies es correcto acá: en Render el único
+        // camino hasta el contenedor pasa por su balanceador.
+        $middleware->trustProxies(at: '*');
+
         // El ESP32 no tiene sesión ni puede obtener un token CSRF:
         // manda un POST plano desde el firmware.
         $middleware->validateCsrfTokens(except: [
