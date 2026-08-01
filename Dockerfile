@@ -50,6 +50,15 @@ RUN cp /usr/local/bin/frankenphp /tmp/frankenphp \
        fi \
     && frankenphp version
 
+# Apagar la API de administracion de Caddy, que por defecto escucha en el
+# puerto 2019 y permite reconfigurar el servidor en caliente.
+#
+# No la usamos, y la sonda de puertos de Render la encontraba: en los logs
+# quedaba un 403 "host not allowed" en cada arranque. El riesgo real es que
+# Render tome el 2019 como el puerto del servicio y enrute el trafico ahi,
+# con lo que el sitio responderia 403 a todo el mundo.
+ENV CADDY_GLOBAL_OPTIONS="admin off"
+
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
 WORKDIR /app
