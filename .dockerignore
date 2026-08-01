@@ -1,0 +1,26 @@
+# Nunca meter credenciales en la imagen: en Render las variables
+# se configuran desde el panel del servicio.
+.env
+.env.*
+!.env.example
+
+.git
+.gitignore
+.gitattributes
+.editorconfig
+
+vendor
+node_modules
+
+storage/logs/*
+storage/framework/cache/*
+storage/framework/sessions/*
+storage/framework/views/*
+
+tests
+phpunit.xml
+README.md
+
+# Restos de la version anterior en PHP plano, si quedaran
+conexion.php
+guardar.php

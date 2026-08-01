@@ -1,0 +1,61 @@
+# ═══════════════════════════════════════════════════════════
+#  Configuración del servicio en Render.
+#
+#  El servicio existente (srv-d8q9oc1194ac73dj73ag) es de tipo Node y
+#  apunta al repo bionea/BioNEA-Organiks. Para usar esta app hay que
+#  cambiarlo a Docker y apuntarlo a este repositorio, o crear uno nuevo.
+#
+#  Las variables marcadas sync:false NO se guardan acá: se cargan a mano
+#  en Render → Environment. Nunca commitear credenciales.
+# ═══════════════════════════════════════════════════════════
+
+services:
+  - type: web
+    name: bionea-organiks
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    plan: free
+    region: oregon
+    healthCheckPath: /bionea/health
+
+    envVars:
+      - key: APP_NAME
+        value: BioNEA Organiks
+      - key: APP_ENV
+        value: production
+      # En producción APP_DEBUG debe quedar en false: con true, cualquier
+      # error muestra el stack trace y fragmentos del .env al visitante.
+      - key: APP_DEBUG
+        value: false
+      - key: APP_TIMEZONE
+        value: America/Argentina/Buenos_Aires
+      - key: LOG_CHANNEL
+        value: stderr
+
+      - key: DB_CONNECTION
+        value: pgsql
+
+      # Sesiones y cache en disco: el servicio corre en una sola
+      # instancia. Guardarlas en Supabase agregaba entre 800 ms y 3 s
+      # de latencia a cada petición.
+      - key: SESSION_DRIVER
+        value: file
+      - key: CACHE_STORE
+        value: file
+      - key: QUEUE_CONNECTION
+        value: sync
+
+      # ── Cargar a mano en el panel de Render ──────────────
+      # APP_KEY: generar con `php artisan key:generate --show`
+      - key: APP_KEY
+        sync: false
+      # DB_URL: cadena de Supabase. Usar el puerto 5432 (session pooler),
+      # no el 6543: el pooler en modo transacción rompe los prepared
+      # statements de PDO.
+      - key: DB_URL
+        sync: false
+      - key: APP_URL
+        sync: false
+      # Poner en true solo cuando se quiera aplicar migraciones en el deploy.
+      - key: RUN_MIGRATIONS
+        value: false
