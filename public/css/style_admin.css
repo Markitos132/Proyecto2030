@@ -1076,3 +1076,24 @@ tbody tr.row-active td::before {
 .user-menu button.logout:hover {
   background: #f5f5f5;
 }
+
+/* ═══════════════════════════════════════════════════════════
+   Sello de última actualización del refresco automático
+   ═══════════════════════════════════════════════════════════ */
+.sello-actualizado {
+  margin-left: 12px;
+  font-size: 0.72rem;
+  font-weight: 400;
+  color: #9a9990;
+  vertical-align: middle;
+}
+
+.sello-actualizado.vivo-error {
+  color: #d32f2f;
+}
+
+/* Última temperatura fuera del rango configurado para la sesión */
+[data-vivo-celda="temperatura"].fuera-de-rango {
+  color: #d32f2f;
+  font-weight: 600;
+}

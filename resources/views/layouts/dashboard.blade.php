@@ -112,6 +112,10 @@
   window.addEventListener('resize', medirLayout);
 
 </script>
+{{-- Refresco automático. Solo actúa en las vistas que declaran
+     elementos con data-vivo; en el resto no hace nada. --}}
+<script src="{{ asset('js/panel-vivo.js') }}" defer></script>
+
 {{-- Scripts específicos de cada vista --}}
 @stack('scripts')
 

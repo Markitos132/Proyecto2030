@@ -7,6 +7,7 @@ use App\Http\Controllers\HistorialController;
 use App\Http\Controllers\IngestaController;
 use App\Http\Controllers\IndividuoController;
 use App\Http\Controllers\NotaController;
+use App\Http\Controllers\PanelEstadoController;
 use App\Http\Controllers\SesionController;
 use Illuminate\Support\Facades\Route;
 
@@ -40,6 +41,9 @@ Route::post('/logout', [AuthController::class, 'logout'])
 Route::middleware('auth')->group(function () {
 
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+
+    // Estado en JSON para el refresco automático del panel.
+    Route::get('/panel/estado', PanelEstadoController::class)->name('panel.estado');
 
     // El alta de usuarios no es pública: se hace desde el panel.
     Route::get('/usuarios/nuevo',  [AuthController::class, 'mostrarRegistro'])->name('registro');
