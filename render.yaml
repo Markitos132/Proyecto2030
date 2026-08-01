@@ -18,6 +18,12 @@ services:
     region: oregon
     healthCheckPath: /bionea/health
 
+    # Cada push a main dispara un deploy.
+    # Ojo con esto y RUN_MIGRATIONS=true a la vez: cualquier commit
+    # aplicaria migraciones sobre la base de produccion sin pedir permiso.
+    branch: main
+    autoDeploy: true
+
     envVars:
       - key: APP_NAME
         value: BioNEA Organiks
