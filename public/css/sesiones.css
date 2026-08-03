@@ -62,6 +62,19 @@
   justify-content: flex-start; /* <--- Fuerza a que todo se pegue arriba */
   gap: 0.8rem;                /* <--- Reduce este valor al espacio vertical que prefieras (ej. 0.6rem a 0.8rem) */
   height: auto;
+
+  /* Imprescindible, aunque parezca el valor por defecto.
+     style_admin.css define otro .session-card, el de la maqueta en lista,
+     con align-items:center. Como ese archivo carga primero y esta regla no
+     declaraba align-items, el centrado seguía en pie y encogía a cada hijo
+     al ancho de su contenido. Por eso todos los bloques de abajo llevan un
+     width:100% escrito a mano: estaban compensando esto sin saberlo. */
+  align-items: stretch;
+
+  /* Por lo mismo: de aquella regla también sobrevivía flex-wrap:wrap. Con
+     height:auto no llega a partir la tarjeta en columnas, pero basta que
+     algún día un hijo tenga alto fijo para que empiece a hacerlo. */
+  flex-wrap: nowrap;
 }
 
 .session-card.alert-card { border-color: #e8c873; background: #fffaf0; }
@@ -172,6 +185,12 @@
 }
 
 .session-alert-msg svg { width: 15px; height: 15px; flex-shrink: 0; }
+
+/* El atributo hidden del HTML lo aplica el navegador como
+   [hidden] { display: none }, y cualquier display declarado por la hoja de
+   estilos le gana. Sin esta regla, el aviso de fuera de rango seguía a la
+   vista incluso en sesiones sin una sola lectura. */
+.session-alert-msg[hidden] { display: none; }
 
 /* El pie alterna entre "última lectura hace X" y el aviso de fuera de
    rango. Los dos elementos existen siempre; el refresco solo cambia
