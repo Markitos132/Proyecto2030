@@ -80,9 +80,10 @@
                   <td data-label="Individuo">{{ $sesion->individuo?->codigo_individuo }}</td>
                   <td data-label="Especie"><em>{{ $sesion->individuo?->especie }}</em></td>
                   <td data-label="Dispositivo">{{ $sesion->dispositivo?->nombre }}</td>
-                  <td data-label="Duración">{{ $duracion->h }} h {{ $duracion->i }} min</td>
+                  <td data-label="Duración">{{ $duracion?->h ?? 0 }} h {{ $duracion?->i ?? 0 }} min</td>
                   <td data-label="Temp. prom.">{{ isset($temperaturaProm) ? number_format($temperaturaProm, 1) . ' °C' : '-- °C' }}</td>
-                  <td><a href="#" class="link-graph">Ver Gráfico</a></td>
+                  {{-- El enlace apuntaba a "#": no llevaba a ningún lado. --}}
+                  <td><a href="{{ route('sesiones.show', $sesion->id_sesion) }}" class="link-graph">Ver Gráfico</a></td>
                 </tr>
               @empty
                 <tr>
