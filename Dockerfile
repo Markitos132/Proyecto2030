@@ -9,8 +9,8 @@
 #  y concurrencia real. `php artisan serve` no sirve en producción
 #  porque atiende una petición por vez.
 #
-#  No se compila nada con Vite: ninguna vista usa @vite y todo el
-#  CSS se sirve estático desde public/css.
+#  No hace falta Node en la imagen: no hay nada que compilar. Todo el
+#  CSS y el JS se sirven como archivos estáticos desde public/.
 # ═══════════════════════════════════════════════════════════
 
 FROM dunglas/frankenphp:php8.3
