@@ -40,7 +40,10 @@ class ConfiguracionController extends Controller
             'roles'           => Usuario::ROLES,
             'totalUnidades'   => $dispositivos->count(),
             'unidadesActivas' => $reportando,
-            'urlServidor'     => rtrim(config('app.url'), '/'),
+            // Del request, no de APP_URL: si esa variable quedó mal cargada
+            // en el servidor, config('app.url') devuelve http://localhost y
+            // el dato que hay que grabar en el firmware saldría equivocado.
+            'urlServidor'     => rtrim($request->getSchemeAndHttpHost(), '/'),
             'claveIngesta'    => config('bionea.clave_ingesta'),
         ]);
     }
