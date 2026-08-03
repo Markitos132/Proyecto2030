@@ -62,7 +62,8 @@ class ConfiguracionController extends Controller
             // Ignora la fila propia: sin eso, guardar sin tocar el correo
             // chocaría contra su propio registro.
             'email'       => [
-                'required', 'email', 'max:255',
+                'required',
+                ...Usuario::REGLAS_EMAIL,
                 Rule::unique('usuarios', 'email')->ignore($usuario->id_usuario, 'id_usuario'),
             ],
             'rol'         => ['nullable', Rule::in(Usuario::ROLES)],
@@ -71,6 +72,9 @@ class ConfiguracionController extends Controller
             'nombre.required' => 'El nombre no puede quedar vacío.',
             'email.required'  => 'El correo electrónico no puede quedar vacío.',
             'email.email'     => 'Escribí un correo electrónico válido.',
+            // Es el caso de "federico@gmail" sin el .com: pasa el RFC pero
+            // después el login no lo acepta.
+            'email.regex'     => 'El dominio del correo está incompleto: falta la parte después del punto (por ejemplo, .com).',
             'email.unique'    => 'Ya existe otra cuenta con ese correo.',
             'rol.in'          => 'Seleccioná un rol de la lista.',
         ]);

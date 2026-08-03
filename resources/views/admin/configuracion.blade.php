@@ -65,7 +65,14 @@
               </div>
               <div class="form-field full">
                 <label for="email">Correo electrónico</label>
-                <input type="email" id="email" name="email" value="{{ old('email', $usuario->email) }}" maxlength="255" required>
+                {{-- El pattern repite la validación del login. type="email" a
+                     secas acepta dominios sin punto, y guardar uno así dejaba
+                     la cuenta sin poder iniciar sesión. --}}
+                <input type="email" id="email" name="email" value="{{ old('email', $usuario->email) }}"
+                       maxlength="255"
+                       pattern="[^\s@]+@[^\s@]+\.[^\s@]+"
+                       title="Escribí un correo completo, con dominio y terminación (por ejemplo, nombre@ejemplo.com)."
+                       required>
                 <span class="field-hint">Con este correo iniciás sesión. Cambiarlo cambia también tu usuario de acceso.</span>
               </div>
               <div class="form-field">

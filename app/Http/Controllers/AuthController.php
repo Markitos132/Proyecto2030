@@ -26,9 +26,11 @@ class AuthController extends Controller
     public function login(Request $request): RedirectResponse
     {
         $credenciales = $request->validate([
-            'email'    => ['required', 'email'],
+            'email'    => ['required', ...Usuario::REGLAS_EMAIL],
             'password' => ['required', 'string'],
-        ], [], [
+        ], [
+            'email.regex' => 'Escribí un correo electrónico válido.',
+        ], [
             'email'    => 'correo electronico',
             'password' => 'contrasena',
         ]);
@@ -60,9 +62,10 @@ class AuthController extends Controller
         $datos = $request->validate([
             'nombre'   => ['required', 'string', 'max:100'],
             'apellido' => ['nullable', 'string', 'max:100'],
-            'email'    => ['required', 'email', 'max:255', 'unique:usuarios,email'],
+            'email'    => ['required', ...Usuario::REGLAS_EMAIL, 'unique:usuarios,email'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
         ], [
+            'email.regex'        => 'El dominio del correo está incompleto: falta la parte después del punto (por ejemplo, .com).',
             'email.unique'       => 'Ya existe una cuenta con ese correo.',
             'password.confirmed' => 'Las contrasenas no coinciden.',
             'password.min'       => 'La contrasena debe tener al menos 8 caracteres.',

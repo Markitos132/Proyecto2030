@@ -108,6 +108,10 @@
     form.addEventListener('submit', (e) => {
       const email = document.getElementById('email').value.trim();
       const password = document.getElementById('password').value;
+      // Mismo patrón que Usuario::REGLAS_EMAIL en el servidor. Si se
+      // cambia uno hay que cambiar el otro: cuando no coincidían, se podía
+      // guardar desde Configuración un correo que después este formulario
+      // rechazaba, y la cuenta quedaba sin poder entrar.
       const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
       setError('emailWrap', 'emailError', !emailValid);

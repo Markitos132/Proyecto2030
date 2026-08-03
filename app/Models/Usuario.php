@@ -52,6 +52,28 @@ class Usuario extends Authenticatable
     }
 
     /**
+     * Reglas de validación del correo, compartidas por el login, el alta y
+     * la edición de perfil.
+     *
+     * El regex existe porque la regla `email` de Laravel valida según RFC,
+     * y ahí un dominio sin punto (algo@gmail) es perfectamente legal. El
+     * formulario de login, en cambio, valida en el navegador con
+     * /^[^\s@]+@[^\s@]+\.[^\s@]+$/ y exige el punto.
+     *
+     * Esa diferencia dejó a un usuario afuera: guardó su correo sin el
+     * .com desde Configuración, y después el login se lo rechazó sin
+     * llegar a enviar el formulario. Como era el único usuario, nadie
+     * podía entrar a arreglarlo. Los dos lados usan el mismo criterio.
+     *
+     * Si se toca este patrón, hay que tocar también el de login.blade.php.
+     */
+    public const REGLAS_EMAIL = [
+        'email',
+        'regex:/^[^\s@]+@[^\s@]+\.[^\s@]+$/',
+        'max:255',
+    ];
+
+    /**
      * Roles que ofrece el formulario de perfil.
      *
      * Son descriptivos: hoy no restringen nada. Cualquier usuario
