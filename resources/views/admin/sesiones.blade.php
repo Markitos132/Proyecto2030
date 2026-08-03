@@ -12,6 +12,7 @@
 
             <form id="formNuevaSesion" action="{{ route('sesiones.store')}}" method="POST" class="modal-form">
               @csrf
+              @include('partials.errores-form')
 
             <!-- Seleccionar Individuo Activo -->
               <div class="form-group">
@@ -19,7 +20,7 @@
                 <select name="individuo_id" id="individuo_id" required>
                   <option value="" disabled selected>Seleccione un ejemplar</option>
                   @forelse ($indActivos as $individuo)
-                    <option value="{{ $individuo->id_individuo }}" data-codigo="{{ $individuo->codigo_individuo }}">{{ $individuo->codigo_individuo}} - {{ $individuo->especie}}</option>
+                    <option value="{{ $individuo->id_individuo }}" data-codigo="{{ $individuo->codigo_individuo }}" {{ old('individuo_id') == $individuo->id_individuo ? 'selected' : '' }}>{{ $individuo->codigo_individuo}} - {{ $individuo->especie}}</option>
                   @empty
                     <option value="" data-codigo="">No hay ningún individuo para medir.</option>
                   @endforelse
@@ -32,7 +33,7 @@
                 <select name="dispositivo_id" id="dispositivo_id" required>
                   <option value="" disabled selected>Seleccione un dispositivo</option>
                   @forelse ($dispositivosDisponibles as $dispositivo)
-                    <option value="{{ $dispositivo->id_dispositivo}}">{{ $dispositivo->nombre }} (Online · Libre)</option>
+                    <option value="{{ $dispositivo->id_dispositivo}}" {{ old('dispositivo_id') == $dispositivo->id_dispositivo ? 'selected' : '' }}>{{ $dispositivo->nombre }} (Online · Libre)</option>
                   @empty
                     <option value="">No hay ningun dispositivo que esté activo para comenzar a medir.</option>
                   @endforelse
@@ -43,13 +44,13 @@
               <div class="form-row">
                 <div class="form-group">
                   <label for="duracion">Duración (mín. 5 min)</label>
-                  <input type="number" id="duracion" name="duracion" placeholder="Ej: 30" min="5" step="1" value="30" required>
+                  <input type="number" id="duracion" name="duracion" placeholder="Ej: 30" min="5" step="1" value="{{ old('duracion', 30) }}" required>
                   <span class="input-help">Tiempo total en minutos</span>
                 </div>
 
                 <div class="form-group">
                   <label for="intervalo">Intervalo (mín. 1 min)</label>
-                  <input type="number" id="intervalo" name="intervalo" placeholder="Ej: 1" min="1" step="1" value="1" required>
+                  <input type="number" id="intervalo" name="intervalo" placeholder="Ej: 1" min="1" step="1" value="{{ old('intervalo', 1) }}" required>
                   <span class="input-help">Lectura cada N minutos</span>
                 </div>
               </div>
@@ -59,12 +60,12 @@
               <div class="form-row">
                 <div class="form-group">
                   <label for="temp_min">Temp. mínima (°C)</label>
-                  <input type="number" id="temp_min" name="temp_min" placeholder="Ej: 20" step="0.5" value="20" required>
+                  <input type="number" id="temp_min" name="temp_min" placeholder="Ej: 20" step="0.5" value="{{ old('temp_min', 20) }}" required>
                 </div>
 
                 <div class="form-group">
                   <label for="temp_max">Temp. máxima (°C)</label>
-                  <input type="number" id="temp_max" name="temp_max" placeholder="Ej: 40" step="0.5" value="40" required>
+                  <input type="number" id="temp_max" name="temp_max" placeholder="Ej: 40" step="0.5" value="{{ old('temp_max', 40) }}" required>
                 </div>
               </div>
 
@@ -218,13 +219,13 @@
             data-especie="{{ $sesion->individuo?->especie }}" 
             data-dispositivo="{{ $sesion->dispositivo?->nombre }}" 
             data-temp-actual="{{ $sesion->ultimaMedicion?->temperatura ?? '--' }} °C"
-            data-lecturas="{{ $sesion->mediciones()->count() }}" 
-            data-duracion="{{ $sesion->fecha_inicio?->diffInMinutes() }} min" 
+            data-lecturas="{{ $sesion->mediciones->count() }}" 
+            data-duracion="{{ (int) round($sesion->fecha_inicio?->diffInMinutes() ?? 0) }} min" 
             data-estadio="{{ $sesion->individuo?->estadio }}" 
             data-sexo="{{ $sesion->individuo?->sexo }}" 
-            data-preñez="{{ $sesion->individuo?->estado_reproductivo }}" 
+            data-prenez="{{ $sesion->individuo?->estado_reproductivo }}" 
             data-trend="{{ $sesion->mediciones->pluck('temperatura')->implode(',') }}" 
-            data-minutos-restantes="{{ $sesion->duracion_sesion - $sesion->fecha_inicio?->diffInMinutes() }}" >
+            data-minutos-restantes="{{ max(0, (int) round(($sesion->duracion_sesion ?? 0) - ($sesion->fecha_inicio?->diffInMinutes() ?? 0))) }}" >
 
             <div class="session-top">
               <div>
@@ -240,11 +241,11 @@
               </div>
               <div class="session-meta-item">
                 <span class="session-meta-label">Duración</span>
-                <span class="session-meta-value">{{ $sesion->fecha_inicio?->diffInMinutes() }} min</span>
+                <span class="session-meta-value">{{ (int) round($sesion->fecha_inicio?->diffInMinutes() ?? 0) }} min</span>
               </div>
               <div class="session-meta-item">
                 <span class="session-meta-label">Lecturas</span>
-                <span class="session-meta-value">{{ $sesion->mediciones()->count() }}</span>
+                <span class="session-meta-value">{{ $sesion->mediciones->count() }}</span>
               </div>
             </div>
             <div class="session-footer">
@@ -399,6 +400,11 @@ function cerrarModalCrearSesion() {
 }
 
 //Para abrir modal con el botón:
+@if ($errors->any() && old('dispositivo_id') !== null)
+  // La sesion fue rechazada: se reabre el modal con el motivo.
+  AbrirModalCrearSesion();
+@endif
+
 if (btnNuevaSesion && modalNuevaSesionOverlay && nuevaSesionModal) {
     btnNuevaSesion.addEventListener('click', AbrirModalCrearSesion);
 }
@@ -480,8 +486,8 @@ const detalleSesionModal = document.getElementById('detalleSesionModal');
       const bloquePreñez = document.getElementById('detallePreñezBloque');
       const valPreñez = document.getElementById('detallePreñez');
 
-      if (data.sexo && data.sexo.toLowerCase() === 'hembra' && data.preñez) {
-        if (valPreñez) valPreñez.textContent = data.preñez;
+      if (data.sexo && data.sexo.toLowerCase() === 'hembra' && data.prenez) {
+        if (valPreñez) valPreñez.textContent = data.prenez;
         if (bloquePreñez) bloquePreñez.style.display = 'flex';
       }
       else {
