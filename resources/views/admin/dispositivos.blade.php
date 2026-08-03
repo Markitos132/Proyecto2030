@@ -10,29 +10,30 @@
             <!--FORMULARIO REGISTRAR INDIVIDUO-->
             <form action="{{ route('dispositivos.store') }}" method="POST" class="modal-form">
               @csrf
+              @include('partials.errores-form')
 
               <!--Código de la unidad en letras y números-->
               <div class="form-group">
                 <label for="codigo_disp">Código de la unidad</label>
-                <input type="text" id="codigo_disp" name="codigo_disp" placeholder="Ej: ESP-001" pattern="^[a-zA-Z0-9\-_]+$" title="Solo se permiten letras, números, guiones y guiones bajos (sin espacios)." required>
+                <input type="text" id="codigo_disp" name="codigo_disp" value="{{ old('codigo_disp') }}" placeholder="Ej: ESP-001" pattern="^[a-zA-Z0-9\-_]+$" title="Solo se permiten letras, números, guiones y guiones bajos (sin espacios)." required>
               </div>
               
               <!--Dirección MAC-->
               <div class="form-group">
                 <label for="MAC">Dirección MAC</label>
-                <input type="text" id="MAC" name="MAC" placeholder="AA:BB:CC:DD:EE:FF" pattern="^([0-9A-Fa-f]{2}[:\-]){5}([0-9A-Fa-f]{2})$" title="Debe ingresar una dirección MAC válida (ej: AA:BB:CC:DD:EE:FF o aa:bb:cc:dd:ee:ff)"required>
+                <input type="text" id="MAC" name="MAC" value="{{ old('MAC') }}" placeholder="AA:BB:CC:DD:EE:FF" pattern="^([0-9A-Fa-f]{2}[:\-]){5}([0-9A-Fa-f]{2})$" title="Debe ingresar una dirección MAC válida (ej: AA:BB:CC:DD:EE:FF o aa:bb:cc:dd:ee:ff)"required>
               </div>
 
               <!--Fecha de Alta-->
               <div class="form-group">
                 <label for="f_alta">Fecha de alta del dispositivo</label>
-                <input type="date" id="f_alta" name="f_alta" required>
+                <input type="date" id="f_alta" name="f_alta" value="{{ old('f_alta') }}" required>
               </div>
 
               <!-- Observaciones / Notas de Hardware -->
               <div class="form-group">
                 <label for="observaciones">Observaciones / Detalles técnicos</label>
-                <textarea id="observaciones" name="observaciones" rows="3" class="disp-form-textarea"></textarea>
+                <textarea id="observaciones" name="observaciones" rows="3" class="disp-form-textarea">{{ old('observaciones') }}</textarea>
               </div>
 
               <!-- Botones de Acción -->
@@ -248,6 +249,11 @@ if (formNuevaUnidad) {
 })
 
 
+
+@if ($errors->any() && old('codigo_disp') !== null)
+  // El alta fue rechazada: se reabre el modal con el error y los datos.
+  abrirModal();
+@endif
 
 if (btnNuevaUnidad && modalOverlay && nuevaUnidadModal) {
   btnNuevaUnidad.addEventListener('click', abrirModal);

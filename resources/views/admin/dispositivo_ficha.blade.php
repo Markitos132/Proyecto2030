@@ -21,7 +21,9 @@
               <form action="{{ route('dispositivos.destroy', $dispositivo->id_dispositivo) }}" method="POST" style="display: inline;">
                 @csrf
                 @method('DELETE')
-                <button type="button" class="btn-primary" id="BorrarDisp">Si, eliminar</button>
+                {{-- type="submit": con type="button" el formulario nunca se
+                     enviaba y el borrado no ocurría. --}}
+                <button type="submit" class="btn-primary" id="BorrarDisp">Si, eliminar</button>
               </form>
             </div>
           </div>
@@ -38,6 +40,7 @@
             <form action="{{ route('dispositivos.update', $dispositivo->id_dispositivo) }}" method="POST" class="modal-form">
               @csrf
               @method('PUT')
+              @include('partials.errores-form')
               <!--Código de la unidad en letras y números-->
               <div class="form-group">
                 <label for="codigo_disp">Código de la unidad</label>
@@ -236,10 +239,9 @@
   if (btnBorrarDispositivo) btnBorrarDispositivo.addEventListener('click', abrirModalDispBorrar);
   if (cancelarBorrarDisp) cancelarBorrarDisp.addEventListener('click', cerrarModalDispBorrar);
 
-  document.getElementById('BorrarDisp').addEventListener('click', () => {
-    console.log(`Borrando este dispositivo...`);
-    cerrarModalDispBorrar();
-  });
+  // El listener que había acá solo escribía en la consola y cerraba el
+  // modal: simulaba el borrado. Ahora el botón envía el formulario y el
+  // borrado lo hace el servidor.
 
   document.addEventListener('keydown', (event) => {
     if (event.key === 'Escape' && confirmarBorrarDisp.classList.contains('open')) {
