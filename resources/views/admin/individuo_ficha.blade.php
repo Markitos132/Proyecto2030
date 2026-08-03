@@ -37,6 +37,7 @@
             <form action="{{ route('individuos.update', $individuo->id_individuo) }}" method="POST" class="modal-form">
               @csrf
               @method('PUT')
+              @include('partials.errores-form')
               <div class="form-group">
                 <label for="codigo">Código del individuo</label>
                 <input type="text" id="codigo" name="codigo" value="{{ old('codigo_individuo', $individuo->codigo_individuo) }}" required>

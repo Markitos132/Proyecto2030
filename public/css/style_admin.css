@@ -1129,3 +1129,12 @@ tbody tr.row-active td::before {
   border-color: #d32f2f;
   color: #a32d2d;
 }
+
+/* Aviso de error dentro de un modal: más compacto que el de página,
+   porque compite con el formulario por el espacio visible. */
+.aviso-en-modal {
+  margin-bottom: 16px;
+  padding: 10px 14px;
+  font-size: 0.85rem;
+  text-align: left;
+}

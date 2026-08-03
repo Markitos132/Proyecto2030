@@ -11,24 +11,25 @@
             <!--FORMULARIO REGISTRAR INDIVIDUO-->
             <form action="{{ route('individuos.store')}}" method="POST" class="modal-form">
               @csrf
+              @include('partials.errores-form')
               <div class="form-group">
                 <label for="codigo">Código del individuo</label>
-                <input type="text" id="codigo" name="codigo_individuo" placeholder="Ej: LC-047" required>
+                <input type="text" id="codigo" name="codigo_individuo" value="{{ old('codigo_individuo') }}" placeholder="Ej: LC-047" required>
               </div>
 
               <!-- Especie y otra especie -->
               <div class="form-group">
                 <label for="especie">Especie</label>
                 <select name="especie" id="especie">
-                  <option value="" disabled selected> Seleccione la especie</option>
-                  <option value="Liolaemus chacoensis">Liolaemus chacoensis</option>
-                  <option value="otra">Otra especie...</option>
+                  <option value="" disabled {{ old('especie') ? '' : 'selected' }}> Seleccione la especie</option>
+                  <option value="Liolaemus chacoensis" {{ old('especie') === 'Liolaemus chacoensis' ? 'selected' : '' }}>Liolaemus chacoensis</option>
+                  <option value="otra" {{ old('especie') === 'otra' ? 'selected' : '' }}>Otra especie...</option>
                 </select>
               </div>
               
-              <div class="form-group" id="grupo-otra-especie" style="display: none;">
+              <div class="form-group" id="grupo-otra-especie" style="display: {{ old('especie') === 'otra' ? 'block' : 'none' }};">
                 <label for="otra_especie">Especifique la especie</label>
-                <input type="text" id="otra_especie" name="otra_especie" placeholder="Ej: Homonota borellii">
+                <input type="text" id="otra_especie" name="otra_especie" value="{{ old('otra_especie') }}" placeholder="Ej: Homonota borellii">
               </div>
 
               <div class="form-row">
@@ -36,9 +37,9 @@
                   <label for="sexo">Sexo</label>
                   <select name="sexo" id="sexo" required>
                     <option value="" disabled selected>Seleccione</option>
-                    <option value="Macho">Macho</option>
-                    <option value="Hembra">Hembra</option>
-                    <option value="Indeterminado">Indeterminado</option>
+                    <option value="Macho" {{ old('sexo') === 'Macho' ? 'selected' : '' }}>Macho</option>
+                    <option value="Hembra" {{ old('sexo') === 'Hembra' ? 'selected' : '' }}>Hembra</option>
+                    <option value="Indeterminado" {{ old('sexo') === 'Indeterminado' ? 'selected' : '' }}>Indeterminado</option>
                   </select>
                 </div>
 
@@ -46,44 +47,44 @@
                   <label for="estadio">Estadio</label>
                   <select name="estadio" id="estadio" required>
                     <option value="" disabled selected>Seleccione</option>
-                    <option value="Adulto">Adulto</option>
-                    <option value="Juvenil">Juvenil</option>
-                    <option value="otro">Otro estadio...</option>
+                    <option value="Adulto" {{ old('estadio') === 'Adulto' ? 'selected' : '' }}>Adulto</option>
+                    <option value="Juvenil" {{ old('estadio') === 'Juvenil' ? 'selected' : '' }}>Juvenil</option>
+                    <option value="otro" {{ old('estadio') === 'otro' ? 'selected' : '' }}>Otro estadio...</option>
                   </select>
                 </div>
               </div>
 
-              <div class="form-group" id="grupo-otro-estadio" style="display: none;">
+              <div class="form-group" id="grupo-otro-estadio" style="display: {{ old('estadio') === 'otro' ? 'block' : 'none' }};">
                 <label for="otro_estadio">Especifique el estadio</label>
-                <input type="text" id="otro_estadio" name="otro_estadio" placeholder="Ej: Subadulto / Neonato">
+                <input type="text" id="otro_estadio" name="otro_estadio" value="{{ old('otro_estadio') }}" placeholder="Ej: Subadulto / Neonato">
               </div>
 
               <!-- estado reproductivo -->
-              <div class="form-group" id="grupo-estado-reproductivo" style="display: none;">
+              <div class="form-group" id="grupo-estado-reproductivo" style="display: {{ old('sexo') === 'Hembra' ? 'block' : 'none' }};">
                 <label for="estado_reproductivo">Estado reproductivo / Gravidez</label>
                 <select name="estado_reproductivo" id="estado_reproductivo">
                   <option value="" selected>No presenta / Desconocido</option>
-                  <option value="Grávida / Preñada">Grávida / Preñada</option>
-                  <option value="Con huevos visibles">Con huevos visibles (Palpables)</option>
-                  <option value="No grávida">No grávida</option>
+                  <option value="Grávida / Preñada" {{ old('estado_reproductivo') === 'Grávida / Preñada' ? 'selected' : '' }}>Grávida / Preñada</option>
+                  <option value="Con huevos visibles" {{ old('estado_reproductivo') === 'Con huevos visibles' ? 'selected' : '' }}>Con huevos visibles (Palpables)</option>
+                  <option value="No grávida" {{ old('estado_reproductivo') === 'No grávida' ? 'selected' : '' }}>No grávida</option>
                 </select>
               </div>
 
               <div class="form-row">
                 <div class="form-group">
                   <label for="svl">SVL (Longitud en mm)</label>
-                  <input type="number" id="svl" name="svl" placeholder="Ej. 68" step="1" required>
+                  <input type="number" id="svl" name="svl" value="{{ old('svl') }}" placeholder="Ej. 68" step="1" required>
                 </div>
                 
                 <div class="form-group">
                   <label for="peso">Peso (Gramos)</label>
-                  <input type="number" id="peso" name="peso" placeholder="Ej. 12.4" step="0.1" required>
+                  <input type="number" id="peso" name="peso" value="{{ old('peso') }}" placeholder="Ej. 12.4" step="0.1" required>
                 </div>
               </div>
 
               <div class="form-group">
                 <label for="observaciones">Observaciones</label>
-                <textarea id="observaciones" name="observaciones" rows="2" class="disp-form-textarea" placeholder="Observaciones iniciales del ejemplar (ej: marcas, ciclo de muda...)"></textarea>
+                <textarea id="observaciones" name="observaciones" rows="2" class="disp-form-textarea" placeholder="Observaciones iniciales del ejemplar (ej: marcas, ciclo de muda...)">{{ old('observaciones') }}</textarea>
               </div>
 
               <div class="modal-footer">
