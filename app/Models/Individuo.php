@@ -34,6 +34,37 @@ class Individuo extends Model
         'peso' => 'decimal:2',
     ];
 
+    /** Estados válidos de un ejemplar. Los valida el controlador al guardar. */
+    public const ESTADOS = ['activo', 'recapturado', 'liberado'];
+
+    /**
+     * Clase CSS de la píldora de estado.
+     *
+     * Vivía duplicada como un @if en la lista y en la ficha, y en las dos
+     * contemplaba solo 'liberado': un ejemplar recapturado caía en el else
+     * y salía en verde, igual que uno activo, aunque el CSS ya tenía
+     * .status-ind-recapturado en ámbar esperando que alguien lo usara.
+     */
+    public function getClaseEstadoAttribute(): string
+    {
+        return match ($this->estado) {
+            'liberado'    => 'status-ind-liberado',
+            'recapturado' => 'status-ind-recapturado',
+            default       => 'status-ind-activo',
+        };
+    }
+
+    /** Texto de la píldora. En la base el estado se guarda en minúsculas. */
+    public function getEtiquetaEstadoAttribute(): string
+    {
+        return match ($this->estado) {
+            'liberado'    => 'Liberado / Perdido',
+            'recapturado' => 'Recapturado',
+            'activo'      => 'Activo',
+            default       => ucfirst((string) $this->estado),
+        };
+    }
+
     public function sesiones()
     {
         return $this->hasMany(Sesion::class, 'id_individuo');

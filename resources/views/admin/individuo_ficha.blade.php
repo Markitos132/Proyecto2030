@@ -145,11 +145,7 @@
         <div class="page-header-top">
           <div class="ficha-title-block">
             <h1 class="page-title">{{ $individuo->codigo_individuo }}</h1>
-            @if($individuo->estado === 'liberado')
-              <span class="status-pill status-ind-inactivo ficha-status-pill">{{ $individuo->estado }}</span>
-            @else
-              <span class="status-pill status-ind-activo ficha-status-pill">{{ $individuo->estado }}</span>
-            @endif
+            <span class="status-pill {{ $individuo->clase_estado }} ficha-status-pill">{{ $individuo->etiqueta_estado }}</span>
           </div>
           <div>
             <button class="btn-add" id="btnEditarIndividuo">

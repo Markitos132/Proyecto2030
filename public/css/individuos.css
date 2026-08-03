@@ -7,20 +7,9 @@
 /* ============================================= */
 
 
-.status-ind-activo {
-  background: var(--status-green-bg);
-  color: white;
-}
-
-.status-ind-recapturado {
-  background: var(--Amarillo);
-  color: var(--Marron);
-}
-
-.status-ind-liberado {
-  background: var(--status-gray-bg);
-  color: var(--text-mid);
-}
+/* Las píldoras .status-ind-* se movieron a style_admin.css: las usan
+   tanto Individuos como la ficha de Dispositivos, y tenerlas acá dejaba
+   media familia definida en un archivo y media sin definir en ninguno. */
 
 /* RESPONSIVE — INDIVIDUOS */
 @media (max-width: 1091px) {

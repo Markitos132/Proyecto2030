@@ -10,16 +10,6 @@ use Illuminate\Routing\Controller;
 
 class IndividuoController extends Controller
 {
-    /**
-     * Estados posibles de un individuo.
-     *
-     * Las vistas comparaban contra 'Liberado/Perdido' mientras el
-     * desplegable guardaba 'liberado', asi que la etiqueta de estado nunca
-     * se pintaba como inactiva. Se unifico en estos tres valores; ninguna
-     * fila de la base usaba el otro, asi que no hubo datos que migrar.
-     */
-    private const ESTADOS = ['activo', 'recapturado', 'liberado'];
-
     public function index(Request $request)
     {
         $individuos = Individuo::query()
@@ -103,7 +93,7 @@ class IndividuoController extends Controller
             'estado_reproductivo' => ['nullable', 'string', 'max:50'],
             'svl'                 => ['nullable', 'numeric', 'min:0', 'max:9999'],
             'peso'                => ['nullable', 'numeric', 'min:0', 'max:9999'],
-            'estado'              => ['nullable', 'string', 'in:'.implode(',', self::ESTADOS)],
+            'estado'              => ['nullable', 'string', 'in:'.implode(',', Individuo::ESTADOS)],
         ], [
             'codigo.unique' => 'Ya existe otro ejemplar con ese código.',
             'estado.in'     => 'El estado seleccionado no es válido.',

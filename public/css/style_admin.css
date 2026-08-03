@@ -597,6 +597,36 @@ tbody tr.row-active td {
   color: var(--text-mid);
 }
 
+/* ═══════════════════════════════════════════════════════════
+   Píldoras de estado de ejemplares y dispositivos
+
+   Estaban a medias y repartidas: individuos.css definía
+   .status-ind-liberado y .status-ind-recapturado, pero las vistas
+   pedían .status-ind-inactivo y .status-ind-alerta, que no existían
+   en ningún archivo. Esas píldoras salían sin fondo.
+
+   Ahora viven acá porque las usan las dos secciones.
+
+   Ejemplares:   activo · recapturado · liberado
+   Dispositivos: activo (online) · alerta (sin reportar) · inactivo (apagado)
+   ═══════════════════════════════════════════════════════════ */
+.status-ind-activo {
+  background: var(--status-green-bg);
+  color: white;
+}
+
+.status-ind-recapturado,
+.status-ind-alerta {
+  background: var(--Amarillo);
+  color: var(--Marron);
+}
+
+.status-ind-liberado,
+.status-ind-inactivo {
+  background: var(--status-gray-bg);
+  color: var(--text-mid);
+}
+
 .link-graph {
   color: var(--Verde1bis);
   font-size: 0.85rem;

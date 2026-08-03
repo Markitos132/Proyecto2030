@@ -184,11 +184,7 @@
                     @endif
                   </td>
                   <td data-label="Estado">
-                    @if ($individuo->estado === 'liberado')
-                      <span class="status-pill status-ind-inactivo">{{ $individuo->estado }}</span>
-                    @else 
-                      <span class="status-pill status-ind-activo">{{ $individuo->estado }}</span>
-                    @endif
+                    <span class="status-pill {{ $individuo->clase_estado }}">{{ $individuo->etiqueta_estado }}</span>
                   </td>
                   <td><a href="/individuos/{{ $individuo->id_individuo}}" class="link-graph">Ver Ficha</a></td>
                 </tr>
