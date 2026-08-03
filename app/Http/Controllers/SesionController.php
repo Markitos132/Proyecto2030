@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Dispositivo;
 use App\Models\Individuo;
+use App\Models\Medicion;
 use App\Models\Sesion;
 use App\Services\CierreDeSesiones;
 use Illuminate\Http\RedirectResponse;
@@ -102,7 +103,30 @@ class SesionController extends Controller
             ->orderBy('fecha_hora')
             ->get(['fecha_hora', 'temperatura', 'alerta']);
 
-        return view('admin.sesion_grafico', compact('sesion', 'mediciones'));
+        // La serie se arma acá y no en la vista a propósito.
+        //
+        // Estaba con @json(...) y una función flecha repartida en varias
+        // líneas: Blade extrae los argumentos de una directiva contando
+        // paréntesis, y con un array multilínea adentro genera PHP inválido.
+        // El resultado era un ParseError que tumbaba la página entera,
+        // incluso cuando el bloque estaba dentro de un @if que daba falso.
+        $serie = $mediciones->map(fn ($m) => [
+            'hora'        => $m->fecha_hora?->format('H:i'),
+            'temperatura' => (float) $m->temperatura,
+            'alerta'      => $m->alerta,
+        ])->values();
+
+        $promedio = $mediciones->avg('temperatura');
+
+        return view('admin.sesion_grafico', [
+            'sesion'       => $sesion,
+            'mediciones'   => $mediciones,
+            'serie'        => $serie,
+            'promedio'     => $promedio !== null ? round((float) $promedio, 1) : null,
+            'fueraDeRango' => $mediciones->where('alerta', Medicion::ALERTA_FUERA)->count(),
+            'tempMin'      => $sesion->temp_min !== null ? (float) $sesion->temp_min : null,
+            'tempMax'      => $sesion->temp_max !== null ? (float) $sesion->temp_max : null,
+        ]);
     }
 
     public function finalizar(Sesion $sesion): RedirectResponse

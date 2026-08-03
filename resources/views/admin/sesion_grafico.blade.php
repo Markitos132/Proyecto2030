@@ -20,15 +20,11 @@
     </div>
     <div class="metric-card">
       <div class="metric-header">Promedio</div>
-      <div class="metric-value">
-        {{ $mediciones->avg('temperatura') !== null
-            ? number_format($mediciones->avg('temperatura'), 1).' °C'
-            : '--' }}
-      </div>
+      <div class="metric-value">{{ $promedio !== null ? $promedio.' °C' : '--' }}</div>
     </div>
     <div class="metric-card">
       <div class="metric-header">Fuera de rango</div>
-      <div class="metric-value">{{ $mediciones->where('alerta', 'FUERA DE RANGO')->count() }}</div>
+      <div class="metric-value">{{ $fueraDeRango }}</div>
     </div>
   </div>
 
@@ -47,7 +43,7 @@
       <form method="POST" action="{{ route('sesiones.finalizar', $sesion->id_sesion) }}">
         @csrf
         @method('PUT')
-        <button type="submit" class="btn-submit">Finalizar sesión</button>
+        <button type="submit" class="btn-primary">Finalizar sesión</button>
       </form>
     @endif
   </div>
@@ -57,34 +53,27 @@
 @push('scripts')
 @if($mediciones->isNotEmpty())
 <script>
-  // Los datos se serializan desde el servidor; Blade escapa el JSON.
-  const mediciones = @json($mediciones->map(fn ($m) => [
-      'x' => $m->fecha_hora?->format('Y-m-d H:i:s'),
-      'y' => (float) $m->temperatura,
-      'alerta' => $m->alerta,
-  ]));
-
-  const tempMin = @json($sesion->temp_min !== null ? (float) $sesion->temp_min : null);
-  const tempMax = @json($sesion->temp_max !== null ? (float) $sesion->temp_max : null);
-
-  const etiquetas = mediciones.map(m => m.x.slice(11, 16));
+  // Los datos vienen ya armados desde el controlador. Las expresiones
+  // complejas dentro de @json rompen la compilación de Blade, así que acá
+  // solo se vuelcan variables simples.
+  const serie   = @json($serie);
+  const tempMin = @json($tempMin);
+  const tempMax = @json($tempMax);
 
   new Chart(document.getElementById('graficoTemperatura'), {
     type: 'line',
     data: {
-      labels: etiquetas,
+      labels: serie.map(m => m.hora),
       datasets: [{
         label: 'Temperatura (°C)',
-        data: mediciones.map(m => m.y),
+        data: serie.map(m => m.temperatura),
         borderColor: '#378ADD',
         backgroundColor: 'rgba(55,138,221,0.12)',
         fill: true,
         tension: 0.25,
         pointRadius: 3,
         // Las mediciones fuera de rango se marcan en rojo.
-        pointBackgroundColor: mediciones.map(
-          m => m.alerta === 'FUERA DE RANGO' ? '#d32f2f' : '#378ADD'
-        ),
+        pointBackgroundColor: serie.map(m => m.alerta === 'FUERA DE RANGO' ? '#d32f2f' : '#378ADD'),
       }]
     },
     options: {
@@ -100,7 +89,7 @@
       plugins: {
         tooltip: {
           callbacks: {
-            afterLabel: ctx => mediciones[ctx.dataIndex].alerta,
+            afterLabel: ctx => serie[ctx.dataIndex].alerta,
           }
         }
       }
