@@ -110,8 +110,13 @@ class SesionController extends Controller
         // paréntesis, y con un array multilínea adentro genera PHP inválido.
         // El resultado era un ParseError que tumbaba la página entera,
         // incluso cuando el bloque estaba dentro de un @if que daba falso.
+        // El formato de la etiqueta se adapta a lo que abarca la sesión.
+        // Con 'H:i' fijo, varias mediciones dentro del mismo minuto salían
+        // todas con la misma hora y el eje quedaba ilegible.
+        $formato = $this->formatoDeEtiqueta($mediciones);
+
         $serie = $mediciones->map(fn ($m) => [
-            'hora'        => $m->fecha_hora?->format('H:i'),
+            'hora'        => $m->fecha_hora?->format($formato),
             'temperatura' => (float) $m->temperatura,
             'alerta'      => $m->alerta,
         ])->values();
@@ -127,6 +132,30 @@ class SesionController extends Controller
             'tempMin'      => $sesion->temp_min !== null ? (float) $sesion->temp_min : null,
             'tempMax'      => $sesion->temp_max !== null ? (float) $sesion->temp_max : null,
         ]);
+    }
+
+    /**
+     * Elige cómo escribir la hora de cada punto del gráfico.
+     *
+     * Sesiones cortas necesitan segundos para distinguir mediciones
+     * consecutivas; las que cruzan la medianoche necesitan la fecha.
+     */
+    private function formatoDeEtiqueta($mediciones): string
+    {
+        $primera = $mediciones->first()?->fecha_hora;
+        $ultima  = $mediciones->last()?->fecha_hora;
+
+        if (! $primera || ! $ultima) {
+            return 'H:i';
+        }
+
+        $minutos = $primera->diffInMinutes($ultima);
+
+        if ($minutos < 60) {
+            return 'H:i:s';
+        }
+
+        return $primera->isSameDay($ultima) ? 'H:i' : 'd/m H:i';
     }
 
     public function finalizar(Sesion $sesion): RedirectResponse
