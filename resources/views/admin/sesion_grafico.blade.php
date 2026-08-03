@@ -53,9 +53,13 @@
 @push('scripts')
 @if($mediciones->isNotEmpty())
 <script>
-  // Los datos vienen ya armados desde el controlador. Las expresiones
-  // complejas dentro de @json rompen la compilación de Blade, así que acá
-  // solo se vuelcan variables simples.
+  // Los datos vienen ya armados desde el controlador: acá solo se vuelcan
+  // variables simples. Las expresiones complejas dentro de una directiva
+  // de serialización rompen la compilación de Blade.
+  //
+  // Y ojo con los comentarios: Blade no distingue el JavaScript del resto,
+  // así que nombrar una directiva acá dentro la expande igual y rompe el
+  // archivo. Por eso este comentario no la nombra.
   const serie   = @json($serie);
   const tempMin = @json($tempMin);
   const tempMax = @json($tempMax);
