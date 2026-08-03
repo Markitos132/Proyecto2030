@@ -147,7 +147,11 @@
               <span class="status-dot online"></span>
               <div>
                 <div class="ficha-device-current-id">{{ $dispositivo->sesionActiva?->individuo?->codigo_individuo }}</div>
-                <div class="ficha-device-current-detail">Sesión iniciada hace {{ $dispositivo->sesionActiva?->fecha_inicio?->diffForHumans() }}</div>
+                {{-- El segundo argumento pide la diferencia en absoluto.
+                     Sin él Carbon ya devuelve "hace 5 minutos" y el texto
+                     quedaba como "Sesión iniciada hace hace 5 minutos".
+                     En inglés no se notaba porque decía "5 minutes ago". --}}
+                <div class="ficha-device-current-detail">Sesión iniciada hace {{ $dispositivo->sesionActiva?->fecha_inicio?->diffForHumans(null, true) }}</div>
               </div>
             </div>
             <a href="{{ route('sesiones.show', $dispositivo->sesionActiva?->id_sesion) }}" class="link-graph">Ver sesión en curso →</a>

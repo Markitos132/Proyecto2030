@@ -76,9 +76,20 @@ return [
     | by Laravel's translation / localization methods. This option can be
     | set to any locale for which you plan to have translation strings.
     |
+    | El valor por defecto es 'es' y no 'en' a propósito: el panel entero
+    | está en castellano y el servidor de producción no tenía APP_LOCALE
+    | definida, así que las fechas relativas salían en inglés. Dejarlo
+    | atado a una variable de entorno significaba que alguien tenía que
+    | acordarse de cargarla en cada despliegue nuevo.
+    |
+    | El idioma de reserva sí queda en inglés: Laravel trae traducciones
+    | solo en 'en'. Con 'es' de reserva, cualquier mensaje de validación
+    | sin texto propio saldría como la clave cruda, 'validation.max.string'
+    | en vez de una frase.
+    |
     */
 
-    'locale' => env('APP_LOCALE', 'en'),
+    'locale' => env('APP_LOCALE', 'es'),
 
     'fallback_locale' => env('APP_FALLBACK_LOCALE', 'en'),
 
