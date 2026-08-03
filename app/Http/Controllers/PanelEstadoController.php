@@ -57,7 +57,11 @@ class PanelEstadoController extends Controller
         $sesiones = Sesion::visiblesEnPanel()
             ->with(['individuo:id_individuo,codigo_individuo,especie',
                     'dispositivo:id_dispositivo,nombre',
-                    'ultimaMedicion'])
+                    'ultimaMedicion',
+                    // Para el mini-gráfico de las tarjetas de Sesiones Activas.
+                    // Solo dos columnas: la serie se recorta a 30 puntos más
+                    // abajo, pero la consulta trae la sesión entera.
+                    'mediciones:id_medicion,id_sesion,temperatura'])
             ->orderByDesc('fecha_inicio')
             ->get();
 
@@ -70,15 +74,34 @@ class PanelEstadoController extends Controller
             ->where('fecha_hora', '>=', now()->subHour())
             ->avg('temperatura');
 
+        $activas = $sesiones->where('estado', Sesion::ESTADO_ACTIVA);
+
+        // Estas dos son las que muestra Sesiones Activas, y no coinciden con
+        // las del dashboard: allá el promedio de temperatura abarca la última
+        // hora de mediciones, acá es el promedio de la última lectura de cada
+        // sesión en curso. Son preguntas distintas y conviven.
+        $tempActualPromedio = $activas
+            ->map(fn ($s) => $s->ultimaMedicion?->temperatura)
+            ->filter()
+            ->avg();
+
+        $duracionPromedio = $activas->map(fn ($s) => $s->minutos_transcurridos)->avg();
+
         $datos = [
             'metricas' => [
-                'sesiones_activas'    => $sesiones->where('estado', Sesion::ESTADO_ACTIVA)->count(),
+                'sesiones_activas'    => $activas->count(),
                 'dispositivos_online' => $dispositivos
                                             ->filter(fn ($d) => $d->estado_calculado !== 'offline')
                                             ->count(),
                 'dispositivos_total'  => $dispositivos->count(),
                 'temp_promedio'       => $tempPromedio !== null
                                             ? round((float) $tempPromedio, 1)
+                                            : null,
+                'temp_actual_promedio' => $tempActualPromedio !== null
+                                            ? round((float) $tempActualPromedio, 1)
+                                            : null,
+                'duracion_promedio'   => $duracionPromedio !== null
+                                            ? round((float) $duracionPromedio, 1)
                                             : null,
             ],
             'sesiones' => $sesiones->map(fn ($s) => [
@@ -93,6 +116,14 @@ class PanelEstadoController extends Controller
                                     : null,
                 'alerta'      => $s->ultimaMedicion?->alerta,
                 'medido_hace' => $s->ultimaMedicion?->fecha_hora?->diffForHumans(null, true),
+
+                // Lo que consumen las tarjetas de Sesiones Activas.
+                'lecturas'    => $s->mediciones->count(),
+                'duracion'    => $s->minutos_transcurridos,
+                'restante'    => $s->minutos_restantes,
+                'total'       => $s->duracion_sesion,
+                'progreso'    => $s->progreso,
+                'serie'       => $s->serieReciente(),
             ])->values(),
 
             // El servidor decide el ritmo: consultar seguido solo mientras

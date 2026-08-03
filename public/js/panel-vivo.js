@@ -36,13 +36,25 @@
   let ritmo          = RITMO_POR_DEFECTO;
   let etag           = null;
 
+  /* Cada vista dibuja un subconjunto distinto de lo que devuelve el
+     endpoint: el dashboard muestra todo lo visible del día, Sesiones
+     Activas solo lo que está midiendo. Sin declararlo, la firma nunca
+     coincidiría en Sesiones Activas y la página se recargaría sola una y
+     otra vez al ver "diferencias" que no son tales. */
+  const contenedorFiltrado = document.querySelector('[data-vivo-filtro]');
+  const soloActivas = contenedorFiltrado?.dataset.vivoFiltro === 'activas';
+
+  const alcance = (sesiones) => soloActivas
+    ? sesiones.filter((s) => s.activa)
+    : sesiones;
+
   // Firma de las sesiones que el servidor ya dibujó en esta página.
   // Arrancar desde el DOM (y no desde null) permite detectar en la primera
   // consulta que la tabla quedó vieja: si una sesión empezó justo después
   // de renderizar, la fila no existe y hay que pedirle el HTML al servidor.
   const firmaDelDom = () => Array.from(
-    document.querySelectorAll('[data-sesion-fila]')
-  ).map((el) => el.dataset.sesionFila).join(',');
+    document.querySelectorAll('[data-sesion-fila], [data-sesion-tarjeta]')
+  ).map((el) => el.dataset.sesionFila || el.dataset.sesionTarjeta).join(',');
 
   let firmaSesiones = firmaDelDom();
 
@@ -76,6 +88,21 @@
         ? `${m.temp_promedio.toFixed(1)}°C`
         : '--°C';
     }
+
+    // Las dos siguientes solo existen en Sesiones Activas.
+    const tempActual = $vivo('temp-actual-promedio');
+    if (tempActual) {
+      tempActual.textContent = m.temp_actual_promedio !== null
+        ? `${m.temp_actual_promedio.toFixed(1)}°C`
+        : '--°C';
+    }
+
+    const duracion = $vivo('duracion-promedio');
+    if (duracion) {
+      duracion.textContent = m.duracion_promedio !== null
+        ? `${m.duracion_promedio.toFixed(1)} min`
+        : '-- min';
+    }
   }
 
   function pintarFilas(sesiones) {
@@ -100,6 +127,119 @@
           `<span class="status-pill ${clase}">${s.etiqueta}</span>`;
         fila.classList.toggle('row-active', s.activa);
       }
+    });
+  }
+
+  /* ── Mini-gráfico de las tarjetas ─────────────────────────
+     Un polyline sobre un viewBox fijo de 300x90. El SVG se estira al ancho
+     de la tarjeta con preserveAspectRatio="none", y el CSS compensa el
+     grosor del trazo con vector-effect para que no se deforme. */
+  const ANCHO_SVG = 300;
+  const ALTO_SVG  = 90;
+  const MARGEN    = 6;
+
+  function dibujarSparkline(svg, serie) {
+    const linea = svg.querySelector('polyline');
+    if (!linea) return;
+
+    const envoltorio = svg.closest('.session-chart-wrap');
+
+    // Con menos de dos puntos no hay curva: una sesión recién arrancada no
+    // debería mostrar una raya plana que parezca un dato.
+    if (!serie || serie.length < 2) {
+      linea.setAttribute('points', '');
+      if (envoltorio) envoltorio.hidden = true;
+      return;
+    }
+
+    if (envoltorio) envoltorio.hidden = false;
+
+    const min = Math.min(...serie);
+    const max = Math.max(...serie);
+
+    // Serie constante: rango cero dividiría por cero y la línea se iría al
+    // infinito. Se dibuja centrada.
+    const rango = max - min || 1;
+    const util  = ALTO_SVG - MARGEN * 2;
+    const paso  = ANCHO_SVG / (serie.length - 1);
+
+    const puntos = serie.map((valor, i) => {
+      const x = (i * paso).toFixed(1);
+      const y = (ALTO_SVG - MARGEN - ((valor - min) / rango) * util).toFixed(1);
+      return `${x},${y}`;
+    });
+
+    linea.setAttribute('points', puntos.join(' '));
+  }
+
+  const leerSerie = (texto) => (texto || '')
+    .split(',')
+    .map(Number)
+    .filter((n) => Number.isFinite(n));
+
+  /** Dibuja las curvas que el servidor ya mandó en el HTML, sin esperar
+      a la primera consulta. */
+  function dibujarSparklinesIniciales() {
+    document.querySelectorAll('[data-vivo-tarjeta="grafico"]').forEach((svg) => {
+      dibujarSparkline(svg, leerSerie(svg.dataset.serie));
+    });
+  }
+
+  function pintarTarjetas(sesiones) {
+    sesiones.forEach((s) => {
+      const tarjeta = document.querySelector(`[data-sesion-tarjeta="${s.id_sesion}"]`);
+      if (!tarjeta) return;
+
+      const $ = (nombre) => tarjeta.querySelector(`[data-vivo-tarjeta="${nombre}"]`);
+      const fueraDeRango = s.alerta === 'FUERA DE RANGO';
+
+      const temp = $('temperatura');
+      if (temp) {
+        temp.textContent = s.temperatura !== null ? `${s.temperatura.toFixed(1)}°C` : '--°C';
+        temp.classList.toggle('temp-alert', fueraDeRango);
+      }
+
+      const lecturas = $('lecturas');
+      if (lecturas) lecturas.textContent = s.lecturas;
+
+      const duracion = $('duracion');
+      if (duracion) duracion.textContent = `${s.duracion} min`;
+
+      if (s.progreso !== null) {
+        const texto = $('progreso-texto');
+        if (texto) texto.textContent = `${s.progreso}% · ${s.duracion} de ${s.total} min`;
+
+        const restante = $('restante');
+        if (restante) restante.textContent = `Faltan ${s.restante} min`;
+
+        const barra = $('progreso-barra');
+        if (barra) {
+          barra.style.width = `${s.progreso}%`;
+          barra.classList.toggle('warning', s.progreso >= 90);
+        }
+      }
+
+      // La tarjeta entera se tiñe cuando la última lectura se sale del rango.
+      tarjeta.classList.toggle('alert-card', fueraDeRango);
+
+      const alerta = $('alerta');
+      if (alerta) alerta.hidden = !fueraDeRango;
+
+      const ultima = $('ultima-lectura');
+      if (ultima) {
+        ultima.hidden = fueraDeRango;
+        ultima.textContent = s.medido_hace
+          ? `Última lectura hace ${s.medido_hace}`
+          : 'Sin lecturas todavía';
+      }
+
+      const grafico = $('grafico');
+      if (grafico) dibujarSparkline(grafico, s.serie);
+
+      // El modal "Ver detalle" lee la serie de este atributo al abrirse.
+      // Mantenerlo al día es lo que hace que muestre la curva actual y no
+      // la que había cuando se cargó la página.
+      tarjeta.dataset.trend = (s.serie || []).join(',');
     });
   }
 
@@ -165,6 +305,7 @@
 
       pintarMetricas(datos.metricas);
       pintarFilas(datos.sesiones);
+      pintarTarjetas(datos.sesiones);
       marcarActualizado(datos.servidor);
 
       // El servidor sugiere cada cuánto volver a preguntar: rápido
@@ -175,7 +316,10 @@
 
       // Si aparecen o desaparecen sesiones, la tabla necesita filas nuevas
       // y eso lo resuelve mejor el servidor que este script.
-      const firma = datos.sesiones.map((s) => s.id_sesion).join(',');
+      //
+      // Se compara contra el mismo subconjunto que dibuja la vista: en
+      // Sesiones Activas, solo las que están midiendo.
+      const firma = alcance(datos.sesiones).map((s) => s.id_sesion).join(',');
       if (firma !== firmaSesiones && !recargadoReciente()) {
         marcarRecarga();
         window.location.reload();
@@ -224,6 +368,10 @@
   }
 
   document.addEventListener('visibilitychange', alCambiarVisibilidad);
+
+  // Las curvas se dibujan con los datos que ya vinieron en el HTML, para
+  // que la tarjeta no aparezca vacía durante el viaje de la primera consulta.
+  dibujarSparklinesIniciales();
 
   consultar();
 })();

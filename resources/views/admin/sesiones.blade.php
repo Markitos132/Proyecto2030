@@ -187,69 +187,137 @@
 
       <div>
         <div class="page-header-top">
-          <h1 class="page-title"><b>Sesiones Activas</b></h1>
+          <h1 class="page-title">
+            <b>Sesiones Activas</b>
+            {{-- El sello lo refresca panel-vivo.js; su presencia es además
+                 lo que enciende el refresco automático en esta página. --}}
+            <span class="sello-actualizado" data-vivo="actualizado"></span>
+          </h1>
           <button class="btn-add" id="btnNuevaSesion">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
             Crear Sesión
           </button>
         </div>
-        <p class="page-sub">Mediciones en curso en este momento. Cada tarjeta muestra la tendencia de temperatura corporal de la sesión y se actualiza con cada nueva lectura del dispositivo.</p>        
+        <p class="page-sub">Mediciones en curso en este momento. Cada tarjeta muestra la tendencia de temperatura corporal de la sesión y se actualiza con cada nueva lectura del dispositivo.</p>
       </div>
 
       <div class="summary-grid">
         <div class="summary-card">
           <div class="summary-label">Sesiones en curso</div>
-          <div class="summary-value">{{ $sesionesEncurso ?? 0 }}</div>
+          <div class="summary-value" data-vivo="sesiones">{{ $sesionesEncurso ?? 0 }}</div>
         </div>
         <div class="summary-card">
           <div class="summary-label">Duración promedio</div>
-          <div class="summary-value">{{ isset($duracionPromedio) ? number_format($duracionPromedio, 1) . ' min' : '-- min' }}</div>
+          <div class="summary-value" data-vivo="duracion-promedio">{{ isset($duracionPromedio) ? number_format($duracionPromedio, 1) . ' min' : '-- min' }}</div>
         </div>
         <div class="summary-card">
           <div class="summary-label">Temp. promedio actual</div>
-          <div class="summary-value">{{ isset($tempPromedioSesion) ? number_format($tempPromedioSesion, 1) . '°C' : '--°C' }}</div>
+          <div class="summary-value" data-vivo="temp-actual-promedio">{{ isset($tempPromedioSesion) ? number_format($tempPromedioSesion, 1) . '°C' : '--°C' }}</div>
         </div>
       </div>
 
-      <div class="session-grid" id="sessionGrid">
+      {{-- data-vivo-filtro le dice a panel-vivo.js que esta vista dibuja solo
+           las sesiones activas. Sin eso compararía contra el conjunto entero
+           que devuelve /panel/estado (que incluye las finalizadas de hoy),
+           encontraría una diferencia en cada consulta y recargaría en bucle. --}}
+      <div class="session-grid" id="sessionGrid" data-vivo-filtro="activas">
         @forelse ($sesionesActivas as $sesion)
-          <div class="session-card" 
+          {{-- La misma serie alimenta el mini-gráfico de la tarjeta y el
+               gráfico del modal "Ver detalle". Antes el modal recibía todas
+               las mediciones de la sesión: con lectura por minuto eran
+               cientos de puntos etiquetados L1, L2, L3... ilegibles en un
+               modal, y además se quedaban congelados en lo que había al
+               cargar la página. El gráfico completo sigue estando en
+               /sesiones/{id}. --}}
+          @php $serie = $sesion->serieReciente(); @endphp
+          <div class="session-card {{ $sesion->fuera_de_rango ? 'alert-card' : '' }}"
+            data-sesion-tarjeta="{{ $sesion->id_sesion }}"
             data-id-sesion="{{ $sesion->id_sesion }}"
-            data-individuo="{{ $sesion->individuo?->codigo_individuo }}" 
-            data-especie="{{ $sesion->individuo?->especie }}" 
-            data-dispositivo="{{ $sesion->dispositivo?->nombre }}" 
+            data-individuo="{{ $sesion->individuo?->codigo_individuo }}"
+            data-especie="{{ $sesion->individuo?->especie }}"
+            data-dispositivo="{{ $sesion->dispositivo?->nombre }}"
             data-temp-actual="{{ $sesion->ultimaMedicion?->temperatura ?? '--' }} °C"
-            data-lecturas="{{ $sesion->mediciones->count() }}" 
-            data-duracion="{{ (int) round($sesion->fecha_inicio?->diffInMinutes() ?? 0) }} min" 
-            data-estadio="{{ $sesion->individuo?->estadio }}" 
-            data-sexo="{{ $sesion->individuo?->sexo }}" 
-            data-prenez="{{ $sesion->individuo?->estado_reproductivo }}" 
-            data-trend="{{ $sesion->mediciones->pluck('temperatura')->implode(',') }}" 
-            data-minutos-restantes="{{ max(0, (int) round(($sesion->duracion_sesion ?? 0) - ($sesion->fecha_inicio?->diffInMinutes() ?? 0))) }}" >
+            data-lecturas="{{ $sesion->mediciones->count() }}"
+            data-duracion="{{ $sesion->minutos_transcurridos }} min"
+            data-estadio="{{ $sesion->individuo?->estadio }}"
+            data-sexo="{{ $sesion->individuo?->sexo }}"
+            data-prenez="{{ $sesion->individuo?->estado_reproductivo }}"
+            data-trend="{{ implode(',', $serie) }}"
+            data-minutos-restantes="{{ $sesion->minutos_restantes ?? '' }}">
 
             <div class="session-top">
               <div>
-                <div class="session-id">{{ $sesion->individuo?->codigo_individuo}} <span class="session-device">· {{ $sesion->dispositivo?->nombre }}</span></div>
-                <div class="session-species"><em>{{ $sesion->individuo?->especie}}</em></div>
+                <div class="session-id">{{ $sesion->individuo?->codigo_individuo }} <span class="session-device">· {{ $sesion->dispositivo?->nombre }}</span></div>
+                <div class="session-species"><em>{{ $sesion->individuo?->especie }}</em></div>
               </div>
               <span class="status-pill-sm measuring"><span class="pulse-dot"></span>MIDIENDO</span>
             </div>
+
             <div class="session-meta">
               <div class="session-meta-item">
                 <span class="session-meta-label">Temp. actual</span>
-                <span class="session-meta-value">{{ $sesion->ultimaMedicion?->temperatura ?? '--' }}°C</span>
+                <span class="session-meta-value {{ $sesion->fuera_de_rango ? 'temp-alert' : '' }}" data-vivo-tarjeta="temperatura">{{ $sesion->ultimaMedicion?->temperatura ?? '--' }}°C</span>
               </div>
               <div class="session-meta-item">
                 <span class="session-meta-label">Duración</span>
-                <span class="session-meta-value">{{ (int) round($sesion->fecha_inicio?->diffInMinutes() ?? 0) }} min</span>
+                <span class="session-meta-value" data-vivo-tarjeta="duracion">{{ $sesion->minutos_transcurridos }} min</span>
               </div>
               <div class="session-meta-item">
                 <span class="session-meta-label">Lecturas</span>
-                <span class="session-meta-value">{{ $sesion->mediciones->count() }}</span>
+                <span class="session-meta-value" data-vivo-tarjeta="lecturas">{{ $sesion->mediciones->count() }}</span>
               </div>
             </div>
+
+            {{-- Progreso. Solo tiene sentido con una duración pactada: sin
+                 ella la sesión corre hasta que alguien la corte. --}}
+            @if ($sesion->progreso !== null)
+              <div>
+                <div class="progress-labels">
+                  <span data-vivo-tarjeta="progreso-texto">{{ $sesion->progreso }}% · {{ $sesion->minutos_transcurridos }} de {{ $sesion->duracion_sesion }} min</span>
+                  <span data-vivo-tarjeta="restante">Faltan {{ $sesion->minutos_restantes }} min</span>
+                </div>
+                <div class="progress-bar">
+                  <div class="progress-fill {{ $sesion->progreso >= 90 ? 'warning' : '' }}"
+                       data-vivo-tarjeta="progreso-barra"
+                       style="width: {{ $sesion->progreso }}%"></div>
+                </div>
+              </div>
+            @else
+              <div class="progress-labels">
+                <span>Sin duración pactada</span>
+                <span data-vivo-tarjeta="restante">Corre hasta finalizarla</span>
+              </div>
+            @endif
+
+            {{-- Mini-gráfico. Es un polyline SVG y no un Chart.js: hay uno por
+                 tarjeta y se redibuja cada 3 segundos, así que instanciar y
+                 destruir gráficos en cada refresco sale caro para lo que es. --}}
+            <div class="session-chart-wrap">
+              <svg viewBox="0 0 300 90" preserveAspectRatio="none" width="100%" height="100%"
+                   data-vivo-tarjeta="grafico" data-serie="{{ implode(',', $serie) }}"
+                   role="img" aria-label="Tendencia de temperatura de la sesión">
+                <polyline fill="none" stroke="var(--Verde2)" stroke-width="2"
+                          stroke-linejoin="round" stroke-linecap="round" points=""></polyline>
+              </svg>
+            </div>
+
             <div class="session-footer">
-              <span style="font-size:0.78rem; color:var(--text-muted);">Última lectura hace {{ $sesion->ultimaMedicion?->fecha_hora?->diffForHumans(null, true) ?? '--' }}</span>
+              {{-- Los dos textos existen siempre y el refresco solo alterna
+                   cuál se ve. Generarlos condicionalmente obligaría al script
+                   a construir HTML, que es justo lo que evita este esquema. --}}
+              <div class="session-footer-estado">
+                <span class="session-alert-msg" data-vivo-tarjeta="alerta" @unless($sesion->fuera_de_rango) hidden @endunless>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/><path d="M12 9v4M12 17h.01"/></svg>
+                  Última lectura fuera de rango
+                </span>
+                <span class="session-ultima-lectura" data-vivo-tarjeta="ultima-lectura" @if($sesion->fuera_de_rango) hidden @endif>
+                  @if ($sesion->ultimaMedicion?->fecha_hora)
+                    Última lectura hace {{ $sesion->ultimaMedicion->fecha_hora->diffForHumans(null, true) }}
+                  @else
+                    Sin lecturas todavía
+                  @endif
+                </span>
+              </div>
               <div class="session-actions">
                 <button class="btn-action verdetalle">Ver detalle</button>
                 <button class="btn-action danger">Finalizar</button>

@@ -173,6 +173,25 @@
 
 .session-alert-msg svg { width: 15px; height: 15px; flex-shrink: 0; }
 
+/* El pie alterna entre "última lectura hace X" y el aviso de fuera de
+   rango. Los dos elementos existen siempre; el refresco solo cambia
+   cuál lleva el atributo hidden. */
+.session-footer-estado { min-width: 0; }
+
+.session-ultima-lectura {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+/* El mini-gráfico se estira al ancho de la tarjeta con preserveAspectRatio
+   none, así que el trazo se deforma si no se compensa el escalado. */
+.session-chart-wrap svg { display: block; }
+
+.session-chart-wrap polyline { vector-effect: non-scaling-stroke; }
+
+/* Sin lecturas todavía no hay curva que dibujar. */
+.session-chart-wrap[hidden] { display: none; }
+
 .session-actions {
   display: flex;
   gap: 0.6rem;

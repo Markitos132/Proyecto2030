@@ -19,7 +19,15 @@ class SesionController extends Controller
         $cierre->revisarSiCorresponde();
 
         $sesionesActivas = Sesion::activas()
-            ->with(['individuo', 'dispositivo', 'ultimaMedicion', 'mediciones'])
+            ->with([
+                'individuo',
+                'dispositivo',
+                'ultimaMedicion',
+                // Solo las columnas que consume la tarjeta. Traer la fila
+                // entera de cada medición no aporta nada y una sesión larga
+                // acumula cientos.
+                'mediciones:id_medicion,id_sesion,temperatura',
+            ])
             ->orderByDesc('fecha_inicio')
             ->get();
 
@@ -28,9 +36,10 @@ class SesionController extends Controller
             ->filter()
             ->avg();
 
+        // El accesor ya redondea a entero: con diffInMinutes() crudo, Carbon 3
+        // devuelve float y el promedio salía como "125.38333333 min".
         $duracionPromedio = $sesionesActivas
-            ->map(fn ($s) => $s->fecha_inicio?->diffInMinutes(now()))
-            ->filter()
+            ->map(fn ($s) => $s->minutos_transcurridos)
             ->avg();
 
         // Individuos y dispositivos elegibles para una sesion nueva:
