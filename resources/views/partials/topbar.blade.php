@@ -1,13 +1,9 @@
 @php
-    $usuario = auth()->user();
-    $nombre  = $usuario->nombre ?? 'Invitado';
-
-    // Iniciales a partir del nombre: "Marcos Ortiz" -> "MO"
-    $iniciales = collect(preg_split('/\s+/', trim($nombre)))
-        ->filter()
-        ->take(2)
-        ->map(fn ($parte) => mb_strtoupper(mb_substr($parte, 0, 1)))
-        ->implode('') ?: '?';
+    // Nombre e iniciales salen del modelo: así el avatar de la topbar y el
+    // de Configuración no pueden decir cosas distintas.
+    $usuario   = auth()->user();
+    $nombre    = $usuario?->nombre_completo ?: 'Invitado';
+    $iniciales = $usuario?->iniciales ?? '?';
 @endphp
 
 <header class="topbar">
@@ -37,7 +33,10 @@
             <a href="{{ route('configuracion') }}">
                 Configuración
             </a>
-            <a href="{{ route('configuracion') }}#cambiar-contrasena">
+            {{-- El ancla apuntaba a #cambiar-contrasena, pero la sección se
+                 llamaba "Cambiar Contraseña" (con espacio y tilde): el
+                 enlace no saltaba a ningún lado. --}}
+            <a href="{{ route('configuracion') }}#seguridad">
                 Cambiar contraseña
             </a>
             <hr>

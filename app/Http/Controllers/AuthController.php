@@ -68,11 +68,9 @@ class AuthController extends Controller
             'password.min'       => 'La contrasena debe tener al menos 8 caracteres.',
         ]);
 
-        // La tabla tiene una sola columna de nombre.
-        $nombreCompleto = trim($datos['nombre'].' '.($datos['apellido'] ?? ''));
-
         $usuario = Usuario::create([
-            'nombre'   => $nombreCompleto,
+            'nombre'   => $datos['nombre'],
+            'apellido' => $datos['apellido'] ?? null,
             'email'    => $datos['email'],
             // El cast 'hashed' del modelo aplica bcrypt al guardar.
             'password' => $datos['password'],
@@ -81,7 +79,7 @@ class AuthController extends Controller
         // No se hace Auth::login: quien crea la cuenta ya esta logueado
         // y no queremos que la sesion salte al usuario recien creado.
         return redirect()->route('configuracion')
-            ->with('exito', "Usuario {$usuario->nombre} creado correctamente.");
+            ->with('exito', "Usuario {$usuario->nombre_completo} creado correctamente.");
     }
 
     public function logout(Request $request): RedirectResponse

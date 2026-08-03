@@ -161,6 +161,14 @@ body {
 
 .btn-cancel:hover { background: var(--bg-card-soft); }
 
+/* "Cancelar" en Configuración es un enlace (recarga el formulario con los
+   datos guardados), no un botón: sin esto saldría subrayado y desalineado. */
+a.btn-cancel {
+  display: inline-block;
+  text-decoration: none;
+  line-height: normal;
+}
+
 .btn-action {
   background: transparent;
   border: 1px solid var(--border);
@@ -1128,6 +1136,14 @@ tbody tr.row-active td::before {
   background: #fdecec;
   border-color: #d32f2f;
   color: #a32d2d;
+}
+
+/* Informativo: ni error ni éxito. Se usa para advertir de una función
+   que está a medias, como las notificaciones sin servicio de correo. */
+.aviso-info {
+  background: #eef4fb;
+  border-color: #378ADD;
+  color: #235a90;
 }
 
 /* Aviso de error dentro de un modal: más compacto que el de página,

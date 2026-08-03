@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\ConfiguracionController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DispositivoController;
 use App\Http\Controllers\HistorialController;
@@ -87,5 +88,9 @@ Route::middleware('auth')->group(function () {
 
     // ── Historial y configuración ──────────────────────────
     Route::get('/historial', [HistorialController::class, 'index'])->name('historial');
-    Route::view('/configuracion', 'admin.configuracion')->name('configuracion');
+
+    Route::get('/configuracion', [ConfiguracionController::class, 'index'])->name('configuracion');
+    Route::put('/configuracion/perfil', [ConfiguracionController::class, 'perfil'])->name('configuracion.perfil');
+    Route::put('/configuracion/password', [ConfiguracionController::class, 'password'])->name('configuracion.password');
+    Route::put('/configuracion/preferencias', [ConfiguracionController::class, 'preferencias'])->name('configuracion.preferencias');
 });

@@ -237,7 +237,7 @@
           @forelse($individuo->notasIndividuo as $nota)
           <li class="ficha-nota-item">
             <div class="ficha-nota-meta">
-              <strong>{{ $nota->usuario?->nombre ?? 'Investigador' }}</strong>
+              <strong>{{ $nota->usuario?->nombre_completo ?: 'Investigador' }}</strong>
               <span>{{ $nota->fecha_alta?->format('d/m/Y H:i') }}</span>
             </div>
             <p>{{ $nota->contenido }}</p>

@@ -1,5 +1,5 @@
 @extends('layouts.dashboard')
-@section('title', 'Dashboard')
+@section('title', 'Configuración')
     @section('content')
       <div class="page-header">
         <div>
@@ -28,83 +28,105 @@
           </div>
 
           <div class="profile-avatar-row">
-            <div class="profile-avatar-lg">MO</div>
+            <div class="profile-avatar-lg">{{ $usuario->iniciales }}</div>
             <div class="profile-avatar-actions">
-              <button class="btn-text-action">Cambiar foto</button>
-              <button class="btn-text-action danger">Quitar foto</button>
+              {{-- Los botones de foto no están: subir imágenes necesita
+                   almacenamiento persistente, y el disco de Render se borra
+                   en cada despliegue. Las iniciales salen del nombre. --}}
+              <span class="field-hint">El avatar se arma con las iniciales de tu nombre.</span>
             </div>
           </div>
 
-          <form id="profileForm">
+          @if ($errors->perfil->any())
+            <div class="aviso aviso-error" role="alert">
+              <ul>
+                @foreach ($errors->perfil->all() as $error)
+                  <li>{{ $error }}</li>
+                @endforeach
+              </ul>
+            </div>
+          @endif
+
+          <form method="POST" action="{{ route('configuracion.perfil') }}" id="profileForm">
+            @csrf
+            @method('PUT')
             <div class="settings-form-grid">
               <div class="form-field">
                 <label for="nombre">Nombre</label>
-                <input type="text" id="nombre" value="Marcos">
+                <input type="text" id="nombre" name="nombre" value="{{ old('nombre', $usuario->nombre) }}" maxlength="100" required>
               </div>
               <div class="form-field">
                 <label for="apellido">Apellido</label>
-                <input type="text" id="apellido" value="Ortiz">
+                <input type="text" id="apellido" name="apellido" value="{{ old('apellido', $usuario->apellido) }}" maxlength="100">
               </div>
               <div class="form-field full">
                 <label for="institucion">Institución / Laboratorio</label>
-                <input type="text" id="institucion" value="IIGHI–CONICET">
+                <input type="text" id="institucion" name="institucion" value="{{ old('institucion', $usuario->institucion) }}" maxlength="150" placeholder="Ej: IIGHI–CONICET">
               </div>
               <div class="form-field full">
                 <label for="email">Correo electrónico</label>
-                <input type="email" id="email" value="marcos.ortiz@iighi-conicet.gob.ar">
-                <span class="field-hint">Se usa para notificaciones de alertas y recuperación de cuenta.</span>
+                <input type="email" id="email" name="email" value="{{ old('email', $usuario->email) }}" maxlength="255" required>
+                <span class="field-hint">Con este correo iniciás sesión. Cambiarlo cambia también tu usuario de acceso.</span>
               </div>
               <div class="form-field">
                 <label for="rol">Rol en el proyecto</label>
-                <select id="rol">
-                  <option>Investigador principal</option>
-                  <option>Investigador asistente</option>
-                  <option>Estudiante / becario</option>
+                <select id="rol" name="rol">
+                  <option value="">Sin especificar</option>
+                  @foreach ($roles as $rol)
+                    <option value="{{ $rol }}" {{ old('rol', $usuario->rol) === $rol ? 'selected' : '' }}>{{ $rol }}</option>
+                  @endforeach
                 </select>
+                <span class="field-hint">Es descriptivo: no cambia lo que podés ver o hacer en el panel.</span>
               </div>
               <div class="form-field">
                 <label for="telefono">Teléfono (opcional)</label>
-                <input type="tel" id="telefono" placeholder="+54 9 ...">
+                <input type="tel" id="telefono" name="telefono" value="{{ old('telefono', $usuario->telefono) }}" maxlength="40" placeholder="+54 9 ...">
               </div>
             </div>
 
             <div class="settings-actions" style="margin-top:1.75rem;">
               <button type="submit" class="btn-save">Guardar cambios</button>
-              <button type="button" class="btn-cancel">Cancelar</button>
-              <span class="save-confirm" id="confirmPerfil">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
-                Cambios guardados
-              </span>
+              <a href="{{ route('configuracion') }}" class="btn-cancel">Cancelar</a>
             </div>
           </form>
         </div>
-        <section id="Cambiar Contraseña">
+
+        <section id="seguridad">
           <div class="settings-card">
             <div class="settings-card-header">
               <h2>Seguridad</h2>
               <p>Actualizá tu contraseña de acceso al sistema.</p>
             </div>
-            <form id="passwordForm">
+
+            @if ($errors->password->any())
+              <div class="aviso aviso-error" role="alert">
+                <ul>
+                  @foreach ($errors->password->all() as $error)
+                    <li>{{ $error }}</li>
+                  @endforeach
+                </ul>
+              </div>
+            @endif
+
+            <form method="POST" action="{{ route('configuracion.password') }}" id="passwordForm">
+              @csrf
+              @method('PUT')
               <div class="settings-form-grid">
                 <div class="form-field full">
                   <label for="passActual">Contraseña actual</label>
-                  <input type="password" id="passActual" placeholder="••••••••">
+                  <input type="password" id="passActual" name="password_actual" placeholder="••••••••" autocomplete="current-password" required>
                 </div>
                 <div class="form-field">
                   <label for="passNueva">Nueva contraseña</label>
-                  <input type="password" id="passNueva" placeholder="Mínimo 8 caracteres">
+                  <input type="password" id="passNueva" name="password_nueva" placeholder="Mínimo 8 caracteres" minlength="8" autocomplete="new-password" required>
                 </div>
                 <div class="form-field">
                   <label for="passConfirm">Confirmar nueva contraseña</label>
-                  <input type="password" id="passConfirm" placeholder="Repetí la contraseña">
+                  <input type="password" id="passConfirm" name="password_nueva_confirmation" placeholder="Repetí la contraseña" minlength="8" autocomplete="new-password" required>
                 </div>
               </div>
               <div class="settings-actions" style="margin-top:1.75rem;">
                 <button type="submit" class="btn-save">Actualizar contraseña</button>
-                <span class="save-confirm" id="confirmPass">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
-                  Contraseña actualizada
-                </span>
               </div>
             </form>
           </div>
@@ -115,35 +137,64 @@
       <div class="settings-panel" id="panel-conectividad">
         <div class="settings-card">
           <div class="settings-card-header">
-            <h2>Red WiFi del laboratorio</h2>
-            <p>Las unidades ESP32 se conectan a esta red para sincronizar datos en tiempo real.</p>
+            <h2>Conexión de las unidades</h2>
+            <p>Datos que hay que grabar en el firmware para que un ESP32 pueda reportar a este panel.</p>
           </div>
+
+          {{-- Acá había un formulario de SSID y contraseña de WiFi. No podía
+               funcionar: la red está compilada dentro del firmware, y sin
+               WiFi el dispositivo nunca llega al servidor para recibir una
+               configuración nueva. En su lugar va lo que sí hace falta. --}}
 
           <div class="wifi-status-row">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5a10 10 0 0 1 14 0M8 16a6 6 0 0 1 8 0M12 19.5h.01"/></svg>
-            Conectado — 7 de 8 unidades sincronizadas correctamente
+            @if ($totalUnidades === 0)
+              Todavía no hay unidades dadas de alta.
+            @else
+              {{ $unidadesActivas }} de {{ $totalUnidades }}
+              {{ $totalUnidades === 1 ? 'unidad reportando' : 'unidades reportando' }}
+              en los últimos {{ \App\Models\Dispositivo::UMBRAL_OFFLINE_MIN }} minutos
+            @endif
           </div>
 
-          <form id="wifiForm">
-            <div class="settings-form-grid">
-              <div class="form-field full">
-                <label for="ssid">Nombre de red (SSID)</label>
-                <input type="text" id="ssid" value="Laboratorio-IIGHI-2G">
+          <div class="settings-form-grid">
+            <div class="form-field full">
+              <label for="urlServidor">Dirección del servidor</label>
+              <div class="copy-field">
+                <input type="text" id="urlServidor" value="{{ $urlServidor }}" readonly>
+                <button type="button" class="btn-cancel" data-copiar="urlServidor">Copiar</button>
               </div>
-              <div class="form-field full">
-                <label for="wifiPass">Contraseña de red</label>
-                <input type="password" id="wifiPass" value="••••••••••">
-              </div>
+              <span class="field-hint">Va en <code>URL_BASE</code> dentro del firmware.</span>
             </div>
-            <div class="settings-actions" style="margin-top:1.75rem;">
-              <button type="submit" class="btn-save">Guardar red</button>
-              <button type="button" class="btn-cancel">Probar conexión</button>
-              <span class="save-confirm" id="confirmWifi">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
-                Red guardada
-              </span>
+
+            <div class="form-field full">
+              <label for="claveIngesta">Clave de la API</label>
+              @if ($claveIngesta)
+                <div class="copy-field">
+                  <input type="password" id="claveIngesta" value="{{ $claveIngesta }}" readonly>
+                  <button type="button" class="btn-cancel" data-ver="claveIngesta">Mostrar</button>
+                  <button type="button" class="btn-cancel" data-copiar="claveIngesta">Copiar</button>
+                </div>
+                <span class="field-hint">
+                  Va en <code>API_KEY</code> dentro del firmware. Cada dispositivo la manda
+                  en la cabecera <code>X-API-Key</code>. Para cambiarla hay que editar la
+                  variable <code>BIONEA_API_KEY</code> del servidor y regrabar los equipos.
+                </span>
+              @else
+                <div class="aviso aviso-error" role="alert">
+                  No hay clave configurada: el endpoint de ingesta acepta datos de
+                  cualquier origen. Definí <code>BIONEA_API_KEY</code> en las variables
+                  de entorno del servidor.
+                </div>
+              @endif
             </div>
-          </form>
+          </div>
+
+          <p class="field-hint" style="margin-top:1rem;">
+            Además, cada equipo tiene que estar dado de alta en
+            <a href="{{ route('dispositivos') }}">Dispositivos</a> con su dirección MAC real:
+            así es como el panel lo reconoce y le asigna sesiones.
+          </p>
         </div>
 
         <div class="settings-card">
@@ -152,128 +203,139 @@
             <p>Elegí cuándo querés recibir avisos sobre el estado de tus sesiones y dispositivos.</p>
           </div>
 
-          <div class="toggle-row">
-            <div class="toggle-row-text">
-              <strong>Alertas de temperatura fuera de rango</strong>
-              <span>Avisa por correo cuando una sesión activa supera el rango esperado para la especie.</span>
-            </div>
-            <label class="switch">
-              <input type="checkbox" checked>
-              <span class="switch-slider"></span>
-            </label>
+          <div class="aviso aviso-info" role="status">
+            Tus preferencias se guardan, pero el envío todavía no está activo:
+            falta configurar un servicio de correo en el servidor.
           </div>
 
-          <div class="toggle-row">
-            <div class="toggle-row-text">
-              <strong>Dispositivo sin reportar</strong>
-              <span>Avisa cuando una unidad deja de enviar datos durante más del doble de su intervalo configurado.</span>
-            </div>
-            <label class="switch">
-              <input type="checkbox" checked>
-              <span class="switch-slider"></span>
-            </label>
-          </div>
+          <form method="POST" action="{{ route('configuracion.preferencias') }}" id="notifsForm">
+            @csrf
+            @method('PUT')
 
-          <div class="toggle-row">
-            <div class="toggle-row-text">
-              <strong>Resumen diario por correo</strong>
-              <span>Un resumen con las sesiones del día y el estado general de las unidades, todas las noches a las 21:00.</span>
+            {{-- El input oculto hace que un toggle apagado también viaje.
+                 Sin él, una casilla sin tildar simplemente no se envía y el
+                 servidor no puede distinguir "apagado" de "no tocado". --}}
+            <div class="toggle-row">
+              <div class="toggle-row-text">
+                <strong>Alertas de temperatura fuera de rango</strong>
+                <span>Avisa por correo cuando una sesión activa supera el rango esperado para la especie.</span>
+              </div>
+              <label class="switch">
+                <input type="hidden" name="notif_fuera_rango" value="0">
+                <input type="checkbox" name="notif_fuera_rango" value="1" {{ $usuario->notif_fuera_rango ? 'checked' : '' }}>
+                <span class="switch-slider"></span>
+              </label>
             </div>
-            <label class="switch">
-              <input type="checkbox">
-              <span class="switch-slider"></span>
-            </label>
-          </div>
 
-          <div class="toggle-row">
-            <div class="toggle-row-text">
-              <strong>Notificaciones push en el navegador</strong>
-              <span>Mostrar una notificación del sistema mientras tenés la página abierta en otra pestaña.</span>
+            <div class="toggle-row">
+              <div class="toggle-row-text">
+                <strong>Dispositivo sin reportar</strong>
+                <span>Avisa cuando una unidad deja de enviar datos durante más del doble de su intervalo configurado.</span>
+              </div>
+              <label class="switch">
+                <input type="hidden" name="notif_sin_reportar" value="0">
+                <input type="checkbox" name="notif_sin_reportar" value="1" {{ $usuario->notif_sin_reportar ? 'checked' : '' }}>
+                <span class="switch-slider"></span>
+              </label>
             </div>
-            <label class="switch">
-              <input type="checkbox">
-              <span class="switch-slider"></span>
-            </label>
-          </div>
 
-          <div class="settings-actions" style="margin-top:1.5rem;">
-            <button type="button" class="btn-save" id="saveNotifs">Guardar preferencias</button>
-            <span class="save-confirm" id="confirmNotifs">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
-              Preferencias guardadas
-            </span>
-          </div>
+            <div class="toggle-row">
+              <div class="toggle-row-text">
+                <strong>Resumen diario por correo</strong>
+                <span>Un resumen con las sesiones del día y el estado general de las unidades, todas las noches a las 21:00.</span>
+              </div>
+              <label class="switch">
+                <input type="hidden" name="notif_resumen_diario" value="0">
+                <input type="checkbox" name="notif_resumen_diario" value="1" {{ $usuario->notif_resumen_diario ? 'checked' : '' }}>
+                <span class="switch-slider"></span>
+              </label>
+            </div>
+
+            <div class="toggle-row">
+              <div class="toggle-row-text">
+                <strong>Notificaciones push en el navegador</strong>
+                <span>Mostrar una notificación del sistema mientras tenés la página abierta en otra pestaña.</span>
+              </div>
+              <label class="switch">
+                <input type="hidden" name="notif_push" value="0">
+                <input type="checkbox" name="notif_push" value="1" {{ $usuario->notif_push ? 'checked' : '' }}>
+                <span class="switch-slider"></span>
+              </label>
+            </div>
+
+            <div class="settings-actions" style="margin-top:1.5rem;">
+              <button type="submit" class="btn-save">Guardar preferencias</button>
+            </div>
+          </form>
         </div>
       </div>
     @endsection
+
 @push('scripts')
 <script>
+  // Ojo: este bloque se ejecuta en el mismo ámbito global que el script del
+  // layout. Declarar acá un const con un nombre que el layout ya usa
+  // (sidebar, userBtn, openMenu...) lanza un SyntaxError que mata el archivo
+  // entero y deja las pestañas sin funcionar. Por eso todo va dentro de la
+  // función y con nombres propios.
+  (function () {
+    const pestanas = document.querySelectorAll('.settings-tab');
+    const paneles  = document.querySelectorAll('.settings-panel');
 
-  const userBtn = document.getElementById("userMenuBtn");
-  const userMenu = document.getElementById("userMenu");
+    function abrirPestana(nombre) {
+      const panel = document.getElementById('panel-' + nombre);
+      if (!panel) return;
 
-  userBtn.addEventListener("click", (e)=>{
-    e.stopPropagation();
-    userMenu.classList.toggle("open");
-  });
+      pestanas.forEach(t => t.classList.toggle('active', t.dataset.tab === nombre));
+      paneles.forEach(p => p.classList.remove('active'));
+      panel.classList.add('active');
+    }
 
-  document.addEventListener("click", ()=>{
-    userMenu.classList.remove("open");
-  });
-
-  const sidebar = document.getElementById('sidebar');
-  const overlay = document.getElementById('sidebarOverlay');
-  const menuToggle = document.getElementById('menuToggle');
-
-  function openMenu() {
-    sidebar.classList.add('open');
-    overlay.classList.add('open');
-  }
-  function closeMenu() {
-    sidebar.classList.remove('open');
-    overlay.classList.remove('open');
-  }
-
-  menuToggle.addEventListener('click', openMenu);
-  overlay.addEventListener('click', closeMenu);
-  sidebar.querySelectorAll('a').forEach(a => a.addEventListener('click', closeMenu));
-
-  // Tabs
-  const tabs = document.querySelectorAll('.settings-tab');
-  const panels = document.querySelectorAll('.settings-panel');
-
-  tabs.forEach(tab => {
-    tab.addEventListener('click', () => {
-      tabs.forEach(t => t.classList.remove('active'));
-      panels.forEach(p => p.classList.remove('active'));
-      tab.classList.add('active');
-      document.getElementById('panel-' + tab.dataset.tab).classList.add('active');
+    pestanas.forEach(pestana => {
+      pestana.addEventListener('click', () => abrirPestana(pestana.dataset.tab));
     });
-  });
 
-  // Confirmaciones de guardado (simulado, sin backend todavía)
-  function flashConfirm(el) {
-    el.classList.add('show');
-    setTimeout(() => el.classList.remove('show'), 2500);
-  }
+    // Permite enlazar directo a una pestaña: /configuracion#conectividad
+    if (location.hash === '#conectividad') {
+      abrirPestana('conectividad');
+    }
 
-  document.getElementById('profileForm').addEventListener('submit', (e) => {
-    e.preventDefault();
-    flashConfirm(document.getElementById('confirmPerfil'));
-  });
+    // Mostrar/ocultar la clave de la API.
+    document.querySelectorAll('[data-ver]').forEach(boton => {
+      boton.addEventListener('click', () => {
+        const campo = document.getElementById(boton.dataset.ver);
+        const oculto = campo.type === 'password';
+        campo.type = oculto ? 'text' : 'password';
+        boton.textContent = oculto ? 'Ocultar' : 'Mostrar';
+      });
+    });
 
-  document.getElementById('passwordForm').addEventListener('submit', (e) => {
-    e.preventDefault();
-    flashConfirm(document.getElementById('confirmPass'));
-  });
+    // Copiar al portapapeles.
+    document.querySelectorAll('[data-copiar]').forEach(boton => {
+      boton.addEventListener('click', async () => {
+        const campo = document.getElementById(boton.dataset.copiar);
+        const original = boton.textContent;
 
-  document.getElementById('wifiForm').addEventListener('submit', (e) => {
-    e.preventDefault();
-    flashConfirm(document.getElementById('confirmWifi'));
-  });
+        try {
+          // navigator.clipboard solo existe en contextos seguros (https o
+          // localhost). En http hay que caer al método viejo.
+          if (navigator.clipboard && window.isSecureContext) {
+            await navigator.clipboard.writeText(campo.value);
+          } else {
+            const tipoPrevio = campo.type;
+            campo.type = 'text';
+            campo.select();
+            document.execCommand('copy');
+            campo.type = tipoPrevio;
+          }
+          boton.textContent = 'Copiado';
+        } catch (e) {
+          boton.textContent = 'No se pudo';
+        }
 
-  document.getElementById('saveNotifs').addEventListener('click', () => {
-    flashConfirm(document.getElementById('confirmNotifs'));
-  });
+        setTimeout(() => { boton.textContent = original; }, 2000);
+      });
+    });
+  })();
 </script>
 @endpush
