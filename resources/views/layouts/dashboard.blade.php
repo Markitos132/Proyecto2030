@@ -6,15 +6,38 @@
   
   <title>@yield('title', 'BIONEA ORGANIKS')</title>
   
+  @php
+      /*
+       * Le agrega a cada archivo una marca que cambia cuando el archivo
+       * cambia: /css/style_admin.css?v=1754251200
+       *
+       * Sin eso el navegador se queda con la copia que ya tenía guardada y
+       * no hay forma de avisarle que hay una nueva. Ya pasó con el arreglo
+       * del menú en el celular: estaba desplegado en el servidor y el
+       * teléfono seguía usando la hoja anterior.
+       *
+       * Se usa la fecha de modificación del archivo. En el contenedor todos
+       * los archivos se copian en el build, así que la marca cambia sola en
+       * cada despliegue.
+       */
+      $conVersion = function (string $ruta): string {
+          $absoluta = public_path($ruta);
+
+          return file_exists($absoluta)
+              ? asset($ruta).'?v='.filemtime($absoluta)
+              : asset($ruta);
+      };
+  @endphp
+
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="{{ asset('css/style_admin.css') }}">
-  <link rel="stylesheet" href="{{ asset('css/individuos.css') }}">
-  <link rel="stylesheet" href="{{ asset('css/dispositivos.css') }}">
-  <link rel="stylesheet" href="{{ asset('css/sesiones.css') }}">
-  <link rel="stylesheet" href="{{ asset('css/historial.css') }}">
-  <link rel="stylesheet" href="{{ asset('css/configuracion.css') }}">
-  <link rel="stylesheet" href="{{ asset('css/modals.css') }}">
-  <link rel="stylesheet" href="{{ asset('css/ficha.css') }}">
+  <link rel="stylesheet" href="{{ $conVersion('css/style_admin.css') }}">
+  <link rel="stylesheet" href="{{ $conVersion('css/individuos.css') }}">
+  <link rel="stylesheet" href="{{ $conVersion('css/dispositivos.css') }}">
+  <link rel="stylesheet" href="{{ $conVersion('css/sesiones.css') }}">
+  <link rel="stylesheet" href="{{ $conVersion('css/historial.css') }}">
+  <link rel="stylesheet" href="{{ $conVersion('css/configuracion.css') }}">
+  <link rel="stylesheet" href="{{ $conVersion('css/modals.css') }}">
+  <link rel="stylesheet" href="{{ $conVersion('css/ficha.css') }}">
   @stack('styles')
 </head>
 <body>
@@ -115,7 +138,7 @@
 </script>
 {{-- Refresco automático. Solo actúa en las vistas que declaran
      elementos con data-vivo; en el resto no hace nada. --}}
-<script src="{{ asset('js/panel-vivo.js') }}" defer></script>
+<script src="{{ $conVersion('js/panel-vivo.js') }}" defer></script>
 
 {{-- Scripts específicos de cada vista --}}
 @stack('scripts')
