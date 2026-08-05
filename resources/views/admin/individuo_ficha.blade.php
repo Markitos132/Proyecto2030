@@ -118,9 +118,8 @@
                      un ejemplar liberado. --}}
                 @php $estadoVal = old('estado', $individuo->estado ?: 'activo'); @endphp
                 <select name="estado" id="estado" required>
-                  <option value="activo"      {{ $estadoVal === 'activo' ? 'selected' : '' }}>Activo</option>
-                  <option value="recapturado" {{ $estadoVal === 'recapturado' ? 'selected' : '' }}>Recapturado</option>
-                  <option value="liberado"    {{ $estadoVal === 'liberado' ? 'selected' : '' }}>Liberado / Perdido</option>
+                  <option value="activo"   {{ $estadoVal === 'activo' ? 'selected' : '' }}>Activo</option>
+                  <option value="liberado" {{ $estadoVal === 'liberado' ? 'selected' : '' }}>Liberado / Perdido</option>
                 </select>
               </div>
 

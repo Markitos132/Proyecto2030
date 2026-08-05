@@ -34,23 +34,31 @@ class Individuo extends Model
         'peso' => 'decimal:2',
     ];
 
-    /** Estados válidos de un ejemplar. Los valida el controlador al guardar. */
-    public const ESTADOS = ['activo', 'recapturado', 'liberado'];
+    /**
+     * Estados válidos de un ejemplar. Los valida el controlador al guardar.
+     *
+     * Son dos a propósito. Hubo un tercero, 'recapturado', que quedó a
+     * medias: estaba en el formulario de la ficha y tenía su color en el
+     * CSS, pero no en el filtro de la lista. Al conectar el CRUD se tomó el
+     * formulario como fuente de verdad y se completó en los demás lugares,
+     * sin saber que el equipo ya había decidido dejar solo dos casos.
+     * Se retiró de todos lados; ninguna fila de la base lo usaba.
+     */
+    public const ESTADOS = ['activo', 'liberado'];
 
     /**
      * Clase CSS de la píldora de estado.
      *
-     * Vivía duplicada como un @if en la lista y en la ficha, y en las dos
-     * contemplaba solo 'liberado': un ejemplar recapturado caía en el else
-     * y salía en verde, igual que uno activo, aunque el CSS ya tenía
-     * .status-ind-recapturado en ámbar esperando que alguien lo usara.
+     * Vivía duplicada como un @if en la lista y en la ficha, y las dos
+     * copias comparaban contra el texto 'Liberado/Perdido' mientras el
+     * desplegable guardaba 'liberado', así que la comparación no daba nunca
+     * y todos los ejemplares salían en verde.
      */
     public function getClaseEstadoAttribute(): string
     {
         return match ($this->estado) {
-            'liberado'    => 'status-ind-liberado',
-            'recapturado' => 'status-ind-recapturado',
-            default       => 'status-ind-activo',
+            'liberado' => 'status-ind-liberado',
+            default    => 'status-ind-activo',
         };
     }
 
@@ -58,10 +66,9 @@ class Individuo extends Model
     public function getEtiquetaEstadoAttribute(): string
     {
         return match ($this->estado) {
-            'liberado'    => 'Liberado / Perdido',
-            'recapturado' => 'Recapturado',
-            'activo'      => 'Activo',
-            default       => ucfirst((string) $this->estado),
+            'liberado' => 'Liberado / Perdido',
+            'activo'   => 'Activo',
+            default    => ucfirst((string) $this->estado),
         };
     }
 

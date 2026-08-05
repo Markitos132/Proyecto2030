@@ -144,7 +144,6 @@
           <select id="filtroEstado" name="estado">
             <option value="">Todos</option>
             <option value="activo" {{ request('estado') == 'activo' ? 'selected' : '' }}>Activo</option>
-            <option value="recapturado" {{ request('estado') == 'recapturado' ? 'selected' : '' }}>Recapturado</option>
             <option value="liberado" {{ request('estado') == 'liberado' ? 'selected' : '' }}>Liberado / Perdido</option>
           </select>
         </div>
