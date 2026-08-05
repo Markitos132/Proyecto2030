@@ -878,7 +878,12 @@ tbody tr.row-active td {
   position: fixed;
   inset: 0;
   background: rgba(0,0,0,0.4);
-  z-index: 1500;
+
+  /* Entre la topbar (1000) y el menú lateral (1200). Estaba en 1500, o sea
+     por encima del menú: en el celular la hamburguesa lo abría, pero cada
+     toque caía sobre este fondo, que está para cerrarlo. Nunca se llegaba a
+     tocar un enlace y no había forma de cambiar de sección. */
+  z-index: 1100;
 }
 
 .sidebar-overlay.open { 
