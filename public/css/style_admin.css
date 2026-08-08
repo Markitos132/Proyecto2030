@@ -97,6 +97,16 @@ body {
 .btn-add:hover { background: var(--Verde1bis); }
 .btn-add svg { width: 16px; height: 16px; }
 
+/* "Exportar CSV" está deshabilitado hasta que se tilde alguna sesión, pero
+   sin estos estilos se veía igual que uno activo: se podía tocar y no
+   pasaba nada, sin ninguna señal de por qué. */
+.btn-add:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-add:disabled:hover { background: var(--Verde1); }
+
 .btn-add.delete { background: #b3261e; color: #ffd5d3; border-color: #50100c; }
 .btn-add.delete:hover { background: #972013; }
 

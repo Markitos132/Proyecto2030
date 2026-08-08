@@ -88,6 +88,7 @@ Route::middleware('auth')->group(function () {
 
     // ── Historial y configuración ──────────────────────────
     Route::get('/historial', [HistorialController::class, 'index'])->name('historial');
+    Route::get('/historial/exportar', [HistorialController::class, 'exportar'])->name('historial.exportar');
 
     Route::get('/configuracion', [ConfiguracionController::class, 'index'])->name('configuracion');
     Route::put('/configuracion/perfil', [ConfiguracionController::class, 'perfil'])->name('configuracion.perfil');

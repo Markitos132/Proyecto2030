@@ -160,8 +160,10 @@ document.getElementById('exportar-csv').addEventListener('click', () => {
     return; // no hay nada tildado, no hacemos nada
   }
 
+  // La URL sale del nombre de ruta y no escrita a mano: si algún día
+  // cambia la dirección, esto sigue funcionando.
   const idsTexto = idsSeleccionados.join(',');
-  window.location.href = `/historial/exportar?ids=${idsTexto}`;
+  window.location.href = "{{ route('historial.exportar') }}?ids=" + encodeURIComponent(idsTexto);
 });
 
 document.getElementById('seleccionarTodas').addEventListener('change', function() {
@@ -181,6 +183,12 @@ document.getElementById('selectAllMobile')?.addEventListener('change', function(
 document.querySelectorAll('.fila-checkbox').forEach(checkbox => {
   checkbox.addEventListener('change', revisarSiTodasEstanTildadas);
 });
+
+// Faltaba esta línea. La función que apaga el botón solo corría al tildar
+// algo, así que al cargar la página arrancaba habilitado con cero sesiones
+// seleccionadas: se podía tocar y el propio script cortaba sin hacer nada.
+// De ahí la impresión de que el botón estaba muerto.
+revisarSiTodasEstanTildadas();
 
 </script>
 @endpush
