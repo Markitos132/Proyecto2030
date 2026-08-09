@@ -47,9 +47,12 @@ class HistorialController extends Controller
     /**
      * Descarga las mediciones de las sesiones tildadas como CSV.
      *
-     * Una fila por lectura, con los datos del ejemplar y de la sesión
-     * repetidos al lado. Es redundante a propósito: así el archivo se abre
-     * en cualquier planilla o en R sin tener que cruzarlo con nada.
+     * Tres columnas: fecha, hora y temperatura. Una fila por lectura.
+     *
+     * Como las filas no dicen a qué sesión pertenecen, al exportar una sola
+     * el código del ejemplar va en el nombre del archivo. Con varias
+     * seleccionadas las lecturas quedan una detrás de otra, ordenadas por
+     * fecha de inicio de sesión.
      */
     public function exportar(Request $request): StreamedResponse
     {
@@ -64,13 +67,13 @@ class HistorialController extends Controller
         $ids = array_slice(array_unique(explode(',', $datos['ids'])), 0, 500);
 
         $sesiones = Sesion::whereIn('id_sesion', $ids)
-            ->with(['individuo', 'dispositivo'])
+            ->with('individuo:id_individuo,codigo_individuo')
             ->orderBy('fecha_inicio')
             ->get();
 
         abort_if($sesiones->isEmpty(), 404, 'Ninguna de esas sesiones existe.');
 
-        $nombre = 'bionea-mediciones-'.now()->format('Y-m-d-Hi').'.csv';
+        $nombre = $this->nombreDelArchivo($sesiones);
 
         // streamDownload en lugar de armar el texto entero en memoria: una
         // campaña larga son decenas de miles de lecturas, y el plan gratuito
@@ -86,47 +89,14 @@ class HistorialController extends Controller
     {
         $salida = fopen('php://output', 'w');
 
-        // Excel no detecta UTF-8 por su cuenta: sin esta marca al inicio,
-        // "Liolaemus chacoensis" está bien pero "Duración" y "sesión" salen
-        // con caracteres rotos.
+        // Excel no detecta UTF-8 por su cuenta. Hoy los encabezados no
+        // llevan tildes, pero la marca se deja igual: alcanza con que
+        // alguien renombre una columna para que salgan rotas.
         fwrite($salida, "\xEF\xBB\xBF");
 
-        fputcsv($salida, [
-            'id_sesion',
-            'individuo',
-            'especie',
-            'sexo',
-            'estadio',
-            'dispositivo',
-            'inicio_sesion',
-            'fin_sesion',
-            'duracion_min',
-            'intervalo_min',
-            'temp_min_configurada',
-            'temp_max_configurada',
-            'fecha',
-            'hora',
-            'temperatura_c',
-            'alerta',
-            'fuera_de_rango',
-        ], ';');
+        fputcsv($salida, ['fecha', 'hora', 'temperatura'], ';');
 
         foreach ($sesiones as $sesion) {
-            $comunes = [
-                $sesion->id_sesion,
-                $sesion->individuo?->codigo_individuo,
-                $sesion->individuo?->especie,
-                $sesion->individuo?->sexo,
-                $sesion->individuo?->estadio,
-                $sesion->dispositivo?->nombre,
-                $sesion->fecha_inicio?->format('d/m/Y H:i:s'),
-                $sesion->fecha_fin?->format('d/m/Y H:i:s'),
-                $sesion->duracion_sesion,
-                $sesion->intervalo_minuto,
-                $this->decimal($sesion->temp_min),
-                $this->decimal($sesion->temp_max),
-            ];
-
             // Se recorre por bloques para no cargar en memoria todas las
             // mediciones de la sesión de una sola vez.
             //
@@ -138,20 +108,44 @@ class HistorialController extends Controller
             $sesion->mediciones()
                 ->orderBy('fecha_hora')
                 ->orderBy('id_medicion')
-                ->chunk(500, function ($mediciones) use ($salida, $comunes) {
+                ->chunk(500, function ($mediciones) use ($salida) {
                     foreach ($mediciones as $m) {
-                        fputcsv($salida, array_merge($comunes, [
+                        fputcsv($salida, [
                             $m->fecha_hora?->format('d/m/Y'),
                             $m->fecha_hora?->format('H:i:s'),
                             $this->decimal($m->temperatura),
-                            $m->alerta,
-                            $m->fueraDeRango() ? 'si' : 'no',
-                        ]), ';');
+                        ], ';');
                     }
                 });
         }
 
         fclose($salida);
+    }
+
+    /**
+     * Con una sola sesión, el código del ejemplar va en el nombre: es lo
+     * único que queda para identificar de quién son esas lecturas, ahora
+     * que las filas no lo dicen.
+     */
+    private function nombreDelArchivo($sesiones): string
+    {
+        $sello = now()->format('Y-m-d-Hi');
+
+        if ($sesiones->count() !== 1) {
+            return "bionea-mediciones-{$sello}.csv";
+        }
+
+        $codigo = $sesiones->first()->individuo?->codigo_individuo;
+
+        if (blank($codigo)) {
+            return "bionea-mediciones-{$sello}.csv";
+        }
+
+        // Los códigos son del estilo LAG-001, pero nada impide que alguien
+        // cargue uno con una barra o un acento y arme un nombre inválido.
+        $codigo = preg_replace('/[^A-Za-z0-9_-]/', '-', $codigo);
+
+        return "bionea-{$codigo}-{$sello}.csv";
     }
 
     /**
