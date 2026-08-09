@@ -160,10 +160,26 @@ document.getElementById('exportar-csv').addEventListener('click', () => {
     return; // no hay nada tildado, no hacemos nada
   }
 
-  // La URL sale del nombre de ruta y no escrita a mano: si algún día
-  // cambia la dirección, esto sigue funcionando.
-  const idsTexto = idsSeleccionados.join(',');
-  window.location.href = "{{ route('historial.exportar') }}?ids=" + encodeURIComponent(idsTexto);
+  // Una descarga por sesión: el servidor devuelve un CSV por vez, con el
+  // ejemplar y la fecha de medición en el nombre.
+  //
+  // Van espaciadas 400 ms. Disparadas todas juntas, el navegador descarta
+  // las que llegan mientras todavía está resolviendo la anterior y bajan
+  // solo dos o tres de las que tildaste.
+  //
+  // La URL sale del nombre de ruta y no escrita a mano.
+  const urlExportar = "{{ route('historial.exportar') }}";
+
+  idsSeleccionados.forEach((id, i) => {
+    setTimeout(() => {
+      const enlace = document.createElement('a');
+      enlace.href = urlExportar + '?sesion=' + encodeURIComponent(id);
+      // Sin download: el nombre lo decide el servidor por cabecera.
+      document.body.appendChild(enlace);
+      enlace.click();
+      enlace.remove();
+    }, i * 400);
+  });
 });
 
 document.getElementById('seleccionarTodas').addEventListener('change', function() {

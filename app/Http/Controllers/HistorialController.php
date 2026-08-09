@@ -45,47 +45,37 @@ class HistorialController extends Controller
     }
 
     /**
-     * Descarga las mediciones de las sesiones tildadas como CSV.
+     * Descarga las mediciones de UNA sesión como CSV.
      *
      * Tres columnas: fecha, hora y temperatura. Una fila por lectura.
      *
-     * Como las filas no dicen a qué sesión pertenecen, al exportar una sola
-     * el código del ejemplar va en el nombre del archivo. Con varias
-     * seleccionadas las lecturas quedan una detrás de otra, ordenadas por
-     * fecha de inicio de sesión.
+     * Es de a una a propósito. Cuando se tildan varias sesiones, la vista
+     * llama a esta ruta una vez por cada una y el navegador baja un archivo
+     * por sesión, en vez de un solo archivo con todo mezclado.
      */
     public function exportar(Request $request): StreamedResponse
     {
         $datos = $request->validate([
-            // Llegan como "12,15,26" desde la casilla de cada fila.
-            'ids' => ['required', 'string', 'regex:/^\d+(,\d+)*$/'],
+            'sesion' => ['required', 'integer', 'exists:sesiones,id_sesion'],
         ], [
-            'ids.required' => 'No hay sesiones seleccionadas para exportar.',
-            'ids.regex'    => 'La lista de sesiones no es válida.',
+            'sesion.required' => 'Falta indicar qué sesión exportar.',
+            'sesion.exists'   => 'Esa sesión no existe.',
         ]);
 
-        $ids = array_slice(array_unique(explode(',', $datos['ids'])), 0, 500);
-
-        $sesiones = Sesion::whereIn('id_sesion', $ids)
-            ->with('individuo:id_individuo,codigo_individuo')
-            ->orderBy('fecha_inicio')
-            ->get();
-
-        abort_if($sesiones->isEmpty(), 404, 'Ninguna de esas sesiones existe.');
-
-        $nombre = $this->nombreDelArchivo($sesiones);
+        $sesion = Sesion::with('individuo:id_individuo,codigo_individuo')
+            ->findOrFail($datos['sesion']);
 
         // streamDownload en lugar de armar el texto entero en memoria: una
         // campaña larga son decenas de miles de lecturas, y el plan gratuito
         // de Render no tiene memoria de sobra.
         return response()->streamDownload(
-            fn () => $this->escribirCsv($sesiones),
-            $nombre,
+            fn () => $this->escribirCsv($sesion),
+            $this->nombreDelArchivo($sesion),
             ['Content-Type' => 'text/csv; charset=UTF-8'],
         );
     }
 
-    private function escribirCsv($sesiones): void
+    private function escribirCsv(Sesion $sesion): void
     {
         $salida = fopen('php://output', 'w');
 
@@ -96,56 +86,58 @@ class HistorialController extends Controller
 
         fputcsv($salida, ['fecha', 'hora', 'temperatura'], ';');
 
-        foreach ($sesiones as $sesion) {
-            // Se recorre por bloques para no cargar en memoria todas las
-            // mediciones de la sesión de una sola vez.
-            //
-            // El id va como segundo criterio y no es decorativo: chunk()
-            // pagina por posición, y con un orden que empata (dos lecturas
-            // en el mismo segundo, que pasa seguido con el simulador) el
-            // motor puede devolverlas en distinto orden en cada bloque y
-            // terminar salteando o repitiendo filas.
-            $sesion->mediciones()
-                ->orderBy('fecha_hora')
-                ->orderBy('id_medicion')
-                ->chunk(500, function ($mediciones) use ($salida) {
-                    foreach ($mediciones as $m) {
-                        fputcsv($salida, [
-                            $m->fecha_hora?->format('d/m/Y'),
-                            $m->fecha_hora?->format('H:i:s'),
-                            $this->decimal($m->temperatura),
-                        ], ';');
-                    }
-                });
-        }
+        // Se recorre por bloques para no cargar en memoria todas las
+        // mediciones de la sesión de una sola vez.
+        //
+        // El id va como segundo criterio y no es decorativo: chunk() pagina
+        // por posición, y con un orden que empata (dos lecturas en el mismo
+        // segundo, que pasa seguido con el simulador) el motor puede
+        // devolverlas en distinto orden en cada bloque y terminar salteando
+        // o repitiendo filas.
+        $sesion->mediciones()
+            ->orderBy('fecha_hora')
+            ->orderBy('id_medicion')
+            ->chunk(500, function ($mediciones) use ($salida) {
+                foreach ($mediciones as $m) {
+                    fputcsv($salida, [
+                        $m->fecha_hora?->format('d/m/Y'),
+                        $m->fecha_hora?->format('H:i:s'),
+                        $this->decimal($m->temperatura),
+                    ], ';');
+                }
+            });
 
         fclose($salida);
     }
 
     /**
-     * Con una sola sesión, el código del ejemplar va en el nombre: es lo
-     * único que queda para identificar de quién son esas lecturas, ahora
-     * que las filas no lo dicen.
+     * Nombre del archivo: ejemplar, día y hora en que se midió.
+     *
+     *     LAG-001_2026-08-01_21h08.csv
+     *
+     * La fecha es la del inicio de la sesión, no la de la descarga: el
+     * archivo tiene que decir cuándo se tomó el dato, no cuándo alguien
+     * se lo bajó.
+     *
+     * La hora hace falta aunque parezca de más. LAG-001 tiene diez sesiones
+     * el 1 de agosto; sin ella los diez archivos se llamarían igual y el
+     * navegador les iría agregando (1), (2), (3) sin que se sepa cuál es
+     * cuál. Va como "21h08" y no como "2108" para que se lea como hora.
      */
-    private function nombreDelArchivo($sesiones): string
+    private function nombreDelArchivo(Sesion $sesion): string
     {
-        $sello = now()->format('Y-m-d-Hi');
-
-        if ($sesiones->count() !== 1) {
-            return "bionea-mediciones-{$sello}.csv";
-        }
-
-        $codigo = $sesiones->first()->individuo?->codigo_individuo;
-
-        if (blank($codigo)) {
-            return "bionea-mediciones-{$sello}.csv";
-        }
+        $codigo = $sesion->individuo?->codigo_individuo;
 
         // Los códigos son del estilo LAG-001, pero nada impide que alguien
         // cargue uno con una barra o un acento y arme un nombre inválido.
-        $codigo = preg_replace('/[^A-Za-z0-9_-]/', '-', $codigo);
+        $codigo = blank($codigo)
+            ? 'sesion-'.$sesion->id_sesion
+            : preg_replace('/[^A-Za-z0-9_-]/', '-', $codigo);
 
-        return "bionea-{$codigo}-{$sello}.csv";
+        $cuando = $sesion->fecha_inicio?->format('Y-m-d_H\hi')
+            ?? 'sin-fecha';
+
+        return "{$codigo}_{$cuando}.csv";
     }
 
     /**
