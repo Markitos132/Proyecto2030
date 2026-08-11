@@ -95,7 +95,7 @@
     
     <div class="features-grid">
       <div class="features-left">
-        <h2>aca va el video del esp32 funcionando</h2>
+        <h2>[Video del ESP32 funcionando]</h2>
       </div>
       <div class="feature-cards">
         <div class="feature-card">
