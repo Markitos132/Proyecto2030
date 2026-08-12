@@ -22,6 +22,14 @@ class IndividuoController extends Controller
             ->when($request->filled('estado'),  fn ($q) => $q->where('estado', $request->estado))
             ->when($request->filled('codigo'),  fn ($q) =>
                 $q->where('codigo_individuo', 'ilike', '%'.$request->codigo.'%'))
+            // Los liberados van al final: son los que ya no se miden, y
+            // mezclados entre los activos obligaban a leer toda la lista
+            // para encontrar los que están en curso.
+            //
+            // En Postgres, ordenar por un booleano pone false antes que
+            // true, así que "no está liberado" queda arriba. Dentro de cada
+            // grupo se mantiene el orden por código.
+            ->orderByRaw("(estado = ?) asc", ['liberado'])
             ->orderBy('codigo_individuo')
             ->get();
 
