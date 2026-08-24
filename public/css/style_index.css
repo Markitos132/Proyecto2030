@@ -89,6 +89,21 @@
     .nav-toggle span { display: block; width: 22px; height: 2px; background: var(--text-dark); border-radius: 2px; }
 
     /* HERO */
+
+.hero-dashboard {
+    width: min(1000px, 90%);
+    margin: 48px auto 0;
+}
+
+.dashboard-preview {
+    width: 100%;
+    height: auto;
+    display: block;
+    border-radius: 16px;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.18);
+}
+
+
     .hero {
         min-height:100svh;
         background: linear-gradient(to bottom, #DEDE3E 0%, #4F8200 100%);

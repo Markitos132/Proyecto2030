@@ -35,53 +35,12 @@
   </div>
 
   <!-- Dashboard mockup -->
-  <div class="hero-mockup">
-    <div class="mockup-header">
-      <p>Bienvenido, IIGHI — CONICET</p>
-      <p>Las métricas de la sesión activa están listas para revisar.</p>
-    </div>
-    <div class="mockup-stats">
-      <div class="stat-card">
-        <div class="label">Individuos activos</div>
-        <div class="value">6</div>
-        <div class="sub">↑ +2 esta sesión</div>
-      </div>
-      <div class="stat-card yellow">
-        <div class="label">Temperatura promedio</div>
-        <div class="value">33.7 °C</div>
-        <div class="sub">Rango: 29–38 °C</div>
-      </div>
-      <div class="stat-card">
-        <div class="label">Registros hoy</div>
-        <div class="value">1.204</div>
-        <div class="sub">↑ +12% vs. ayer</div>
-      </div>
-    </div>
-    <div class="chart-area">
-      <div class="chart-label">Tendencia de temperatura — últimas 6 horas</div>
-      <div class="chart-bars">
-        <div class="bar" style="height:35%"></div>
-        <div class="bar" style="height:40%"></div>
-        <div class="bar" style="height:38%"></div>
-        <div class="bar" style="height:50%"></div>
-        <div class="bar" style="height:60%"></div>
-        <div class="bar" style="height:55%"></div>
-        <div class="bar" style="height:65%"></div>
-        <div class="bar" style="height:70%"></div>
-        <div class="bar highlight" style="height:88%"></div>
-        <div class="bar" style="height:75%"></div>
-        <div class="bar" style="height:72%"></div>
-        <div class="bar" style="height:68%"></div>
-        <div class="bar" style="height:74%"></div>
-        <div class="bar" style="height:80%"></div>
-        <div class="bar" style="height:76%"></div>
-        <div class="bar" style="height:70%"></div>
-        <div class="bar" style="height:65%"></div>
-        <div class="bar" style="height:60%"></div>
-        <div class="bar" style="height:55%"></div>
-        <div class="bar" style="height:58%"></div>
-      </div>
-    </div>
+  <div class="hero-dashboard">
+    <img
+        src="/imagenes/dashboard-bionea.png"
+        alt="Dashboard principal de BIONEA Organiks"
+        class="dashboard-preview"
+    >
   </div>
 </section>
 
