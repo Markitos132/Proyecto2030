@@ -292,14 +292,6 @@
             {{-- Mini-gráfico. Es un polyline SVG y no un Chart.js: hay uno por
                  tarjeta y se redibuja cada 3 segundos, así que instanciar y
                  destruir gráficos en cada refresco sale caro para lo que es. --}}
-            <div class="session-chart-wrap">
-              <svg viewBox="0 0 300 90" preserveAspectRatio="none" width="100%" height="100%"
-                   data-vivo-tarjeta="grafico" data-serie="{{ implode(',', $serie) }}"
-                   role="img" aria-label="Tendencia de temperatura de la sesión">
-                <polyline fill="none" stroke="var(--Verde2)" stroke-width="2"
-                          stroke-linejoin="round" stroke-linecap="round" points=""></polyline>
-              </svg>
-            </div>
 
             <div class="session-footer">
               {{-- Los dos textos existen siempre y el refresco solo alterna

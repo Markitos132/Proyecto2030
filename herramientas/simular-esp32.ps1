@@ -12,7 +12,7 @@
 
     Uso:
         .\simular-esp32.ps1 -Clave "tu-api-key"
-        .\simular-esp32.ps1 -Clave "tu-api-key" -Acelerar
+        .\simular-esp32.ps1 -Clave "a33c1743d4c5a9d909e012bc220489d73cecc4c861b8ea4a" -Acelerar
 
     Con -Acelerar, los minutos del intervalo y de la duración se
     interpretan como segundos: una sesión de 30 min con lecturas cada
