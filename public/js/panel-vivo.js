@@ -240,6 +240,9 @@
       // Mantenerlo al día es lo que hace que muestre la curva actual y no
       // la que había cuando se cargó la página.
       tarjeta.dataset.trend = (s.serie || []).join(',');
+      if (typeof window.onSesionActualizada === 'function') {
+        window.onSesionActualizada(s);
+      }
     });
   }
 

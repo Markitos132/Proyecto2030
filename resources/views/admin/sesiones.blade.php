@@ -390,6 +390,7 @@
     });
   });
 
+
 //* =========================
 //* MODAL DE CREAR SESIÓN
 //* =========================
@@ -528,12 +529,15 @@ const detalleSesionModal = document.getElementById('detalleSesionModal');
     detalleSesionModal.classList.remove('open');
     document.body.classList.remove('modal-open');
 
+    delete detallesesionModal.dataset.sesionAbierta;
+
   }
 
-  document.querySelectorAll('.btn-action.verdetalle').forEach(boton => {
+  document.querySelectorAll('.btn-action.verdetalle').forEach(boton => { 
     boton.addEventListener('click', () => {
       const card = boton.closest('.session-card');
       const data = card.dataset;
+      detalleSesionModal.dataset.sesionAbierta = data.idSesion || '';
 
       //!Datos técnicos del animal
       document.getElementById('detalleTitulo').textContent = data.individuo || 'S/N';
@@ -649,5 +653,18 @@ function agregarLecturaEnTiempoReal(nuevaTemperatura) {
   }
 }
 
+window.onSesionActualizada = function (s) {
+  if (!detalleSesionModal.classList.contains('open')) return;
+  if (String(detalleSesionModal.dataset.sesionAbierta) !== String(s.id_sesion)) return;
+
+  document.getElementById('detalleDuracion').textContent = `${s.duracion} min`;
+  document.getElementById('detalleLecturas').textContent = s.lecturas;
+  document.getElementById('detalleTiempoRestante').textContent = s.restante != null ? `${s.restante} min` : '-- min';
+
+  const lecturasEnGrafico = miGraficoModal ? miGraficoModal.data.datasets[0].data.length : 0;
+  if (s.temperatura !== null && s.lecturas > lecturasEnGrafico) {
+    agregarLecturaEnTiempoReal(s.temperatura);
+  }
+}
 </script>
 @endpush
