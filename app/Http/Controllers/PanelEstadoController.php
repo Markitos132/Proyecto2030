@@ -61,7 +61,7 @@ class PanelEstadoController extends Controller
                     // Para el mini-gráfico de las tarjetas de Sesiones Activas.
                     // Solo dos columnas: la serie se recorta a 30 puntos más
                     // abajo, pero la consulta trae la sesión entera.
-                    'mediciones:id_medicion,id_sesion,temperatura'])
+                    'mediciones:id_medicion,id_sesion,temperatura,fecha_hora'])
             ->orderByDesc('fecha_inicio')
             ->get();
 

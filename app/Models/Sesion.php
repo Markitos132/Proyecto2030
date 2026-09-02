@@ -193,7 +193,7 @@ class Sesion extends Model
     public function serieReciente(int $limite = 30): array
     {
         return $this->mediciones
-            ->sortBy('id_medicion')
+            ->sortBy('fecha_hora')
             ->pluck('temperatura')
             ->map(fn ($t) => (float) $t)
             ->slice(-$limite)

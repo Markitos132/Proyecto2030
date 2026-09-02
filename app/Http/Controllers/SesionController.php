@@ -26,7 +26,7 @@ class SesionController extends Controller
                 // Solo las columnas que consume la tarjeta. Traer la fila
                 // entera de cada medición no aporta nada y una sesión larga
                 // acumula cientos.
-                'mediciones:id_medicion,id_sesion,temperatura',
+                'mediciones:id_medicion,id_sesion,temperatura,fecha_hora',
             ])
             ->orderByDesc('fecha_inicio')
             ->get();
