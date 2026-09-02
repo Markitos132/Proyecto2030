@@ -657,6 +657,8 @@ window.onSesionActualizada = function (s) {
   if (!detalleSesionModal.classList.contains('open')) return;
   if (String(detalleSesionModal.dataset.sesionAbierta) !== String(s.id_sesion)) return;
 
+  document.getElementById('detalleTempActual').textContent = s.temperatura !== null ? `${s.temperatura.toFixed(1)} °C` : '-- °C';
+
   document.getElementById('detalleDuracion').textContent = `${s.duracion} min`;
   document.getElementById('detalleLecturas').textContent = s.lecturas;
   document.getElementById('detalleTiempoRestante').textContent = s.restante != null ? `${s.restante} min` : '-- min';
