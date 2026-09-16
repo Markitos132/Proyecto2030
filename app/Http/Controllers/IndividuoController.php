@@ -7,12 +7,14 @@ use App\Models\Sesion;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
+use Illuminate\Validation\Rule;
 
 class IndividuoController extends Controller
 {
     public function index(Request $request)
     {
         $individuos = Individuo::query()
+            ->where('id_usuario', auth()->id())
             ->with('sesionActiva.dispositivo')
             // El filtro de especie es un campo de texto libre, no un
             // desplegable: buscar por igualdad exacta hacia que escribir
@@ -33,7 +35,7 @@ class IndividuoController extends Controller
             ->orderBy('codigo_individuo')
             ->get();
 
-        $todos = Individuo::with('sesionActiva')->get();
+        $todos = Individuo::where('id_usuario', auth()->id())->with('sesionActiva')->get();
 
         return view('admin.individuos', [
             'individuos'           => $individuos,
@@ -43,7 +45,7 @@ class IndividuoController extends Controller
         ]);
     }
 
-    public function store(Request $request): RedirectResponse
+    public function guardar(Request $request): RedirectResponse
     {
         $datos = $this->validarAlta($request);
 
@@ -60,14 +62,17 @@ class IndividuoController extends Controller
             'peso'                => $datos['peso'] ?? null,
             'observaciones'       => $datos['observaciones'] ?? null,
             'estado'              => 'activo',
+            'id_usuario'          => auth()->id(),
         ]);
 
         return redirect()->route('individuos')
             ->with('exito', 'Ejemplar guardado correctamente.');
     }
 
-    public function show(Individuo $individuo)
+    public function mostrar(Individuo $individuo)
     {
+        abort_if($individuo->id_usuario !== auth()->id(), 403);
+
         $individuo->load([
             'notasIndividuo.usuario',
             'sesionActiva.dispositivo',
@@ -89,10 +94,13 @@ class IndividuoController extends Controller
 
     public function update(Request $request, Individuo $individuo): RedirectResponse
     {
+        abort_if($individuo->id_usuario !== auth()->id(), 403);
+
         $request->validate([
             'codigo'              => ['required', 'string', 'max:50',
-                                      'unique:individuos,codigo_individuo,'
-                                          .$individuo->id_individuo.',id_individuo'],
+                                      Rule::unique('individuos', 'codigo_individuo')
+                                          ->where('id_usuario', auth()->id())
+                                          ->ignore($individuo->id_individuo, 'id_individuo')],
             'especie_select'      => ['nullable', 'string', 'max:255'],
             'especie_otra'        => ['nullable', 'string', 'max:255'],
             'sexo'                => ['nullable', 'string', 'max:50'],
@@ -123,8 +131,10 @@ class IndividuoController extends Controller
         return back()->with('exito', 'Ficha actualizada.');
     }
 
-    public function destroy(Individuo $individuo): RedirectResponse
+    public function destruir(Individuo $individuo): RedirectResponse
     {
+        abort_if($individuo->id_usuario !== auth()->id(), 403);
+
         // Un individuo con mediciones asociadas es dato de campo: borrarlo
         // perderia el historial y ademas violaria la clave foranea.
         if ($individuo->sesiones()->exists()) {
@@ -144,10 +154,14 @@ class IndividuoController extends Controller
     private function validarAlta(Request $request): array
     {
         return $request->validate([
-            // El codigo tiene que ser unico: el ESP32 identifica al ejemplar
-            // por ese valor, y dos individuos con el mismo codigo harian que
-            // las mediciones fueran a parar a cualquiera de los dos.
-            'codigo_individuo'    => ['required', 'string', 'max:50', 'unique:individuos,codigo_individuo'],
+            // El codigo tiene que ser unico *para este usuario*: el ESP32
+            // identifica al ejemplar por ese valor dentro de los
+            // dispositivos de un mismo dueño, y dos individuos con el mismo
+            // codigo harian que las mediciones fueran a parar a cualquiera
+            // de los dos.
+            'codigo_individuo'    => ['required', 'string', 'max:50',
+                                      Rule::unique('individuos', 'codigo_individuo')
+                                          ->where('id_usuario', auth()->id())],
             'especie'             => ['required', 'string', 'max:255'],
             'otra_especie'        => ['nullable', 'required_if:especie,otra', 'string', 'max:255'],
             'sexo'                => ['nullable', 'string', 'max:50'],
