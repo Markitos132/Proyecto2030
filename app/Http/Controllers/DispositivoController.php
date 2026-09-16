@@ -6,18 +6,18 @@ use App\Models\Dispositivo;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
+use Illuminate\Validation\Rule;
 
 class DispositivoController extends Controller
 {
     public function index()
     {
-        $dispositivos = Dispositivo::with([
-            'sesionActiva.individuo',
-            'sesionActiva.ultimaMedicion',
-        ])->orderBy('id_dispositivo')->get();
+        $dispositivos = Dispositivo::where('id_usuario', auth()->id())
+            ->with([
+                'sesionActiva.individuo',
+                'sesionActiva.ultimaMedicion',
+            ])->orderBy('id_dispositivo')->get();
 
-        // estado_calculado deriva de ultima_conexion y del ritmo de
-        // mediciones, no de la columna `estado`, que se desactualiza.
         $porEstado = $dispositivos->groupBy->estado_calculado;
 
         return view('admin.dispositivos', [
@@ -39,6 +39,7 @@ class DispositivoController extends Controller
             'f_alta'        => $datos['f_alta'] ?? now(),
             'observaciones' => $datos['observaciones'] ?? null,
             'estado'        => 'activo',
+            'id_usuario'    => auth()->id(),
         ]);
 
         return redirect()->route('dispositivos')
@@ -47,6 +48,8 @@ class DispositivoController extends Controller
 
     public function show(Dispositivo $dispositivo)
     {
+        abort_if($dispositivo->id_usuario !== auth()->id(), 403);
+
         $dispositivo->load([
             'notasDisp.usuario',
             'sesionActiva.individuo',
@@ -58,6 +61,8 @@ class DispositivoController extends Controller
 
     public function update(Request $request, Dispositivo $dispositivo): RedirectResponse
     {
+        abort_if($dispositivo->id_usuario !== auth()->id(), 403);
+
         $datos = $this->validar($request, $dispositivo->id_dispositivo);
 
         $dispositivo->update([
@@ -72,6 +77,8 @@ class DispositivoController extends Controller
 
     public function destroy(Dispositivo $dispositivo): RedirectResponse
     {
+        abort_if($dispositivo->id_usuario !== auth()->id(), 403);
+
         if ($dispositivo->sesiones()->exists()) {
             return back()->withErrors([
                 'dispositivo' => 'No se puede eliminar: el dispositivo tiene sesiones registradas.',
@@ -85,15 +92,16 @@ class DispositivoController extends Controller
 
     private function validar(Request $request, ?int $ignorarId = null): array
     {
-        // La MAC identifica fisicamente al equipo: no puede repetirse.
+        // La MAC identifica el equipo físico, pero la unicidad ahora es
+        // por usuario: dos usuarios distintos pueden registrar el mismo
+        // ESP32 (misma MAC), cada uno como su propio dispositivo. Lo que
+        // no puede pasar es que un mismo usuario la registre dos veces.
         $reglaMac = ['nullable', 'string', 'max:17',
                      'regex:/^([0-9A-Fa-f]{2}[:-]){5}[0-9A-Fa-f]{2}$/'];
 
-        $unica = 'unique:dispositivos,mac_address';
-        if ($ignorarId !== null) {
-            $unica .= ','.$ignorarId.',id_dispositivo';
-        }
-        $reglaMac[] = $unica;
+        $reglaMac[] = Rule::unique('dispositivos', 'mac_address')
+            ->where('id_usuario', auth()->id())
+            ->ignore($ignorarId, 'id_dispositivo');
 
         return $request->validate([
             'codigo_disp'   => ['required', 'string', 'max:255'],
@@ -102,7 +110,7 @@ class DispositivoController extends Controller
             'observaciones' => ['nullable', 'string', 'max:1000'],
         ], [
             'MAC.regex'  => 'La MAC debe tener el formato AA:BB:CC:DD:EE:FF.',
-            'MAC.unique' => 'Ya hay un dispositivo registrado con esa MAC.',
+            'MAC.unique' => 'Ya tenés registrado un dispositivo con esa MAC.',
         ]);
     }
 }
