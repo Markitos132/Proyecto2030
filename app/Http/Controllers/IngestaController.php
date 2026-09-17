@@ -12,29 +12,11 @@ use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-// Ojo: el Response de Symfony, no el de Illuminate. JsonResponse no hereda
-// del de Illuminate, y declararlo asi lanza un TypeError en tiempo de
-// ejecucion. Ya paso una vez con /panel/estado.
 use Symfony\Component\HttpFoundation\Response;
 use Throwable;
 
-/**
- * Ingesta de datos del ESP32.
- *
- * Port del server.js que corría como servicio Node aparte. Mantiene la
- * misma ruta (/bionea/guardar) y el mismo contrato JSON, para que el
- * firmware no tenga que cambiar.
- *
- * Diferencia de fondo con la versión Node: aquella mantenía un Map en
- * memoria con session_id -> id_sesion para evitar un SELECT por medición.
- * En PHP eso no es posible: cada request arranca con memoria limpia, no
- * hay proceso de larga vida donde guardar el Map. Se resuelve siempre
- * contra la columna sesion_externa, que está indexada; con un dispositivo
- * midiendo cada pocos minutos, el costo es irrelevante.
- */
 class IngestaController extends Controller
 {
-    /** Segundos mínimos entre dos escrituras de ultima_conexion. */
     private const FRECUENCIA_LATIDO = 60;
 
     public function guardar(Request $request): JsonResponse
@@ -50,9 +32,12 @@ class IngestaController extends Controller
             'temp_min'    => ['nullable', 'numeric'],
             'temp_max'    => ['nullable', 'numeric'],
             'alerta'      => ['nullable', 'string', 'max:50'],
+            // Solo hace falta cuando sesion_externa no matchea nada (el
+            // equipo se reinició, por ejemplo): es lo único que permite
+            // reencontrar de quién es la sesión sin adivinar.
+            'mac'         => ['nullable', 'string', 'max:17'],
         ]);
 
-        // El firmware manda el session_id como número; en la base es texto.
         $datos['session_id'] = (string) $datos['session_id'];
 
         $momento = $this->parsearFechaHora($datos['fecha'], $datos['hora']);
@@ -64,11 +49,6 @@ class IngestaController extends Controller
         }
 
         try {
-            // Sin transacción en el camino de la medición: cada BEGIN/COMMIT
-            // son dos viajes extra a la base, y con ~800 ms de latencia hacia
-            // Supabase eso duplicaba el tiempo de respuesta. El INSERT de una
-            // medición ya es atómico por sí solo, y el UPDATE de
-            // ultima_conexion no necesita ser atómico con él.
             return $datos['tipo'] === 'medicion'
                 ? $this->registrarMedicion($datos, $momento)
                 : DB::transaction(fn () => $this->finalizarSesion($datos, $momento));
@@ -78,21 +58,19 @@ class IngestaController extends Controller
                 'tipo'       => $datos['tipo'],
             ]);
 
-            // Sin detalle del error hacia afuera: filtraría la estructura
-            // de la base a un endpoint que hoy no exige autenticación.
             return response()->json(['error' => 'Error interno del servidor'], 500);
         }
     }
 
     /**
-     * El dispositivo pregunta si tiene una sesión asignada.
+     * El dispositivo pregunta si tiene una sesión asignada, identificándose
+     * por MAC.
      *
-     * Se identifica por su MAC, que es lo único que el ESP32 conoce de sí
-     * mismo sin configuración previa. La sesión la crea una persona desde
-     * el panel; el dispositivo solo la ejecuta.
-     *
-     * Responde 204 sin cuerpo cuando no hay nada asignado, que es el caso
-     * frecuente: el equipo pregunta cada pocos minutos durante horas.
+     * El mismo equipo físico puede estar registrado por varios usuarios
+     * (se lo prestan entre sí) — cada uno tiene su propia fila en
+     * `dispositivos` con la misma MAC. La sesión activa es lo único que
+     * indica de qué cuenta es la medición en este momento; sin sesión
+     * activa en ninguna de las filas, no hay quién reclame el dato.
      */
     public function sesionAsignada(Request $request): Response
     {
@@ -102,18 +80,28 @@ class IngestaController extends Controller
             return response()->json(['error' => 'Falta el parámetro mac'], 422);
         }
 
-        $dispositivo = Dispositivo::whereRaw('upper(mac_address) = ?', [strtoupper($mac)])->first();
+        $dispositivos = Dispositivo::whereRaw('upper(mac_address) = ?', [strtoupper($mac)])->get();
 
-        if (! $dispositivo) {
+        if ($dispositivos->isEmpty()) {
             return response()->json([
                 'error' => 'Dispositivo no registrado. Datelo de alta en el panel con esta MAC.',
                 'mac'   => $mac,
             ], 404);
         }
 
-        // Cada consulta cuenta como señal de vida. Sin esto, un equipo
-        // encendido pero sin medir figuraría como offline en el panel.
-        $this->registrarLatido($dispositivo->id_dispositivo, now());
+        // Cada consulta es una señal de que el equipo está encendido, sin
+        // importar quién lo esté usando ahora — así el estado online/offline
+        // queda bien en TODAS las cuentas que lo registraron, no solo en la
+        // que tiene la sesión activa.
+        $this->registrarLatido($dispositivos->pluck('id_dispositivo')->all(), now());
+
+        $dispositivo = Dispositivo::whereIn('id_dispositivo', $dispositivos->pluck('id_dispositivo'))
+            ->whereHas('sesiones', fn ($q) => $q->where('estado', Sesion::ESTADO_ACTIVA))
+            ->first();
+
+        if (! $dispositivo) {
+            return response()->noContent();
+        }
 
         $sesion = Sesion::activas()
             ->where('id_dispositivo', $dispositivo->id_dispositivo)
@@ -125,10 +113,6 @@ class IngestaController extends Controller
             return response()->noContent();
         }
 
-        // La ingesta reconoce las sesiones por sesion_externa. Las que crea
-        // el panel no tienen ese campo, así que se completa acá con el id:
-        // sin esto, cada medición del dispositivo crearía una sesión nueva
-        // en lugar de sumarse a la que le fue asignada.
         if (blank($sesion->sesion_externa)) {
             $sesion->update(['sesion_externa' => (string) $sesion->id_sesion]);
         }
@@ -144,7 +128,6 @@ class IngestaController extends Controller
         ]);
     }
 
-    /** Diagnóstico: confirma que la app y la base responden. */
     public function health(): JsonResponse
     {
         try {
@@ -155,8 +138,6 @@ class IngestaController extends Controller
                 'db'               => 'conectada',
                 'hora_servidor'    => $ahora,
                 'sesiones_activas' => Sesion::activas()->count(),
-                // Visible a propósito: es la forma de darse cuenta de que
-                // la clave quedó sin configurar y el endpoint sigue abierto.
                 'ingesta_protegida' => filled(config('bionea.clave_ingesta')),
             ]);
         } catch (Throwable $e) {
@@ -175,7 +156,18 @@ class IngestaController extends Controller
             return response()->json(['error' => 'Falta temperatura'], 422);
         }
 
-        $sesion = $this->obtenerOCrearSesion($datos, $momento);
+        $sesion = $this->obtenerSesion($datos);
+
+        if (! $sesion) {
+            Log::warning('[Ingesta ESP32] Medición sin sesión resoluble', [
+                'session_id' => $datos['session_id'],
+                'mac'        => $datos['mac'] ?? null,
+            ]);
+
+            return response()->json([
+                'error' => 'No hay sesión activa asignada para este dispositivo. Asignala desde el panel.',
+            ], 409);
+        }
 
         Medicion::create([
             'id_sesion'   => $sesion->id_sesion,
@@ -186,17 +178,8 @@ class IngestaController extends Controller
                                 : Medicion::ALERTA_OK,
         ]);
 
-        // Marcar el dispositivo como visto. Sin esto, ultima_conexion queda
-        // siempre en null y el accessor estado_calculado reporta 'offline'
-        // aunque el equipo esté midiendo: era lo que pasaba con la API Node,
-        // que nunca tocaba esta columna.
-        //
-        // No hace falta escribirlo en cada medición: estado_calculado solo
-        // distingue con granularidad de minutos. Actualizarlo cada
-        // FRECUENCIA_LATIDO segundos ahorra un viaje a la base en la
-        // mayoría de las peticiones.
         if ($sesion->id_dispositivo) {
-            $this->registrarLatido($sesion->id_dispositivo, $momento);
+            $this->registrarLatido([$sesion->id_dispositivo], $momento);
         }
 
         return response()->json([
@@ -211,8 +194,6 @@ class IngestaController extends Controller
         $sesion = Sesion::where('sesion_externa', $datos['session_id'])->first();
 
         if (! $sesion) {
-            // No es un error del dispositivo: puede haberse reiniciado y
-            // mandado el cierre de una sesión que nunca llegó a crearse.
             Log::warning('[Ingesta ESP32] Cierre de sesión inexistente', [
                 'session_id' => $datos['session_id'],
             ]);
@@ -223,7 +204,6 @@ class IngestaController extends Controller
         $sesion->update([
             'fecha_fin'       => $momento,
             'estado'          => Sesion::ESTADO_FINALIZADA,
-            // Carbon 3 devuelve un float; la columna es entera.
             'duracion_sesion' => $sesion->fecha_inicio
                                     ? (int) round($sesion->fecha_inicio->diffInMinutes($momento))
                                     : null,
@@ -232,9 +212,23 @@ class IngestaController extends Controller
         return response()->json(['ok' => true, 'tipo' => 'fin_sesion', 'id_sesion' => $sesion->id_sesion]);
     }
 
-    // ── Resolución de sesión e individuo ────────────────────
+    // ── Resolución de sesión ─────────────────────────────────
 
-    private function obtenerOCrearSesion(array $datos, \DateTimeInterface $momento): Sesion
+    /**
+     * Resuelve a qué sesión pertenece una medición.
+     *
+     * Camino normal: el session_id ya matchea una sesión (fue asignada
+     * desde el panel, el ESP32 la viene usando desde entonces).
+     *
+     * Camino de recuperación: el dispositivo perdió su session_id (se
+     * reinició, por ejemplo) pero sigue teniendo una sesión activa
+     * asignada — se lo reencuentra por MAC. Ya NO se crea una sesión ni
+     * un individuo desde cero sin MAC: con el mismo equipo físico
+     * registrado en varias cuentas, adivinar "cualquiera" mezclaría datos
+     * entre usuarios. Sin poder identificar con certeza de quién es, se
+     * rechaza la medición en vez de arriesgarse.
+     */
+    private function obtenerSesion(array $datos): ?Sesion
     {
         $sesion = Sesion::where('sesion_externa', $datos['session_id'])->first();
 
@@ -242,61 +236,49 @@ class IngestaController extends Controller
             return $sesion;
         }
 
-        return Sesion::create([
-            'id_individuo'     => $this->obtenerOCrearIndividuo($datos)?->id_individuo,
-            'id_dispositivo'   => $this->dispositivoPorDefecto()?->id_dispositivo,
-            'id_usuario'       => null,
-            'fecha_inicio'     => $momento,
-            'intervalo_minuto' => 10,
-            'estado'           => Sesion::ESTADO_ACTIVA,
-            'sesion_externa'   => $datos['session_id'],
-            'temp_min'         => $datos['temp_min'] ?? null,
-            'temp_max'         => $datos['temp_max'] ?? null,
-        ]);
-    }
-
-    /**
-     * El ESP32 identifica al individuo por código (ej: "LAG-001").
-     * Si no está cargado en el panel, se crea al vuelo para no perder
-     * la medición; después se completa la ficha a mano.
-     */
-    private function obtenerOCrearIndividuo(array $datos): ?Individuo
-    {
-        $codigo = $datos['individuo'] ?? null;
-
-        if (! $codigo) {
+        if (empty($datos['mac'])) {
             return null;
         }
 
-        return Individuo::firstOrCreate(
-            ['codigo_individuo' => $codigo],
-            ['especie' => $datos['especie'] ?? null, 'estado' => 'activo']
-        );
+        $dispositivo = Dispositivo::whereRaw('upper(mac_address) = ?', [strtoupper($datos['mac'])])
+            ->whereHas('sesiones', fn ($q) => $q->where('estado', Sesion::ESTADO_ACTIVA))
+            ->first();
+
+        if (! $dispositivo) {
+            return null;
+        }
+
+        $sesion = Sesion::activas()->where('id_dispositivo', $dispositivo->id_dispositivo)->first();
+
+        // Recupera el session_id que el dispositivo venía usando, para que
+        // las próximas mediciones matcheen directo sin pasar por acá.
+        if ($sesion && blank($sesion->sesion_externa)) {
+            $sesion->update(['sesion_externa' => $datos['session_id']]);
+        }
+
+        return $sesion;
     }
 
     /**
-     * Actualiza ultima_conexion como mucho una vez cada minuto por
-     * dispositivo. El marcador vive en el cache de la aplicación, no en la
-     * base, así que el caso frecuente no cuesta ninguna consulta.
+     * Actualiza ultima_conexion como mucho una vez cada minuto, por cada
+     * dispositivo de la lista.
      */
-    private function registrarLatido(int $idDispositivo, \DateTimeInterface $momento): void
+    private function registrarLatido(array $idsDispositivo, \DateTimeInterface $momento): void
     {
-        $clave = "latido:dispositivo:{$idDispositivo}";
+        $pendientes = array_values(array_filter(array_unique($idsDispositivo), function ($id) {
+            return ! Cache::store('file')->has("latido:dispositivo:{$id}");
+        }));
 
-        if (Cache::store('file')->has($clave)) {
+        if (empty($pendientes)) {
             return;
         }
 
-        Dispositivo::whereKey($idDispositivo)
+        Dispositivo::whereIn('id_dispositivo', $pendientes)
             ->update(['ultima_conexion' => $momento, 'estado' => 'activo']);
 
-        Cache::store('file')->put($clave, true, self::FRECUENCIA_LATIDO);
-    }
-
-    private function dispositivoPorDefecto(): ?Dispositivo
-    {
-        return Dispositivo::where('estado', 'activo')->first()
-            ?? Dispositivo::first();
+        foreach ($pendientes as $id) {
+            Cache::store('file')->put("latido:dispositivo:{$id}", true, self::FRECUENCIA_LATIDO);
+        }
     }
 
     /** Convierte "DD/MM/YYYY" + "HH:MM:SS" en un objeto de fecha. */

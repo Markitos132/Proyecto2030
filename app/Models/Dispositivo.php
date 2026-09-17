@@ -17,7 +17,6 @@ class Dispositivo extends Model
 
     public $timestamps = false;
 
-    /** Minutos sin señal a partir de los cuales se considera offline. */
     public const UMBRAL_OFFLINE_MIN = 15;
 
     protected $fillable = [
@@ -27,6 +26,7 @@ class Dispositivo extends Model
         'f_alta',
         'observaciones',
         'ultima_conexion',
+        'id_usuario',
     ];
 
     protected $casts = [
@@ -50,6 +50,11 @@ class Dispositivo extends Model
         return $this->hasMany(NotaDispositivo::class, 'id_dispositivo');
     }
 
+    public function usuario()
+    {
+        return $this->belongsTo(Usuario::class, 'id_usuario');
+    }
+
     public function getUltimaConexionHumanAttribute(): string
     {
         if (! $this->ultima_conexion) {
@@ -59,14 +64,6 @@ class Dispositivo extends Model
         return $this->ultima_conexion->diffForHumans(null, true);
     }
 
-    /**
-     * Estado real del dispositivo, derivado de la actividad reciente
-     * en lugar de la columna `estado`, que puede quedar desactualizada.
-     *
-     * offline  → sin señal hace mas de UMBRAL_OFFLINE_MIN minutos
-     * warning  → conectado, pero la sesion no reporta a tiempo
-     * online   → todo en orden
-     */
     public function getEstadoCalculadoAttribute(): string
     {
         if (! $this->ultima_conexion) {
@@ -79,14 +76,12 @@ class Dispositivo extends Model
 
         $sesion = $this->sesionActiva;
 
-        // Conectado y disponible, sin sesion en curso.
         if (! $sesion) {
             return 'online';
         }
 
         $ultima = $sesion->ultimaMedicion;
 
-        // Sesion recien arrancada, todavia sin mediciones.
         if (! $ultima) {
             return 'online';
         }

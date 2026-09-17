@@ -16,21 +16,11 @@ class IndividuoController extends Controller
         $individuos = Individuo::query()
             ->where('id_usuario', auth()->id())
             ->with('sesionActiva.dispositivo')
-            // El filtro de especie es un campo de texto libre, no un
-            // desplegable: buscar por igualdad exacta hacia que escribir
-            // "Liolaemus" no encontrara "Liolaemus chacoensis".
             ->when($request->filled('especie'), fn ($q) =>
                 $q->where('especie', 'ilike', '%'.$request->especie.'%'))
             ->when($request->filled('estado'),  fn ($q) => $q->where('estado', $request->estado))
             ->when($request->filled('codigo'),  fn ($q) =>
                 $q->where('codigo_individuo', 'ilike', '%'.$request->codigo.'%'))
-            // Los liberados van al final: son los que ya no se miden, y
-            // mezclados entre los activos obligaban a leer toda la lista
-            // para encontrar los que están en curso.
-            //
-            // En Postgres, ordenar por un booleano pone false antes que
-            // true, así que "no está liberado" queda arriba. Dentro de cada
-            // grupo se mantiene el orden por código.
             ->orderByRaw("(estado = ?) asc", ['liberado'])
             ->orderBy('codigo_individuo')
             ->get();
@@ -54,7 +44,6 @@ class IndividuoController extends Controller
             'especie'             => $this->resolverOtro($request, 'especie', 'otra_especie'),
             'sexo'                => $datos['sexo'] ?? null,
             'estadio'             => $this->resolverOtro($request, 'estadio', 'otro_estadio'),
-            // El estado reproductivo solo tiene sentido en hembras.
             'estado_reproductivo' => ($request->sexo === 'Hembra')
                                         ? $request->estado_reproductivo
                                         : null,
@@ -82,9 +71,6 @@ class IndividuoController extends Controller
 
         $sesiones = $individuo->sesiones->sortByDesc('fecha_inicio');
 
-        // La vista resuelve por su cuenta, con un bloque @php, qué opción
-        // del desplegable preseleccionar. No se pasan esos valores desde
-        // acá para no tener dos fuentes de verdad que puedan discrepar.
         return view('admin.individuo_ficha', [
             'individuo'           => $individuo,
             'sesiones'            => $sesiones,
@@ -135,8 +121,6 @@ class IndividuoController extends Controller
     {
         abort_if($individuo->id_usuario !== auth()->id(), 403);
 
-        // Un individuo con mediciones asociadas es dato de campo: borrarlo
-        // perderia el historial y ademas violaria la clave foranea.
         if ($individuo->sesiones()->exists()) {
             return back()->withErrors([
                 'individuo' => 'No se puede eliminar: el ejemplar tiene sesiones registradas. '
@@ -154,11 +138,6 @@ class IndividuoController extends Controller
     private function validarAlta(Request $request): array
     {
         return $request->validate([
-            // El codigo tiene que ser unico *para este usuario*: el ESP32
-            // identifica al ejemplar por ese valor dentro de los
-            // dispositivos de un mismo dueño, y dos individuos con el mismo
-            // codigo harian que las mediciones fueran a parar a cualquiera
-            // de los dos.
             'codigo_individuo'    => ['required', 'string', 'max:50',
                                       Rule::unique('individuos', 'codigo_individuo')
                                           ->where('id_usuario', auth()->id())],
@@ -178,10 +157,6 @@ class IndividuoController extends Controller
         ]);
     }
 
-    /**
-     * Los desplegables ofrecen una opcion "otra" / "otro" que habilita un
-     * campo de texto libre. Devuelve el valor que corresponda guardar.
-     */
     private function resolverOtro(Request $request, string $campoSelect, string $campoLibre): ?string
     {
         $valor = $request->input($campoSelect);
