@@ -78,35 +78,37 @@ class HistorialController extends Controller
 
     private function escribirCsv(Sesion $sesion): void
     {
-        $salida = fopen('php://output', 'w');
+    $salida = fopen('php://output', 'w');
 
-        fwrite($salida, "\xEF\xBB\xBF");
+    fwrite($salida, "\xEF\xBB\xBF");
 
-        fputcsv($salida, ['individuo' ,'fecha', 'hora', 'mediciones' , 'temperatura'], ';');
+    fputcsv($salida, ['individuo', 'fecha', 'hora', 'n_medicion', 'temperatura', 'promedio'], ';');
 
-        $individuo = $sesion->individuo?->codigo_individuo? '';
-        $promedio = $this->decimal($sesion->mediciones()->avg('temperatura'));
+    $individuo = $sesion->individuo?->codigo_individuo ?? '';
+    $promedio  = $this->decimal($sesion->mediciones()->avg('temperatura'));
 
-        $numero = 0;
+    $numero = 0;
 
-        $sesion->mediciones()
-            ->orderBy('fecha_hora')
-            ->orderBy('id_medicion')
-            ->chunk(500, function ($mediciones) use ($salida, $individuo, $promedio, &$numero)) {
-                foreach ($mediciones as $m) {
-                    $numero++;
-                    fputcsv($salida, [
-                        $individuo,
-                        $m->fecha_hora?->format('d/m/Y'),
-                        $m->fecha_hora?->format('H:i:s'),
-                        $this->decimal($m->temperatura),
-                        $promedio,
-                    ], ';');
-                }
-            });
+    $sesion->mediciones()
+        ->orderBy('fecha_hora')
+        ->orderBy('id_medicion')
+        ->chunk(500, function ($mediciones) use ($salida, $individuo, $promedio, &$numero) {
+            foreach ($mediciones as $m) {
+                $numero++;
 
-        fclose($salida);
-    }
+                fputcsv($salida, [
+                    $individuo,
+                    $m->fecha_hora?->format('d/m/Y'),
+                    $m->fecha_hora?->format('H:i:s'),
+                    $numero,
+                    $this->decimal($m->temperatura),
+                    $promedio,
+                ], ';');
+            }
+        });
+
+    fclose($salida);
+}
 
     private function nombreDelArchivo(Sesion $sesion): string
     {
