@@ -45,7 +45,7 @@ class IndividuoController extends Controller
         ]);
     }
 
-    public function guardar(Request $request): RedirectResponse
+    public function store(Request $request): RedirectResponse
     {
         $datos = $this->validarAlta($request);
 
@@ -69,7 +69,7 @@ class IndividuoController extends Controller
             ->with('exito', 'Ejemplar guardado correctamente.');
     }
 
-    public function mostrar(Individuo $individuo)
+    public function show(Individuo $individuo)
     {
         abort_if($individuo->id_usuario !== auth()->id(), 403);
 
@@ -131,7 +131,7 @@ class IndividuoController extends Controller
         return back()->with('exito', 'Ficha actualizada.');
     }
 
-    public function destruir(Individuo $individuo): RedirectResponse
+    public function destroy(Individuo $individuo): RedirectResponse
     {
         abort_if($individuo->id_usuario !== auth()->id(), 403);
 
