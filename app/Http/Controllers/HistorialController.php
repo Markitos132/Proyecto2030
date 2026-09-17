@@ -84,15 +84,23 @@ class HistorialController extends Controller
 
         fputcsv($salida, ['individuo' ,'fecha', 'hora', 'mediciones' , 'temperatura'], ';');
 
+        $individuo = $sesion->individuo?->codigo_individuo? '';
+        $promedio = $this->decimal($sesion->mediciones()->avg('temperatura'));
+
+        $numero = 0;
+
         $sesion->mediciones()
             ->orderBy('fecha_hora')
             ->orderBy('id_medicion')
-            ->chunk(500, function ($mediciones) use ($salida) {
+            ->chunk(500, function ($mediciones) use ($salida, $individuo, $promedio, &$numero)) {
                 foreach ($mediciones as $m) {
+                    $numero++;
                     fputcsv($salida, [
+                        $individuo,
                         $m->fecha_hora?->format('d/m/Y'),
                         $m->fecha_hora?->format('H:i:s'),
                         $this->decimal($m->temperatura),
+                        $promedio,
                     ], ';');
                 }
             });

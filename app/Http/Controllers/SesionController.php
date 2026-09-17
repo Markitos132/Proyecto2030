@@ -10,22 +10,20 @@ use App\Services\CierreDeSesiones;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
+use Illuminate\Validation\Rule;
 
 class SesionController extends Controller
 {
     public function index(CierreDeSesiones $cierre)
     {
-        // Antes de listar, descartar las que dejaron de reportar.
         $cierre->revisarSiCorresponde();
 
         $sesionesActivas = Sesion::activas()
+            ->where('id_usuario', auth()->id())
             ->with([
                 'individuo',
                 'dispositivo',
                 'ultimaMedicion',
-                // Solo las columnas que consume la tarjeta. Traer la fila
-                // entera de cada medición no aporta nada y una sesión larga
-                // acumula cientos.
                 'mediciones:id_medicion,id_sesion,temperatura,fecha_hora',
             ])
             ->orderByDesc('fecha_inicio')
@@ -36,22 +34,22 @@ class SesionController extends Controller
             ->filter()
             ->avg();
 
-        // El accesor ya redondea a entero: con diffInMinutes() crudo, Carbon 3
-        // devuelve float y el promedio salía como "125.38333333 min".
         $duracionPromedio = $sesionesActivas
             ->map(fn ($s) => $s->minutos_transcurridos)
             ->avg();
 
         // Individuos y dispositivos elegibles para una sesion nueva:
-        // los que no estan ya midiendo.
+        // los propios del usuario que no estan ya midiendo.
         $indActivos = Individuo::where('estado', 'activo')
+            ->where('id_usuario', auth()->id())
             ->whereDoesntHave('sesiones', fn ($q) => $q->where('estado', Sesion::ESTADO_ACTIVA))
             ->orderBy('codigo_individuo')
             ->get();
 
-        $dispositivosDisponibles = Dispositivo::whereDoesntHave(
-                'sesiones', fn ($q) => $q->where('estado', Sesion::ESTADO_ACTIVA)
-            )->orderBy('nombre')->get();
+        $dispositivosDisponibles = Dispositivo::where('id_usuario', auth()->id())
+            ->whereDoesntHave('sesiones', fn ($q) => $q->where('estado', Sesion::ESTADO_ACTIVA))
+            ->orderBy('nombre')
+            ->get();
 
         return view('admin.sesiones', [
             'sesionesActivas'         => $sesionesActivas,
@@ -66,8 +64,12 @@ class SesionController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $datos = $request->validate([
-            'individuo_id'   => ['required', 'exists:individuos,id_individuo'],
-            'dispositivo_id' => ['required', 'exists:dispositivos,id_dispositivo'],
+            'individuo_id'   => ['required',
+                                 Rule::exists('individuos', 'id_individuo')
+                                     ->where('id_usuario', auth()->id())],
+            'dispositivo_id' => ['required',
+                                 Rule::exists('dispositivos', 'id_dispositivo')
+                                     ->where('id_usuario', auth()->id())],
             'duracion'       => ['nullable', 'integer', 'min:1', 'max:10080'],
             'intervalo'      => ['nullable', 'integer', 'min:1', 'max:1440'],
             'temp_min'       => ['nullable', 'numeric', 'min:-50', 'max:100'],
@@ -78,7 +80,6 @@ class SesionController extends Controller
             'temp_max.gt'           => 'La temperatura máxima debe ser mayor que la mínima.',
         ]);
 
-        // Un dispositivo solo puede medir un individuo a la vez.
         $ocupado = Sesion::activas()
             ->where('id_dispositivo', $datos['dispositivo_id'])
             ->exists();
@@ -106,22 +107,14 @@ class SesionController extends Controller
 
     public function show(Sesion $sesion)
     {
+        abort_if($sesion->id_usuario !== auth()->id(), 403);
+
         $sesion->load(['individuo', 'dispositivo']);
 
         $mediciones = $sesion->mediciones()
             ->orderBy('fecha_hora')
             ->get(['fecha_hora', 'temperatura', 'alerta']);
 
-        // La serie se arma acá y no en la vista a propósito.
-        //
-        // Estaba con @json(...) y una función flecha repartida en varias
-        // líneas: Blade extrae los argumentos de una directiva contando
-        // paréntesis, y con un array multilínea adentro genera PHP inválido.
-        // El resultado era un ParseError que tumbaba la página entera,
-        // incluso cuando el bloque estaba dentro de un @if que daba falso.
-        // El formato de la etiqueta se adapta a lo que abarca la sesión.
-        // Con 'H:i' fijo, varias mediciones dentro del mismo minuto salían
-        // todas con la misma hora y el eje quedaba ilegible.
         $formato = $this->formatoDeEtiqueta($mediciones);
 
         $serie = $mediciones->map(fn ($m) => [
@@ -143,12 +136,6 @@ class SesionController extends Controller
         ]);
     }
 
-    /**
-     * Elige cómo escribir la hora de cada punto del gráfico.
-     *
-     * Sesiones cortas necesitan segundos para distinguir mediciones
-     * consecutivas; las que cruzan la medianoche necesitan la fecha.
-     */
     private function formatoDeEtiqueta($mediciones): string
     {
         $primera = $mediciones->first()?->fecha_hora;
@@ -169,6 +156,8 @@ class SesionController extends Controller
 
     public function finalizar(Sesion $sesion): RedirectResponse
     {
+        abort_if($sesion->id_usuario !== auth()->id(), 403);
+
         if (! $sesion->estaActiva()) {
             return back()->withErrors(['sesion' => 'La sesión ya estaba finalizada.']);
         }
@@ -178,8 +167,6 @@ class SesionController extends Controller
         $sesion->update([
             'fecha_fin'       => $fin,
             'estado'          => Sesion::ESTADO_FINALIZADA,
-            // Carbon 3 devuelve un float en diffInMinutes; la columna es
-            // entera y Postgres rechaza el decimal.
             'duracion_sesion' => $sesion->fecha_inicio
                                     ? (int) round($sesion->fecha_inicio->diffInMinutes($fin))
                                     : null,
