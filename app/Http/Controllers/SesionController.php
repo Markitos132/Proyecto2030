@@ -125,7 +125,6 @@ class SesionController extends Controller
             'mediciones'   => $mediciones,
             'serie'        => $serie,
             'promedio'     => $promedio !== null ? round((float) $promedio, 1) : null,
-            'fueraDeRango' => $mediciones->where('alerta', Medicion::ALERTA_FUERA)->count(),
         ]);
     }
 

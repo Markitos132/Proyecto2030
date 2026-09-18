@@ -77,7 +77,6 @@ class PanelEstadoController extends Controller
                 'temperatura' => $s->ultimaMedicion?->temperatura !== null
                                     ? (float) $s->ultimaMedicion->temperatura
                                     : null,
-                'alerta'      => $s->ultimaMedicion?->alerta,
                 'medido_hace' => $s->ultimaMedicion?->fecha_hora?->diffForHumans(null, true),
                 'lecturas'    => $s->mediciones->count(),
                 'duracion'    => $s->minutos_transcurridos,

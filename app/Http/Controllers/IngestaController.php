@@ -29,8 +29,6 @@ class IngestaController extends Controller
             'individuo'   => ['nullable', 'string', 'max:50'],
             'especie'     => ['nullable', 'string', 'max:255'],
             'temperatura' => ['nullable', 'numeric'],
-            'temp_min'    => ['nullable', 'numeric'],
-            'temp_max'    => ['nullable', 'numeric'],
             'alerta'      => ['nullable', 'string', 'max:50'],
             // Solo hace falta cuando sesion_externa no matchea nada (el
             // equipo se reinició, por ejemplo): es lo único que permite
@@ -123,8 +121,6 @@ class IngestaController extends Controller
             'especie'    => $sesion->individuo?->especie ?? '',
             'duracion'   => (int) ($sesion->duracion_sesion ?: 60),
             'intervalo'  => (int) ($sesion->intervalo_minuto ?: 10),
-            'temp_min'   => $sesion->temp_min !== null ? (float) $sesion->temp_min : null,
-            'temp_max'   => $sesion->temp_max !== null ? (float) $sesion->temp_max : null,
         ]);
     }
 

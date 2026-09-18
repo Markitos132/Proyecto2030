@@ -22,11 +22,6 @@
       <div class="metric-header">Promedio</div>
       <div class="metric-value">{{ $promedio !== null ? $promedio.' °C' : '--' }}</div>
     </div>
-    <div class="metric-card">
-      <div class="metric-header">Fuera de rango</div>
-      <div class="metric-value">{{ $fueraDeRango }}</div>
-    </div>
-  </div>
 
   <div class="table-panel" style="padding: 1.5rem;">
     @if($mediciones->isEmpty())
