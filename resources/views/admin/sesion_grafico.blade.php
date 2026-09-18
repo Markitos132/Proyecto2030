@@ -61,8 +61,6 @@
   // así que nombrar una directiva acá dentro la expande igual y rompe el
   // archivo. Por eso este comentario no la nombra.
   const serie   = @json($serie);
-  const tempMin = @json($tempMin);
-  const tempMax = @json($tempMax);
 
   new Chart(document.getElementById('graficoTemperatura'), {
     type: 'line',
