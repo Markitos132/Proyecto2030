@@ -72,12 +72,9 @@ class SesionController extends Controller
                                      ->where('id_usuario', auth()->id())],
             'duracion'       => ['nullable', 'integer', 'min:1', 'max:10080'],
             'intervalo'      => ['nullable', 'integer', 'min:1', 'max:1440'],
-            'temp_min'       => ['nullable', 'numeric', 'min:-50', 'max:100'],
-            'temp_max'       => ['nullable', 'numeric', 'min:-50', 'max:100', 'gt:temp_min'],
         ], [
             'individuo_id.exists'   => 'El ejemplar seleccionado no existe.',
             'dispositivo_id.exists' => 'El dispositivo seleccionado no existe.',
-            'temp_max.gt'           => 'La temperatura máxima debe ser mayor que la mínima.',
         ]);
 
         $ocupado = Sesion::activas()
@@ -97,8 +94,6 @@ class SesionController extends Controller
             'fecha_inicio'     => now(),
             'duracion_sesion'  => $datos['duracion'] ?? null,
             'intervalo_minuto' => $datos['intervalo'] ?? 10,
-            'temp_min'         => $datos['temp_min'] ?? null,
-            'temp_max'         => $datos['temp_max'] ?? null,
             'estado'           => Sesion::ESTADO_ACTIVA,
         ]);
 
@@ -131,8 +126,6 @@ class SesionController extends Controller
             'serie'        => $serie,
             'promedio'     => $promedio !== null ? round((float) $promedio, 1) : null,
             'fueraDeRango' => $mediciones->where('alerta', Medicion::ALERTA_FUERA)->count(),
-            'tempMin'      => $sesion->temp_min !== null ? (float) $sesion->temp_min : null,
-            'tempMax'      => $sesion->temp_max !== null ? (float) $sesion->temp_max : null,
         ]);
     }
 

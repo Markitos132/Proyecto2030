@@ -77,19 +77,8 @@
         tension: 0.25,
         pointRadius: 3,
         // Las mediciones fuera de rango se marcan en rojo.
-        pointBackgroundColor: serie.map(m => m.alerta === 'FUERA DE RANGO' ? '#d32f2f' : '#378ADD'),
       }]
     },
-    options: {
-      responsive: true,
-      interaction: { intersect: false, mode: 'index' },
-      scales: {
-        y: {
-          title: { display: true, text: '°C' },
-          suggestedMin: tempMin !== null ? tempMin - 2 : undefined,
-          suggestedMax: tempMax !== null ? tempMax + 2 : undefined,
-        }
-      },
       plugins: {
         tooltip: {
           callbacks: {
@@ -97,8 +86,7 @@
           }
         }
       }
-    }
-  });
+    });
 </script>
 @endif
 @endpush
