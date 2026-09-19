@@ -85,7 +85,9 @@ class HistorialController extends Controller
     fputcsv($salida, ['individuo', 'fecha', 'hora', 'n_medicion', 'temperatura', 'promedio'], ';');
 
     $individuo = $sesion->individuo?->codigo_individuo ?? '';
-    $promedio  = $this->decimal($sesion->mediciones()->avg('temperatura'));
+
+    $promediotodosdecimales = $sesion->mediciones()->avg('temperatura');
+    $promedio  = $promediotodosdecimales !== null ? $this->decimal(round($promediotodosdecimales, 2)): '';
 
     $numero = 0;
 
@@ -102,7 +104,8 @@ class HistorialController extends Controller
                     $m->fecha_hora?->format('H:i:s'),
                     $numero,
                     $this->decimal($m->temperatura),
-                    $promedio,
+                    //aca solo se escribe el promedio en la primera fila, sino se repite en la cantidad de columnas que tengan mediciones
+                    $numero == 1 ? $promedio : '',
                 ], ';');
             }
         });
