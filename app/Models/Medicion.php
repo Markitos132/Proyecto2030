@@ -32,4 +32,4 @@ class Medicion extends Model
     {
         return $this->belongsTo(Sesion::class, 'id_sesion');
     }
-},
+}
