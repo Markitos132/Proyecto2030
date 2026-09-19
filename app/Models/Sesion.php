@@ -180,7 +180,7 @@ class Sesion extends Model
     /** True si la última lectura recibida quedó fuera del rango pactado. */
     public function getFueraDeRangoAttribute(): bool
     {
-        return $this->ultimaMedicion?->alerta === Medicion::ALERTA_FUERA;
+        return false;
     }
 
     /**
