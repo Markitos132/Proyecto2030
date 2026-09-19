@@ -33,15 +33,11 @@ class Sesion extends Model
         'duracion_sesion',
         'estado',
         'sesion_externa',
-        'temp_min',
-        'temp_max',
     ];
 
     protected $casts = [
         'fecha_inicio' => 'datetime',
         'fecha_fin'    => 'datetime',
-        'temp_min'     => 'decimal:2',
-        'temp_max'     => 'decimal:2',
     ];
 
     public function mediciones()

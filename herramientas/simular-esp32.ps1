@@ -29,7 +29,6 @@ param(
 
     [switch] $Acelerar,
 
-    # Cada cuánto preguntar si hay sesión asignada, en segundos.
     [int] $EsperaConsulta = 10
 )
 
@@ -40,7 +39,6 @@ function Escribir($texto, $color = 'Gray') {
     Write-Host ("[{0}] {1}" -f (Get-Date -Format 'HH:mm:ss'), $texto) -ForegroundColor $color
 }
 
-# ── Preguntar si hay una sesión asignada ───────────────────
 function Buscar-Sesion {
     try {
         $r = Invoke-WebRequest -Uri "$Url/bionea/sesion?mac=$Mac" `
@@ -57,14 +55,11 @@ function Buscar-Sesion {
         return $null
     }
 
-    # 204: no hay nada asignado. Es la respuesta normal mientras nadie
-    # haya creado una sesión para este equipo.
     if ($r.StatusCode -eq 204) { return $null }
 
     return $r.Content | ConvertFrom-Json
 }
 
-# ── Enviar una medición o el fin de sesión ─────────────────
 function Enviar-Dato($cuerpo) {
     try {
         Invoke-RestMethod -Uri "$Url/bionea/guardar" -Method Post `
@@ -79,28 +74,19 @@ function Enviar-Dato($cuerpo) {
     }
 }
 
-# ── Ejecutar la sesión recibida ────────────────────────────
 function Ejecutar-Sesion($s) {
     Escribir "──────────────────────────────" Cyan
     Escribir "Sesión $($s.session_id) — $($s.individuo) ($($s.especie))" Cyan
     Escribir "Duración $($s.duracion) min · intervalo $($s.intervalo) min" Cyan
-
-    $hayRango = ($null -ne $s.temp_min) -and ($null -ne $s.temp_max)
-    if ($hayRango) {
-        Escribir "Rango $($s.temp_min) - $($s.temp_max) °C" Cyan
-    } else {
-        Escribir "Sin rango definido: todas las mediciones saldrán OK" Yellow
-    }
     Escribir "──────────────────────────────" Cyan
 
-    # Con -Acelerar los minutos se tratan como segundos.
     $unidad    = if ($Acelerar) { 1 } else { 60 }
     $intervalo = [int][Math]::Max([int]$s.intervalo, 1) * $unidad
     $total     = [int][Math]::Max([int]$s.duracion, 1) * $unidad
     $lecturas  = [int][Math]::Max([int][Math]::Floor($total / $intervalo), 1)
 
-    $centro = if ($hayRango) { ($s.temp_min + $s.temp_max) / 2 } else { 30 }
-    $ok = 0; $fuera = 0; $errores = 0
+    $centro = 30
+    $enviadas = 0; $errores = 0
 
     for ($i = 1; $i -le $lecturas; $i++) {
 
@@ -108,10 +94,6 @@ function Ejecutar-Sesion($s) {
         # temperatura real y no a una serie de números al azar.
         $fase = [Math]::Sin($i / 4.0) * 6
         $temp = [Math]::Round($centro + $fase + (Get-Random -Minimum -15 -Maximum 15) / 10.0, 2)
-
-        $alerta = if ($hayRango -and ($temp -lt $s.temp_min -or $temp -gt $s.temp_max)) {
-            "FUERA DE RANGO"
-        } else { "OK" }
 
         $ahora = Get-Date
         $cuerpo = @{
@@ -122,18 +104,12 @@ function Ejecutar-Sesion($s) {
             individuo   = $s.individuo
             especie     = $s.especie
             temperatura = $temp
-            alerta      = $alerta
-        }
-
-        if ($hayRango) {
-            $cuerpo.temp_min = $s.temp_min
-            $cuerpo.temp_max = $s.temp_max
+            mac         = $Mac
         }
 
         if (Enviar-Dato $cuerpo) {
-            $color = if ($alerta -eq 'OK') { 'Green' } else { 'Yellow' }
-            Escribir ("#{0}/{1}  {2} °C  {3}" -f $i, $lecturas, $temp, $alerta) $color
-            if ($alerta -eq 'OK') { $ok++ } else { $fuera++ }
+            Escribir ("#{0}/{1}  {2} °C" -f $i, $lecturas, $temp) Green
+            $enviadas++
         } else {
             $errores++
         }
@@ -151,10 +127,9 @@ function Ejecutar-Sesion($s) {
         especie    = $s.especie
     } | Out-Null
 
-    Escribir "Sesión finalizada — $ok OK, $fuera fuera de rango, $errores errores" Cyan
+    Escribir "Sesión finalizada — $enviadas mediciones enviadas, $errores errores" Cyan
 }
 
-# ── Bucle principal ────────────────────────────────────────
 Write-Host ""
 Write-Host "  BioNEA Organiks — simulador del ESP32" -ForegroundColor White
 Write-Host "  MAC: $Mac"

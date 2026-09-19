@@ -29,7 +29,6 @@ class IngestaController extends Controller
             'individuo'   => ['nullable', 'string', 'max:50'],
             'especie'     => ['nullable', 'string', 'max:255'],
             'temperatura' => ['nullable', 'numeric'],
-            'alerta'      => ['nullable', 'string', 'max:50'],
             // Solo hace falta cuando sesion_externa no matchea nada (el
             // equipo se reinició, por ejemplo): es lo único que permite
             // reencontrar de quién es la sesión sin adivinar.
@@ -169,9 +168,6 @@ class IngestaController extends Controller
             'id_sesion'   => $sesion->id_sesion,
             'fecha_hora'  => $momento,
             'temperatura' => $datos['temperatura'],
-            'alerta'      => ($datos['alerta'] ?? null) === Medicion::ALERTA_FUERA
-                                ? Medicion::ALERTA_FUERA
-                                : Medicion::ALERTA_OK,
         ]);
 
         if ($sesion->id_dispositivo) {
