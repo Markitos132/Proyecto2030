@@ -23,13 +23,15 @@
       <div class="metric-value">{{ $promedio !== null ? $promedio.' °C' : '--' }}</div>
     </div>
 
-  <div class="table-panel" style="padding: 1.5rem;">
+  <div class="table-panel" style="padding: 1.5rem; grid-column: 1/-1;">
     @if($mediciones->isEmpty())
-      <p style="text-align:center; color:#888; padding:25px;">
+      <p style="text-align:center; color:#888; padding:25px;"> 
         Esta sesión todavía no tiene mediciones registradas.
       </p>
     @else
-      <canvas id="graficoTemperatura" height="110"></canvas>
+      <div style="position: relative; height: 320px;">
+        <canvas id="graficoTemperatura" height="110"></canvas>
+     </div>
     @endif
   </div>
 
@@ -70,6 +72,9 @@
         tension: 0.25,
         pointRadius: 3,
       }]
+      },
+      options: {
+        maintainAspectRatio: false,
       }
     });
 </script>
