@@ -69,15 +69,7 @@
         fill: true,
         tension: 0.25,
         pointRadius: 3,
-        // Las mediciones fuera de rango se marcan en rojo.
       }]
-    },
-      plugins: {
-        tooltip: {
-          callbacks: {
-            afterLabel: ctx => serie[ctx.dataIndex].alerta,
-          }
-        }
       }
     });
 </script>

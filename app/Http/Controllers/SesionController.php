@@ -108,14 +108,13 @@ class SesionController extends Controller
 
         $mediciones = $sesion->mediciones()
             ->orderBy('fecha_hora')
-            ->get(['fecha_hora', 'temperatura', 'alerta']);
+            ->get(['fecha_hora', 'temperatura']);
 
         $formato = $this->formatoDeEtiqueta($mediciones);
 
         $serie = $mediciones->map(fn ($m) => [
             'hora'        => $m->fecha_hora?->format($formato),
             'temperatura' => (float) $m->temperatura,
-            'alerta'      => $m->alerta,
         ])->values();
 
         $promedio = $mediciones->avg('temperatura');
