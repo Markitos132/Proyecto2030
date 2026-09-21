@@ -1080,6 +1080,16 @@ tbody tr.row-active td::before {
 
 }
 
+/* --- contenedores de la barra de navegacion --- */
+.pagination-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
 
 /* ==========================================================================
    📱 RETOQUES PANTALLAS CHICAS (Celulares < 576px)
