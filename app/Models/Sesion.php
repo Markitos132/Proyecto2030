@@ -173,12 +173,6 @@ class Sesion extends Model
         return (int) round(min(100, max(0, $porcentaje)));
     }
 
-    /** True si la última lectura recibida quedó fuera del rango pactado. */
-    public function getFueraDeRangoAttribute(): bool
-    {
-        return false;
-    }
-
     /**
      * Últimas temperaturas, para el mini-gráfico de la tarjeta.
      *

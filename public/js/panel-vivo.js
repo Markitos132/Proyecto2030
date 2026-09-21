@@ -115,7 +115,6 @@
         celdaTemp.textContent = s.temperatura !== null
           ? `${s.temperatura.toFixed(1)} °C`
           : '-- °C';
-        celdaTemp.classList.toggle('fuera-de-rango', s.alerta === 'FUERA DE RANGO');
       }
 
       // Una sesión puede terminar sin que cambie el conjunto de filas:
@@ -191,12 +190,10 @@
       if (!tarjeta) return;
 
       const $ = (nombre) => tarjeta.querySelector(`[data-vivo-tarjeta="${nombre}"]`);
-      const fueraDeRango = s.alerta === 'FUERA DE RANGO';
 
       const temp = $('temperatura');
       if (temp) {
         temp.textContent = s.temperatura !== null ? `${s.temperatura.toFixed(1)}°C` : '--°C';
-        temp.classList.toggle('temp-alert', fueraDeRango);
       }
 
       const lecturas = $('lecturas');
@@ -219,15 +216,8 @@
         }
       }
 
-      // La tarjeta entera se tiñe cuando la última lectura se sale del rango.
-      tarjeta.classList.toggle('alert-card', fueraDeRango);
-
-      const alerta = $('alerta');
-      if (alerta) alerta.hidden = !fueraDeRango;
-
       const ultima = $('ultima-lectura');
       if (ultima) {
-        ultima.hidden = fueraDeRango;
         ultima.textContent = s.medido_hace
           ? `Última lectura hace ${s.medido_hace}`
           : 'Sin lecturas todavía';

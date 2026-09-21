@@ -77,8 +77,6 @@
   flex-wrap: nowrap;
 }
 
-.session-card.alert-card { border-color: #e8c873; background: #fffaf0; }
-
 .session-top {
   display: flex;
   align-items: flex-start;
@@ -156,7 +154,6 @@
 
 .session-meta-label { font-size: 0.72rem; color: var(--text-muted); }
 .session-meta-value { font-size: 1.15rem; font-weight: 700; color: var(--Marron); }
-.session-meta-value.temp-alert { color: #b3261e; }
 
 .session-chart-wrap {
   width: 100%;
@@ -175,26 +172,6 @@
   width: 100%;
 }
 
-.session-alert-msg {
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-  font-size: 0.78rem;
-  color: #93650b;
-  font-weight: 600;
-}
-
-.session-alert-msg svg { width: 15px; height: 15px; flex-shrink: 0; }
-
-/* El atributo hidden del HTML lo aplica el navegador como
-   [hidden] { display: none }, y cualquier display declarado por la hoja de
-   estilos le gana. Sin esta regla, el aviso de fuera de rango seguía a la
-   vista incluso en sesiones sin una sola lectura. */
-.session-alert-msg[hidden] { display: none; }
-
-/* El pie alterna entre "última lectura hace X" y el aviso de fuera de
-   rango. Los dos elementos existen siempre; el refresco solo cambia
-   cuál lleva el atributo hidden. */
 .session-footer-estado { min-width: 0; }
 
 .session-ultima-lectura {

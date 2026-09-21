@@ -55,20 +55,6 @@
                 </div>
               </div>
 
-              {{-- Rango térmico: el dispositivo lo usa para marcar como
-                   FUERA DE RANGO las mediciones que se salgan. --}}
-              <div class="form-row">
-                <div class="form-group">
-                  <label for="temp_min">Temp. mínima (°C)</label>
-                  <input type="number" id="temp_min" name="temp_min" placeholder="Ej: 20" step="0.5" value="{{ old('temp_min', 20) }}" required>
-                </div>
-
-                <div class="form-group">
-                  <label for="temp_max">Temp. máxima (°C)</label>
-                  <input type="number" id="temp_max" name="temp_max" placeholder="Ej: 40" step="0.5" value="{{ old('temp_max', 40) }}" required>
-                </div>
-              </div>
-
               <!-- Mensaje de advertencia o ayuda de límites -->
               <div class="info-note">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
@@ -173,6 +159,17 @@
                       <span class="session-meta-label">Tiempo restante estimado</span>
                       <span class="session-meta-value" id="detalleTiempoRestante">18 min</span>
                     </div>
+                    {{-- TODO: hoy son datos de prueba hardcodeados en el JS de abajo.
+                         Cuando /panel/estado mande temp_min_real / temp_max_real por
+                         sesión, esto pasa a leerse de ahí (ver actualizarMetricasDetalle). --}}
+                    <div class="detalle-metric">
+                      <span class="session-meta-label">Temp. mínima registrada</span>
+                      <span class="session-meta-value" id="detalleTempMin">-- °C</span>
+                    </div>
+                    <div class="detalle-metric">
+                      <span class="session-meta-label">Temp. máxima registrada</span>
+                      <span class="session-meta-value" id="detalleTempMax">-- °C</span>
+                    </div>
                   </div>
                 </div>
                 <div class="modal-footer">
@@ -230,7 +227,7 @@
                cargar la página. El gráfico completo sigue estando en
                /sesiones/{id}. --}}
           @php $serie = $sesion->serieReciente(); @endphp
-          <div class="session-card {{ $sesion->fuera_de_rango ? 'alert-card' : '' }}"
+          <div class="session-card"
             data-sesion-tarjeta="{{ $sesion->id_sesion }}"
             data-id-sesion="{{ $sesion->id_sesion }}"
             data-individuo="{{ $sesion->individuo?->codigo_individuo }}"
@@ -256,7 +253,7 @@
             <div class="session-meta">
               <div class="session-meta-item">
                 <span class="session-meta-label">Temp. actual</span>
-                <span class="session-meta-value {{ $sesion->fuera_de_rango ? 'temp-alert' : '' }}" data-vivo-tarjeta="temperatura">{{ $sesion->ultimaMedicion?->temperatura ?? '--' }}°C</span>
+                <span class="session-meta-value" data-vivo-tarjeta="temperatura">{{ $sesion->ultimaMedicion?->temperatura ?? '--' }}°C</span>
               </div>
               <div class="session-meta-item">
                 <span class="session-meta-label">Duración</span>
@@ -294,15 +291,8 @@
                  destruir gráficos en cada refresco sale caro para lo que es. --}}
 
             <div class="session-footer">
-              {{-- Los dos textos existen siempre y el refresco solo alterna
-                   cuál se ve. Generarlos condicionalmente obligaría al script
-                   a construir HTML, que es justo lo que evita este esquema. --}}
               <div class="session-footer-estado">
-                <span class="session-alert-msg" data-vivo-tarjeta="alerta" @unless($sesion->fuera_de_rango) hidden @endunless>
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/><path d="M12 9v4M12 17h.01"/></svg>
-                  Última lectura fuera de rango
-                </span>
-                <span class="session-ultima-lectura" data-vivo-tarjeta="ultima-lectura" @if($sesion->fuera_de_rango) hidden @endif>
+                <span class="session-ultima-lectura" data-vivo-tarjeta="ultima-lectura">
                   @if ($sesion->ultimaMedicion?->fecha_hora)
                     Última lectura hace {{ $sesion->ultimaMedicion->fecha_hora->diffForHumans(null, true) }}
                   @else
@@ -533,6 +523,17 @@ const detalleSesionModal = document.getElementById('detalleSesionModal');
 
   }
 
+  //! Temp. mínima/máxima real de la sesión.
+  //! TODO: por ahora son datos de prueba hardcodeados. Cuando /panel/estado
+  //! mande temp_min_real / temp_max_real por sesión, esto se reemplaza por
+  //! datos leídos de ahí (o del dataset de la tarjeta, si Marcos los agrega
+  //! como data-temp-min-real / data-temp-max-real) — el resto del modal no
+  //! cambia, solo de dónde se leen estos dos valores.
+  function actualizarMetricasDetalle() {
+    document.getElementById('detalleTempMin').textContent = '24.1 °C';
+    document.getElementById('detalleTempMax').textContent = '33.7 °C';
+  }
+
   document.querySelectorAll('.btn-action.verdetalle').forEach(boton => { 
     boton.addEventListener('click', () => {
       const card = boton.closest('.session-card');
@@ -563,6 +564,8 @@ const detalleSesionModal = document.getElementById('detalleSesionModal');
       document.getElementById('detalleDuracion').textContent = data.duracion || '-- min';
       document.getElementById('detalleLecturas').textContent = data.lecturas || '--';
       document.getElementById('detalleTiempoRestante').textContent = data.minutosRestantes ? `${data.minutosRestantes} min` : `-- min`;
+
+      actualizarMetricasDetalle();
 
       //!renderizar gráfico del modal con chart.js
       actualizarGraficoModal(data.trend);

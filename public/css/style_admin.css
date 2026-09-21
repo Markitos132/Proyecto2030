@@ -1156,12 +1156,6 @@ tbody tr.row-active td::before {
   color: #d32f2f;
 }
 
-/* Última temperatura fuera del rango configurado para la sesión */
-[data-vivo-celda="temperatura"].fuera-de-rango {
-  color: #d32f2f;
-  font-weight: 600;
-}
-
 /* ═══════════════════════════════════════════════════════════
    Avisos de éxito y error
 
