@@ -104,13 +104,29 @@
         @if($sesionesFinalizadas->onFirstPage()) aria-disabled="true" onclick="return false"; @endif>
         <- Anterior
       </a>  
-      
+
       @php
       $actual = $sesionesFinalizadas->currentPage();
       $ultima = $sesionesFinalizadas->lastPage();
       $desde = max($actual -2, 1);
       $hasta = min($actual + 2, $utlima);
       @endphp
+      
+      @if($desde >1)
+      <a href="{{ $sesionesFinalizadas->url(1) }}" class="btn-action; padding: 0.25rem;">1</a>
+      @endif
+      
+      @for($pagina = $desde; $pagina <= $hasta; $pagina++)
+      @if($pagina == $actual)
+        <span class="btn-action; cursor:default;">{{ $pagina }}</span>
+      @else
+        <a href="{{ $sesionesFinalizadas->url($pagina) }}" class="btn-action">{{ $pagina }}</a>
+      @endif
+    @endfor
+
+    @if($hasta < $ultima)
+      <a href="{{ $sesionesFinalizadas->url($ultima) }}" class="btn-action; padding: 0 .25rem;">{{ $ultima }}</a>
+    @endif
 
       <a href="{{ $sesionesFinalizadas->nextPageUrl() }}"
        class="btn-action {{ $sesionesFinalizadas->hasMorePages() ? '' : 'disabled' }}"
