@@ -112,17 +112,18 @@
       @endphp
       
       @if ($desde > 1)
-      <a href="{{ $sesionesFinalizadas->url(1) }}" class="btn-action">1</a>
-      @if ($desde > 2)
-      <span>...</span>
+        <a href="{{ $sesionesFinalizadas->url(1) }}" class="btn-action">1</a>
+        @if ($desde > 2)
+          <span>...</span>
+        @endif
       @endif
 
       @for ($pagina = $desde; $pagina <= $hasta; $pagina++)
-      @if($pagina == $actual)
-      <span class ="btn-action active">{{ $pagina }}</span>
-      @else
-      <a href="{{ $sesionesFinalizadas->url(1) }}" class="btn-action">1>{{ $pagina }}</a>
-      @endif
+        @if($pagina == $actual)
+        <span class ="btn-action active">{{ $pagina }}</span>
+        @else
+          <a href="{{ $sesionesFinalizadas->url(1) }}" class="btn-action">{{ $pagina }}</a>
+        @endif
       @endfor
 
       @if ($hasta < $ultima)
