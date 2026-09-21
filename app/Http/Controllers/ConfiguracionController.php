@@ -25,7 +25,8 @@ class ConfiguracionController extends Controller
     {
         // estado_calculado consulta la sesión activa y su última medición.
         // Sin precargarlas, cada dispositivo dispararía dos consultas más.
-        $dispositivos = Dispositivo::with('sesionActiva.ultimaMedicion')
+        $dispositivos = Dispositivo::where('id_usuario' , $request->user()->id_usuario)
+            ->with('sesionActiva.ultimaMedicion')
             ->orderBy('nombre')
             ->get();
 

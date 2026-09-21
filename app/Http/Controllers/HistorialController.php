@@ -32,8 +32,8 @@ class HistorialController extends Controller
             ->when($request->filled('hasta'), fn ($q) =>
                 $q->whereDate('fecha_inicio', '<=', $request->hasta))
             ->orderByDesc('fecha_inicio')
-            ->limit(200)
-            ->get();
+            ->paginate(15)
+            ->withQueryString();
 
         // Para el desplegable de filtro por especie.
         $especiesDisponibles = Individuo::query()

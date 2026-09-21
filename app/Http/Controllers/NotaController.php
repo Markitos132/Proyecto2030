@@ -15,6 +15,8 @@ class NotaController extends Controller
 {
     public function storeIndividuo(Request $request, Individuo $individuo): RedirectResponse
     {
+        abort_if($individuo->id_usuario !== $request->user()->id_usuario, 403);
+
         $datos = $this->validar($request);
 
         NotaIndividuo::create([
@@ -29,6 +31,7 @@ class NotaController extends Controller
 
     public function storeDispositivo(Request $request, Dispositivo $dispositivo): RedirectResponse
     {
+        abort_if($dispositivo->id_usuario !== $request->user()->id_usuario, 403);
         $datos = $this->validar($request);
 
         NotaDispositivo::create([

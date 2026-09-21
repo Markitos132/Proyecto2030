@@ -96,7 +96,22 @@
           </table>
         </div>
       </div>
+<div>
+  @if($sesionesFinalizadas->hasPages())
+    <div class="pagination-bar" style="display:flex; justify-content:center; align-items:center gap: 0.5rem; margin-top:1rem;">
+      <a href="{{ $sesionesFinalizadas->previousPageUrl() }}"
+        class="btn-action {{ $sesionesFinalizadas->onFirstPage() ? 'disabled' : '' }}"
+        @if($sesionesFinalizadas->onFirstPage()) aria-disabled="true" onclick="return false"; @endif>
+        <- Anterior
+      </a>  
 
+      <a href="{{ $sesionesFinalizadas->nextPageUrl() }}"
+       class="btn-action {{ $sesionesFinalizadas->hasMorePages() ? '' : 'disabled' }}"
+       @if(! $sesionesFinalizadas->hasMorePages()) aria-disabled="true" onclick="return false;" @endif>
+        Siguiente ->
+    </a>
+</div>
+@endif
       <div class="info-note">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
         <span>Cada sesión finalizada queda asociada permanentemente a su individuo y dispositivo. El botón <strong>"Exportar CSV"</strong> descarga los datos filtrados, ya estructurados, listos para análisis estadístico sin procesamiento manual.</span>
