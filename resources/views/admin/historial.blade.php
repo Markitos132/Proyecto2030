@@ -98,12 +98,39 @@
       </div>
 <div>
   @if($sesionesFinalizadas->hasPages())
-    <div class="pagination-bar" style="display:flex; justify-content:center; align-items:center gap: 0.5rem; margin-top:1rem;">
+    <div class="pagination-bar">
       <a href="{{ $sesionesFinalizadas->previousPageUrl() }}"
         class="btn-action {{ $sesionesFinalizadas->onFirstPage() ? 'disabled' : '' }}"
         @if($sesionesFinalizadas->onFirstPage()) aria-disabled="true" onclick="return false"; @endif>
         <- Anterior
-      </a>  
+      </a>
+      @php
+      $actual = $sesionesFinalizadas->currentPage();
+      $ultima = $sesionesFinalizadas->lastPage();
+      $desde = max($actual - 2, 1);
+      $hasta = min($actual +2, $ultima);
+      @endphp
+      
+      @if ($desde > 1)
+      <a href="{{ $sesionesFinalizadas->url(1) }}" class="btn-action">1</a>
+      @if ($desde > 2)
+      <span>...</span>
+      @endif
+
+      @for ($pagina = $desde; $pagina <= $hasta; $pagina++)
+      @if($pagina == $actual)
+      <span class ="btn-action active">{{ $pagina }}</span>
+      @else
+      <a href="{{ $sesionesFinalizadas->url(1) }}" class="btn-action">1>{{ $pagina }}</a>
+      @endif
+      @endfor
+
+      @if ($hasta < $ultima)
+        @if  ($hasta < $ultima -1)
+          <span>...</span>
+        @endif
+        <a href="{{ $sesionesFinalizadas->url($ultima) }}" class="btn-action">{{ $ultima }}</a>
+      @endif
 
       <a href="{{ $sesionesFinalizadas->nextPageUrl() }}"
        class="btn-action {{ $sesionesFinalizadas->hasMorePages() ? '' : 'disabled' }}"
