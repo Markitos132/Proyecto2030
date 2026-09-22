@@ -30,15 +30,6 @@
             </div>
 
             <a href="{{ route('configuracion') }}">Mi perfil</a>
-            <a href="{{ route('configuracion') }}">
-                Configuración
-            </a>
-            {{-- El ancla apuntaba a #cambiar-contrasena, pero la sección se
-                 llamaba "Cambiar Contraseña" (con espacio y tilde): el
-                 enlace no saltaba a ningún lado. --}}
-            <a href="{{ route('configuracion') }}#seguridad">
-                Cambiar contraseña
-            </a>
             <hr>
             {{-- Logout por POST: con un GET, cualquier enlace o imagen externa
                  podria desloguear al usuario sin que lo pida (CSRF). --}}
