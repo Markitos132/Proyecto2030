@@ -170,6 +170,15 @@ class IngestaController extends Controller
             'temperatura' => $datos['temperatura'],
         ]);
 
+        if ($sesion->$estado === Sesion::ESTADO_FINALIZAD && (!$sesion->$fecha_fin || $momento > $ $sesion->$fecha_fin)) {
+            $sesion->update([
+                'fecha_fin' => $momento,
+                'duracion_sesion' => $sesion->$fecha_inicio
+                                    ? (int) round($sesion->$fecha_inicio->diffInMinutes($momento))
+                                    : $sesion->$duracion_sesion,
+            ]);
+        }
+
         if ($sesion->id_dispositivo) {
             $this->registrarLatido([$sesion->id_dispositivo], $momento);
         }
