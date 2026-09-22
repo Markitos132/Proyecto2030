@@ -56,9 +56,10 @@ Route::middleware('auth')->group(function () {
     // Estado en JSON para el refresco automático del panel.
     Route::get('/panel/estado', PanelEstadoController::class)->name('panel.estado');
 
-    // El alta de usuarios no es pública: se hace desde el panel.
-    Route::get('/usuarios/nuevo',  [AuthController::class, 'mostrarRegistro'])->name('registro');
-    Route::post('/usuarios/nuevo', [AuthController::class, 'registro']);
+    // El alta de usuarios no es pública: se hace desde el panel, y solo
+    // un administrador puede hacerla (ver VerificarEsAdmin).
+    Route::get('/usuarios/nuevo',  [AuthController::class, 'mostrarRegistro'])->name('registro')->middleware('es.admin');
+    Route::post('/usuarios/nuevo', [AuthController::class, 'registro'])->middleware('es.admin');
 
     // ── Individuos ─────────────────────────────────────────
     Route::get('/individuos', [IndividuoController::class, 'index'])->name('individuos');

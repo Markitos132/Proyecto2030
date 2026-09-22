@@ -31,6 +31,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $middleware->alias([
             'clave.ingesta' => \App\Http\Middleware\VerificarClaveIngesta::class,
+            'es.admin'      => \App\Http\Middleware\VerificarEsAdmin::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

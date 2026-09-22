@@ -27,6 +27,7 @@ class Usuario extends Authenticatable
         'institucion',
         'telefono',
         'rol',
+        'es_admin',
         'notif_fuera_rango',
         'notif_sin_reportar',
         'notif_resumen_diario',
@@ -41,6 +42,7 @@ class Usuario extends Authenticatable
     {
         return [
             'password'             => 'hashed',
+            'es_admin'             => 'boolean',
             'notif_fuera_rango'    => 'boolean',
             'notif_sin_reportar'   => 'boolean',
             'notif_resumen_diario' => 'boolean',
@@ -73,8 +75,9 @@ class Usuario extends Authenticatable
     /**
      * Roles que ofrece el formulario de perfil.
      *
-     * Son descriptivos: hoy no restringen nada. Cualquier usuario
-     * autenticado ve el panel completo.
+     * Son descriptivos: no restringen nada por sí solos. Quién puede
+     * dar de alta usuarios se controla con la columna `es_admin`,
+     * totalmente aparte de esto.
      */
     public const ROLES = [
         'Investigador principal',
