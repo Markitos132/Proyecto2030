@@ -170,7 +170,7 @@ class IngestaController extends Controller
             'temperatura' => $datos['temperatura'],
         ]);
 
-        if ($sesion->estado === Sesion::ESTADO_FINALIZAD && (!$sesion->$fecha_fin || $momento > $ $sesion->$fecha_fin)) {
+        if ($sesion->estado === Sesion::ESTADO_FINALIZADA && (!$sesion->$fecha_fin || $momento > $ $sesion->$fecha_fin)) {
             $sesion->update([
                 'fecha_fin' => $momento,
                 'duracion_sesion' => $sesion->fecha_inicio
