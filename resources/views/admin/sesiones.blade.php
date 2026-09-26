@@ -519,19 +519,13 @@ const detalleSesionModal = document.getElementById('detalleSesionModal');
     detalleSesionModal.classList.remove('open');
     document.body.classList.remove('modal-open');
 
-    delete detallesesionModal.dataset.sesionAbierta;
-
+    delete detalleSesionModal.dataset.sesionAbierta;
+ 
   }
 
-  //! Temp. mínima/máxima real de la sesión.
-  //! TODO: por ahora son datos de prueba hardcodeados. Cuando /panel/estado
-  //! mande temp_min_real / temp_max_real por sesión, esto se reemplaza por
-  //! datos leídos de ahí (o del dataset de la tarjeta, si Marcos los agrega
-  //! como data-temp-min-real / data-temp-max-real) — el resto del modal no
-  //! cambia, solo de dónde se leen estos dos valores.
-  function actualizarMetricasDetalle() {
-    document.getElementById('detalleTempMin').textContent = '24.1 °C';
-    document.getElementById('detalleTempMax').textContent = '33.7 °C';
+  function actualizarMetricasDetalle(data) {
+    document.getElementById('detalleTempMin').textContent = data.tempMinReal ? `${data.tempMinReal} °C`: '-- °C';
+    document.getElementById('detalleTempMax').textContent = data.tempMaxReal ? `${data.tempMaxReal} °C`: '-- °C';
   }
 
   document.querySelectorAll('.btn-action.verdetalle').forEach(boton => { 
@@ -565,7 +559,7 @@ const detalleSesionModal = document.getElementById('detalleSesionModal');
       document.getElementById('detalleLecturas').textContent = data.lecturas || '--';
       document.getElementById('detalleTiempoRestante').textContent = data.minutosRestantes ? `${data.minutosRestantes} min` : `-- min`;
 
-      actualizarMetricasDetalle();
+      actualizarMetricasDetalle(data);
 
       //!renderizar gráfico del modal con chart.js
       actualizarGraficoModal(data.trend);
@@ -665,6 +659,9 @@ window.onSesionActualizada = function (s) {
   document.getElementById('detalleDuracion').textContent = `${s.duracion} min`;
   document.getElementById('detalleLecturas').textContent = s.lecturas;
   document.getElementById('detalleTiempoRestante').textContent = s.restante != null ? `${s.restante} min` : '-- min';
+
+  document.getElementyById('detalleTempMin').textContent = s.temp_min_real !== null ? `${s.temp_min_real.toFixed(1)} °C` : '-- C';
+  document.getElemntyById('detalleTempMax').textContent = s.temp_max_real !== null ? `${s.temp_max_real.toFixed(1)} °C` : '-- °C';
 
   const lecturasEnGrafico = miGraficoModal ? miGraficoModal.data.datasets[0].data.length : 0;
   if (s.temperatura !== null && s.lecturas > lecturasEnGrafico) {

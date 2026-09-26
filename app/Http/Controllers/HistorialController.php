@@ -82,12 +82,15 @@ class HistorialController extends Controller
 
     fwrite($salida, "\xEF\xBB\xBF");
 
-    fputcsv($salida, ['individuo', 'fecha', 'hora', 'n_medicion', 'temperatura', 'promedio'], ';');
+    fputcsv($salida, ['individuo', 'fecha', 'hora', 'n_medicion', 'temperatura', 'promedio', 'minima', 'maxima'], ';');
 
     $individuo = $sesion->individuo?->codigo_individuo ?? '';
 
     $promediotodosdecimales = $sesion->mediciones()->avg('temperatura');
     $promedio  = $promediotodosdecimales !== null ? $this->decimal(round($promediotodosdecimales, 2)): '';
+
+    $minima = $this->decimal($sesion->mediciones()->min('temperatura'));
+    $maxima = $this->decimal($sesion->mediciones()->max('temperatura'));
 
     $numero = 0;
 
@@ -106,6 +109,8 @@ class HistorialController extends Controller
                     $this->decimal($m->temperatura),
                     //aca solo se escribe el promedio en la primera fila, sino se repite en la cantidad de columnas que tengan mediciones
                     $numero == 1 ? $promedio : '',
+                    $numero == 1 ? $minima : '',
+                    $numero == 1 ? $maxima : '',
                 ], ';');
             }
         });
