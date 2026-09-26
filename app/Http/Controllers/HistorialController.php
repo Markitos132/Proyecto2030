@@ -97,7 +97,7 @@ class HistorialController extends Controller
     $sesion->mediciones()
         ->orderBy('fecha_hora')
         ->orderBy('id_medicion')
-        ->chunk(500, function ($mediciones) use ($salida, $individuo, $promedio, &$numero) {
+        ->chunk(500, function ($mediciones) use ($salida, $individuo, $promedio, $minima, $maxima, &$numero) {
             foreach ($mediciones as $m) {
                 $numero++;
 

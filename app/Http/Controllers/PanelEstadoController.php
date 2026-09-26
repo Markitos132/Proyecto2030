@@ -84,6 +84,8 @@ class PanelEstadoController extends Controller
                 'total'       => $s->duracion_sesion,
                 'progreso'    => $s->progreso,
                 'serie'       => $s->serieReciente(),
+                'temp_min_real'  => $temperaturas->isNotEmpty() ? (float) $temperaturas->min() : null,
+                'temp_max_real'  => $temperaturas->isNotEmpty() ? (float) $temperaturas->max() : null,
             ])->values(),
 
             'proximo_en' => $hayActivas ? self::RITMO_ACTIVO : self::RITMO_REPOSO,

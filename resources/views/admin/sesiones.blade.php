@@ -660,8 +660,8 @@ window.onSesionActualizada = function (s) {
   document.getElementById('detalleLecturas').textContent = s.lecturas;
   document.getElementById('detalleTiempoRestante').textContent = s.restante != null ? `${s.restante} min` : '-- min';
 
-  document.getElementyById('detalleTempMin').textContent = s.temp_min_real !== null ? `${s.temp_min_real.toFixed(1)} °C` : '-- C';
-  document.getElemntyById('detalleTempMax').textContent = s.temp_max_real !== null ? `${s.temp_max_real.toFixed(1)} °C` : '-- °C';
+  document.getElementById('detalleTempMin').textContent = typeof s.temp_min_real === 'number' ? `${s.temp_min_real.toFixed(1)} °C` : '-- °C';
+  document.getElementById('detalleTempMax').textContent = typeof s.temp_max_real === 'number' ? `${s.temp_max_real.toFixed(1)} °C` : '-- °C';
 
   const lecturasEnGrafico = miGraficoModal ? miGraficoModal.data.datasets[0].data.length : 0;
   if (s.temperatura !== null && s.lecturas > lecturasEnGrafico) {

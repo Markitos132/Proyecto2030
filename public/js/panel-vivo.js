@@ -233,8 +233,8 @@
       tarjeta.dataset.lecturas = s.lecturas;
       tarjeta.dataset.duracion = `${s.duracion} min`;
       tarjeta.dataset.minutosRestantes = s.restante ?? '';
-      tarjeta.dataset.tempMinReal = s.temp.min.real !== null ? s.temp_min_real.toFixed(1) : '';
-      tarjeta.dataset.tempMaxReal = s.tem_max_real !== null ? s.temp_max_real.toFixed(1) : '';
+      tarjeta.dataset.tempMinReal = typeof s.temp_min_real === 'number' ? s.temp_min_real.toFixed(1) : '';
+      tarjeta.dataset.tempMaxReal = typeof s.temp_max_real === 'number' ? s.temp_max_real.toFixed(1) : '';
 
       tarjeta.dataset.trend = (s.serie || []).join(',');
       if (typeof window.onSesionActualizada === 'function') {
