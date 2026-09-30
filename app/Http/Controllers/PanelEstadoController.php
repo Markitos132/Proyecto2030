@@ -67,26 +67,30 @@ class PanelEstadoController extends Controller
                                             ? round((float) $duracionPromedio, 1)
                                             : null,
             ],
-            'sesiones' => $sesiones->map(fn ($s) => [
-                'id_sesion'   => $s->id_sesion,
-                'activa'      => $s->estaActiva(),
-                'etiqueta'    => $s->etiqueta_estado,
-                'individuo'   => $s->individuo?->codigo_individuo,
-                'especie'     => $s->individuo?->especie,
-                'dispositivo' => $s->dispositivo?->nombre,
-                'temperatura' => $s->ultimaMedicion?->temperatura !== null
-                                    ? (float) $s->ultimaMedicion->temperatura
-                                    : null,
-                'medido_hace' => $s->ultimaMedicion?->fecha_hora?->diffForHumans(null, true),
-                'lecturas'    => $s->mediciones->count(),
-                'duracion'    => $s->minutos_transcurridos,
-                'restante'    => $s->minutos_restantes,
-                'total'       => $s->duracion_sesion,
-                'progreso'    => $s->progreso,
-                'serie'       => $s->serieReciente(),
-                'temp_min_real'  => $temperaturas->isNotEmpty() ? (float) $temperaturas->min() : null,
-                'temp_max_real'  => $temperaturas->isNotEmpty() ? (float) $temperaturas->max() : null,
-            ])->values(),
+            'sesiones' => $sesiones->map(function ($s) {
+                $temperaturas = $s->mediciones->pluck('temperatura')->filter();
+
+                return [
+                    'id_sesion'   => $s->id_sesion,
+                    'activa'      => $s->estaActiva(),
+                    'etiqueta'    => $s->etiqueta_estado,
+                    'individuo'   => $s->individuo?->codigo_individuo,
+                    'especie'     => $s->individuo?->especie,
+                    'dispositivo' => $s->dispositivo?->nombre,
+                    'temperatura' => $s->ultimaMedicion?->temperatura !== null
+                                        ? (float) $s->ultimaMedicion->temperatura
+                                        : null,
+                    'medido_hace' => $s->ultimaMedicion?->fecha_hora?->diffForHumans(null, true),
+                    'lecturas'    => $s->mediciones->count(),
+                    'duracion'    => $s->minutos_transcurridos,
+                    'restante'    => $s->minutos_restantes,
+                    'total'       => $s->duracion_sesion,
+                    'progreso'    => $s->progreso,
+                    'serie'       => $s->serieReciente(),
+                    'temp_min_real'  => $temperaturas->isNotEmpty() ? (float) $temperaturas->min() : null,
+                    'temp_max_real'  => $temperaturas->isNotEmpty() ? (float) $temperaturas->max() : null,
+                ];
+            })->values(),
 
             'proximo_en' => $hayActivas ? self::RITMO_ACTIVO : self::RITMO_REPOSO,
         ];
