@@ -164,21 +164,18 @@ class IngestaController extends Controller
             ], 409);
         }
 
+        $cerrada      = ! $sesion->estaActiva();
+        $fueraDeRango = $cerrada
+            && $sesion->fecha_fin
+            && $momento > $sesion->fecha_fin->copy()->addMinute();
+
+    if (! $fueraDeRango) {
         Medicion::create([
             'id_sesion'   => $sesion->id_sesion,
             'fecha_hora'  => $momento,
             'temperatura' => $datos['temperatura'],
         ]);
-
-        if ($sesion->estado === Sesion::ESTADO_FINALIZADA 
-            && (! $sesion->fecha_fin || $momento > $sesion->fecha_fin)) {
-            $sesion->update([
-                'fecha_fin' => $momento,
-                'duracion_sesion' => $sesion->fecha_inicio
-                                    ? (int) round($sesion->fecha_inicio->diffInMinutes($momento))
-                                    : $sesion->duracion_sesion,
-            ]);
-        }
+}
 
         if ($sesion->id_dispositivo) {
             $this->registrarLatido([$sesion->id_dispositivo], $momento);

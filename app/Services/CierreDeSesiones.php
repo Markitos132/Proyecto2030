@@ -29,6 +29,10 @@ class CierreDeSesiones
     /** Segundos entre dos pasadas cuando se invoca de forma oportunista. */
     private const FRECUENCIA_REVISION = 120;
 
+    // Cubre que el ESP32 arranque la sesión un rato después de que se creó en el panel
+    private const GRACIA_DURACION_MINUTOS = 2;
+
+
     /**
      * Revisa como mucho una vez cada FRECUENCIA_REVISION segundos.
      *
@@ -63,6 +67,27 @@ class CierreDeSesiones
         $cerradas = 0;
 
         foreach ($sesiones as $sesion) {
+            if ($sesion->duracion_sesion && $sesion->fecha_inicio) {
+             $finPrevisto = $sesion->fecha_inicio->copy()->addMinutes((int) $sesion->duracion_sesion);
+
+             if(now()->lt($finPrevisto->copy()->addMinutes(self::GRACIA_DURACION_MINUTOS))){
+                continue;
+             }
+
+            $sesion->update([
+                'fecha_fin'       => $finPrevisto,
+                'estado'          => Sesion::ESTADO_FINALIZADA,
+            ]);
+
+            $cerradas++;
+
+            Log::info('[BioNEA] Sesion cerrada por cumplir su duracion' , [
+                'id_sesion' => $sesion->id_sesion,
+                'fecha_fin' => $finPrevisto->toDateTimeString(),
+            ]);
+
+            continue;
+         }
             $ultimaSenal = $sesion->ultimaMedicion?->fecha_hora ?? $sesion->fecha_inicio;
 
             // Sin fecha de inicio ni mediciones no hay forma de decidir.
@@ -76,7 +101,7 @@ class CierreDeSesiones
             if ($ultimaSenal->diffInMinutes(now()) < $umbral) {
                 continue;
             }
-
+            
             $sesion->update([
                 'fecha_fin'       => $ultimaSenal,
                 'estado'          => Sesion::ESTADO_FINALIZADA,
@@ -92,6 +117,7 @@ class CierreDeSesiones
                 'ultima_senal'   => $ultimaSenal->toDateTimeString(),
                 'umbral_minutos' => $umbral,
             ]);
+
         }
 
         return $cerradas;
