@@ -4,8 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Models\Individuo;
 use App\Models\Sesion;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
+use Illuminate\Support\Facades\DB;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class HistorialController extends Controller
@@ -74,6 +76,51 @@ class HistorialController extends Controller
             $this->nombreDelArchivo($sesion),
             ['Content-Type' => 'text/csv; charset=UTF-8'],
         );
+    }
+
+    /**
+     * Borra una o varias sesiones finalizadas del historial, con sus
+     * mediciones.
+     *
+     * mediciones.id_sesion tiene foreign key a sesiones pero sin cascada
+     * (ver create_bionea_schema), así que si se borrara la sesión sin
+     * borrar antes sus mediciones, Postgres rechaza el delete entero.
+     *
+     * Solo entran acá sesiones finalizadas del propio usuario, aunque el
+     * formulario llegue manipulado con otros ids: ni una sesión activa ni
+     * una ajena se borran por esta vía.
+     */
+    public function eliminar(Request $request): RedirectResponse
+    {
+        $datos = $request->validate([
+            'sesiones'   => ['required', 'array', 'min:1'],
+            'sesiones.*' => ['integer'],
+        ], [
+            'sesiones.required' => 'No se seleccionó ninguna sesión para borrar.',
+        ]);
+
+        $sesiones = Sesion::finalizadas()
+            ->where('id_usuario', auth()->id())
+            ->whereIn('id_sesion', $datos['sesiones'])
+            ->get();
+
+        if ($sesiones->isEmpty()) {
+            return back()->withErrors(['sesiones' => 'No se encontró ninguna sesión válida para borrar.']);
+        }
+
+        DB::transaction(function () use ($sesiones) {
+            foreach ($sesiones as $sesion) {
+                $sesion->mediciones()->delete();
+                $sesion->delete();
+            }
+        });
+
+        $cantidad = $sesiones->count();
+        $mensaje = $cantidad === 1
+            ? 'Se borró 1 sesión del historial.'
+            : "Se borraron {$cantidad} sesiones del historial.";
+
+        return back()->with('exito', $mensaje);
     }
 
     private function escribirCsv(Sesion $sesion): void

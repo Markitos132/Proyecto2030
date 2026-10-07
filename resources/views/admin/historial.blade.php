@@ -13,6 +13,32 @@
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v13M7 11l5 5 5-5M5 21h14"/></svg>
               <span id="exportar-csv-texto">Exportar CSV</span>
             </button>
+            <button class="btn-add delete" id="borrar-sesiones" disabled>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0-1 14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2L4 6h16Z"/></svg>
+              <span id="borrar-sesiones-texto">Borrar sesión</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {{-- MODAL DE CONFIRMACIÓN — mismo patrón que individuo_ficha /
+           dispositivo_ficha. El form arranca vacío: los <input hidden>
+           con los ids tildados se arman por JS recién al confirmar. --}}
+      <div class="content-overlay" id="modalBorrarSesiones"></div>
+      <div class="modal-wrapper" id="confirmarBorrarSesiones">
+        <div class="pop-up">
+          <div class="pop-up-card">
+            <div><h2 id="borrarSesionesTitulo">¿Seguro de borrar la sesión seleccionada?</h2></div>
+            <div class="modal-form">
+              <p>Esta acción no se podrá deshacer. Se borran también sus mediciones.</p>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn-secondary" id="cancelarBorrarSesiones">Cancelar</button>
+              <form method="POST" action="{{ route('historial.eliminar') }}" id="formBorrarSesiones">
+                @csrf
+                <button type="submit" class="btn-primary" id="confirmarBorrarSesionesBtn">Sí, borrar</button>
+              </form>
+            </div>
           </div>
         </div>
       </div>
@@ -175,20 +201,31 @@ function revisarSiTodasEstanTildadas() {
 
   const botonExportar = document.getElementById('exportar-csv');
   const textoExportar = document.getElementById('exportar-csv-texto');
+  const botonBorrar = document.getElementById('borrar-sesiones');
+  const textoBorrar = document.getElementById('borrar-sesiones-texto');
 
   if (tildadas.length === 0) {
     botonExportar.disabled = true;
     textoExportar.textContent = 'Exportar CSV';
+
+    botonBorrar.disabled = true;
+    textoBorrar.textContent = 'Borrar sesión';
   }
 
   else if (tildadas.length === 1) {
     botonExportar.disabled = false;
     textoExportar.textContent = 'Exportar archivo';
+
+    botonBorrar.disabled = false;
+    textoBorrar.textContent = 'Borrar sesión';
   }
 
   else {
     botonExportar.disabled = false;
     textoExportar.textContent = 'Exportar archivos';
+
+    botonBorrar.disabled = false;
+    textoBorrar.textContent = `Borrar ${tildadas.length} sesiones`;
   }
 
 
@@ -222,6 +259,55 @@ document.getElementById('exportar-csv').addEventListener('click', () => {
       enlace.click();
       enlace.remove();
     }, i * 400);
+  });
+});
+
+// Borrar sesiones: el botón de la barra solo abre el modal de
+// confirmación. Los <input hidden> con los ids tildados recién se
+// arman al tocar "Sí, borrar" — si se armaran antes, destildar una
+// fila después de abrir el modal no se reflejaría en el envío.
+const modalBorrarSesiones = document.getElementById('modalBorrarSesiones');
+const confirmarBorrarSesiones = document.getElementById('confirmarBorrarSesiones');
+const formBorrarSesiones = document.getElementById('formBorrarSesiones');
+const borrarSesionesTitulo = document.getElementById('borrarSesionesTitulo');
+
+function abrirModalBorrarSesiones() {
+  const tildadas = Array.from(document.querySelectorAll('.fila-checkbox')).filter(c => c.checked);
+  if (tildadas.length === 0) return;
+
+  borrarSesionesTitulo.textContent = tildadas.length === 1
+    ? '¿Seguro de borrar la sesión seleccionada?'
+    : `¿Seguro de borrar las ${tildadas.length} sesiones seleccionadas?`;
+
+  modalBorrarSesiones.classList.add('open');
+  confirmarBorrarSesiones.classList.add('open');
+}
+
+function cerrarModalBorrarSesiones() {
+  modalBorrarSesiones.classList.remove('open');
+  confirmarBorrarSesiones.classList.remove('open');
+}
+
+document.getElementById('borrar-sesiones').addEventListener('click', abrirModalBorrarSesiones);
+document.getElementById('cancelarBorrarSesiones').addEventListener('click', cerrarModalBorrarSesiones);
+
+document.addEventListener('keydown', (event) => {
+  if (event.key === 'Escape' && confirmarBorrarSesiones.classList.contains('open')) {
+    cerrarModalBorrarSesiones();
+  }
+});
+
+formBorrarSesiones.addEventListener('submit', () => {
+  // Limpiamos por si el usuario abrió y cerró el modal más de una vez.
+  formBorrarSesiones.querySelectorAll('input[name="sesiones[]"]').forEach(i => i.remove());
+
+  const tildadas = Array.from(document.querySelectorAll('.fila-checkbox')).filter(c => c.checked);
+  tildadas.forEach(checkbox => {
+    const input = document.createElement('input');
+    input.type = 'hidden';
+    input.name = 'sesiones[]';
+    input.value = checkbox.dataset.sesionId;
+    formBorrarSesiones.appendChild(input);
   });
 });
 
