@@ -5,6 +5,8 @@
 /* HEADER & EXPORT BLOCK (Base Desktop) */
 .historial-header-top {
   display: flex;
+  flex-wrap: nowrap; /* .page-header-top trae wrap; con 2 botones largos
+                         saltaba entero de línea en vez de acomodarse. */
   justify-content: space-between;
   align-items: flex-start;
   gap: 1.5rem;
