@@ -81,7 +81,7 @@
           <button type="submit" class="btn-submit">Ingresar</button>
 
           {{-- El alta de usuarios se hace desde el panel, no desde acá. --}}
-          <p class="auth-switch">¿No tenés una cuenta? Pedile acceso a un administrador.</p>
+          <p class="auth-switch">¿No tenés una cuenta? Escribinos a <a href="mailto:bioneaorganiks@gmail.com">bioneaorganiks@gmail.com</a> y un administrador te la crea.</p>
         </form>
       </div>
     </div>

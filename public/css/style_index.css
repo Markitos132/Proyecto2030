@@ -405,6 +405,8 @@
 
     .cta h2 { font-size: clamp(1.8rem, 4vw, 2.8rem); font-weight: 700; margin-bottom: 1rem; }
     .cta p { font-size: 1rem; color: var(--text-muted); max-width: 480px; margin: 0 auto 2rem; line-height: 1.7; }
+    .cta .cta-note { font-size: 0.88rem; margin: 1.5rem auto 0; }
+    .cta .cta-note a { color: #4F8200; font-weight: 600; text-decoration: underline; }
 
     /* FOOTER */
     footer {

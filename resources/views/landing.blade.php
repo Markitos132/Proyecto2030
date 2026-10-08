@@ -132,6 +132,7 @@
     <h2>¿Listo para comenzar?</h2>
     <p>Ingresá al sistema para gestionar sesiones, visualizar mediciones y consultar el historial de cada individuo.</p>
     <a href="{{ route('login') }}" class="btn btn-dark">INICIAR SESIÓN</a>
+    <p class="cta-note">¿Todavía no tenés una cuenta? Escribinos a <a href="mailto:bioneaorganiks@gmail.com">bioneaorganiks@gmail.com</a> y un administrador te la crea.</p>
   </div>
 </section>
 

@@ -313,6 +313,12 @@ img { max-width: 100%; display: block; }
   color: var(--text-mid);
 }
 
+.auth-switch a[href^="mailto:"] {
+  color: var(--Verde2);
+  font-weight: 600;
+  text-decoration: underline;
+}
+
 .auth-divider {
   display: flex;
   align-items: center;
