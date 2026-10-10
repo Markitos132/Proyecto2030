@@ -95,5 +95,4 @@ Route::middleware('auth')->group(function () {
     Route::get('/configuracion', [ConfiguracionController::class, 'index'])->name('configuracion');
     Route::put('/configuracion/perfil', [ConfiguracionController::class, 'perfil'])->name('configuracion.perfil');
     Route::put('/configuracion/password', [ConfiguracionController::class, 'password'])->name('configuracion.password');
-    Route::put('/configuracion/preferencias', [ConfiguracionController::class, 'preferencias'])->name('configuracion.preferencias');
 });

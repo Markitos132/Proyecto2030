@@ -28,10 +28,6 @@ class Usuario extends Authenticatable
         'telefono',
         'rol',
         'es_admin',
-        'notif_fuera_rango',
-        'notif_sin_reportar',
-        'notif_resumen_diario',
-        'notif_push',
     ];
 
     protected $hidden = [
@@ -43,10 +39,6 @@ class Usuario extends Authenticatable
         return [
             'password'             => 'hashed',
             'es_admin'             => 'boolean',
-            'notif_fuera_rango'    => 'boolean',
-            'notif_sin_reportar'   => 'boolean',
-            'notif_resumen_diario' => 'boolean',
-            'notif_push'           => 'boolean',
         ];
     }
 

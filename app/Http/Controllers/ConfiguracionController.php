@@ -12,8 +12,8 @@ use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 
 /**
- * Configuración del panel: perfil del investigador, contraseña,
- * conectividad y preferencias de notificación.
+ * Configuración del panel: perfil del investigador, contraseña y
+ * conectividad de las unidades.
  *
  * Toda la vista era una maqueta: los datos estaban escritos a mano en el
  * HTML y los formularios hacían preventDefault() para mostrar un tilde de
@@ -53,7 +53,7 @@ class ConfiguracionController extends Controller
     {
         $usuario = $request->user();
 
-        // Bolsa de errores propia: los tres formularios conviven en la misma
+        // Bolsa de errores propia: los dos formularios conviven en la misma
         // página, y sin separarlos un error de contraseña aparecería también
         // sobre el formulario de perfil.
         $datos = $request->validateWithBag('perfil', [
@@ -127,20 +127,5 @@ class ConfiguracionController extends Controller
 
         return redirect()->route('configuracion')
             ->with('exito', 'Contraseña actualizada.');
-    }
-
-    public function preferencias(Request $request): RedirectResponse
-    {
-        $request->user()->update([
-            'notif_fuera_rango'    => $request->boolean('notif_fuera_rango'),
-            'notif_sin_reportar'   => $request->boolean('notif_sin_reportar'),
-            'notif_resumen_diario' => $request->boolean('notif_resumen_diario'),
-            'notif_push'           => $request->boolean('notif_push'),
-        ]);
-
-        // Con el ancla, la página vuelve a abrir la pestaña donde estaba el
-        // formulario en vez de saltar a Perfil.
-        return redirect()->to(route('configuracion').'#conectividad')
-            ->with('exito', 'Preferencias guardadas.');
     }
 }

@@ -15,7 +15,7 @@
         </button>
         <button class="settings-tab" data-tab="conectividad">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5a10 10 0 0 1 14 0M8 16a6 6 0 0 1 8 0M12 19.5h.01"/></svg>
-          Conectividad y notificaciones
+          Conectividad
         </button>
       </div>
 
@@ -140,7 +140,7 @@
         </section>
       </div>
 
-      <!-- PANEL: CONECTIVIDAD Y NOTIFICACIONES -->
+      <!-- PANEL: CONECTIVIDAD -->
       <div class="settings-panel" id="panel-conectividad">
         <div class="settings-card">
           <div class="settings-card-header">
@@ -202,78 +202,6 @@
             <a href="{{ route('dispositivos') }}">Dispositivos</a> con su dirección MAC real:
             así es como el panel lo reconoce y le asigna sesiones.
           </p>
-        </div>
-
-        <div class="settings-card">
-          <div class="settings-card-header">
-            <h2>Notificaciones</h2>
-            <p>Elegí cuándo querés recibir avisos sobre el estado de tus sesiones y dispositivos.</p>
-          </div>
-
-          <div class="aviso aviso-info" role="status">
-            Tus preferencias se guardan, pero el envío todavía no está activo:
-            falta configurar un servicio de correo en el servidor.
-          </div>
-
-          <form method="POST" action="{{ route('configuracion.preferencias') }}" id="notifsForm">
-            @csrf
-            @method('PUT')
-
-            {{-- El input oculto hace que un toggle apagado también viaje.
-                 Sin él, una casilla sin tildar simplemente no se envía y el
-                 servidor no puede distinguir "apagado" de "no tocado". --}}
-            <div class="toggle-row">
-              <div class="toggle-row-text">
-                <strong>Alertas de temperatura fuera de rango</strong>
-                <span>Avisa por correo cuando una sesión activa supera el rango esperado para la especie.</span>
-              </div>
-              <label class="switch">
-                <input type="hidden" name="notif_fuera_rango" value="0">
-                <input type="checkbox" name="notif_fuera_rango" value="1" {{ $usuario->notif_fuera_rango ? 'checked' : '' }}>
-                <span class="switch-slider"></span>
-              </label>
-            </div>
-
-            <div class="toggle-row">
-              <div class="toggle-row-text">
-                <strong>Dispositivo sin reportar</strong>
-                <span>Avisa cuando una unidad deja de enviar datos durante más del doble de su intervalo configurado.</span>
-              </div>
-              <label class="switch">
-                <input type="hidden" name="notif_sin_reportar" value="0">
-                <input type="checkbox" name="notif_sin_reportar" value="1" {{ $usuario->notif_sin_reportar ? 'checked' : '' }}>
-                <span class="switch-slider"></span>
-              </label>
-            </div>
-
-            <div class="toggle-row">
-              <div class="toggle-row-text">
-                <strong>Resumen diario por correo</strong>
-                <span>Un resumen con las sesiones del día y el estado general de las unidades, todas las noches a las 21:00.</span>
-              </div>
-              <label class="switch">
-                <input type="hidden" name="notif_resumen_diario" value="0">
-                <input type="checkbox" name="notif_resumen_diario" value="1" {{ $usuario->notif_resumen_diario ? 'checked' : '' }}>
-                <span class="switch-slider"></span>
-              </label>
-            </div>
-
-            <div class="toggle-row">
-              <div class="toggle-row-text">
-                <strong>Notificaciones push en el navegador</strong>
-                <span>Mostrar una notificación del sistema mientras tenés la página abierta en otra pestaña.</span>
-              </div>
-              <label class="switch">
-                <input type="hidden" name="notif_push" value="0">
-                <input type="checkbox" name="notif_push" value="1" {{ $usuario->notif_push ? 'checked' : '' }}>
-                <span class="switch-slider"></span>
-              </label>
-            </div>
-
-            <div class="settings-actions" style="margin-top:1.5rem;">
-              <button type="submit" class="btn-save">Guardar preferencias</button>
-            </div>
-          </form>
         </div>
       </div>
     @endsection

@@ -5,7 +5,7 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
 /**
- * Campos de perfil y preferencias de notificación.
+ * Campos de perfil del usuario.
  *
  * La tabla `usuarios` venía de la versión Node con lo mínimo para
  * autenticar: nombre, email y password. El formulario de Configuración
@@ -37,25 +37,6 @@ return new class extends Migration
                 $table->string('rol', 60)->nullable();
             }
 
-            // Preferencias de notificación. Se guardan de verdad, pero
-            // todavía no hay servicio de correo que las consuma: hasta que
-            // exista SMTP, activarlas no dispara ningún envío.
-            if (! Schema::hasColumn('usuarios', 'notif_fuera_rango')) {
-                $table->boolean('notif_fuera_rango')->default(true);
-            }
-
-            if (! Schema::hasColumn('usuarios', 'notif_sin_reportar')) {
-                $table->boolean('notif_sin_reportar')->default(true);
-            }
-
-            if (! Schema::hasColumn('usuarios', 'notif_resumen_diario')) {
-                $table->boolean('notif_resumen_diario')->default(false);
-            }
-
-            if (! Schema::hasColumn('usuarios', 'notif_push')) {
-                $table->boolean('notif_push')->default(false);
-            }
-
             // El login tiene una casilla "Recordarme" desde el principio,
             // pero la tabla nunca tuvo dónde guardar el token: al tildarla,
             // Auth::attempt() intentaba escribir en una columna inexistente.
@@ -73,10 +54,6 @@ return new class extends Migration
                 'institucion',
                 'telefono',
                 'rol',
-                'notif_fuera_rango',
-                'notif_sin_reportar',
-                'notif_resumen_diario',
-                'notif_push',
                 'remember_token',
             ]);
         });
