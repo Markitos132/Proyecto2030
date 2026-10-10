@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\Dispositivo;
-use App\Models\Medicion;
 use App\Models\Sesion;
 use App\Services\CierreDeSesiones;
 use Illuminate\Routing\Controller;
@@ -30,15 +29,18 @@ class DashboardController extends Controller
             ->filter(fn ($d) => $d->estado_calculado !== 'offline')
             ->count();
 
-        $tempPromedio = Medicion::query()
-            ->whereHas('sesion', fn ($q) => $q->where('estado', Sesion::ESTADO_ACTIVA)
-                                               ->where('id_usuario', auth()->id()))
-            ->where('fecha_hora', '>=', now()->subHour())
-            ->avg('temperatura');
+        // Misma cuenta que hace Sesiones Activas: promedio de la última
+        // lectura de cada sesión en curso (sin ventana de tiempo).
+        $activas = $sesionesDelDia->where('estado', Sesion::ESTADO_ACTIVA);
+
+        $tempPromedio = $activas
+            ->map(fn ($s) => $s->ultimaMedicion?->temperatura)
+            ->filter()
+            ->avg();
 
         return view('admin.dashboard', [
             'sesionesDelDia'       => $sesionesDelDia,
-            'sesionesActivasCount' => Sesion::activas()->where('id_usuario', auth()->id())->count(),
+            'sesionesActivasCount' => $activas->count(),
             'dispositivosOnline'   => $dispositivosOnline,
             'totalDispositivos'    => $dispositivos->count(),
             'tempPromedio'         => $tempPromedio,

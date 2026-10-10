@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\Dispositivo;
-use App\Models\Medicion;
 use App\Models\Sesion;
 use App\Services\CierreDeSesiones;
 use Illuminate\Http\Request;
@@ -35,12 +34,6 @@ class PanelEstadoController extends Controller
 
         $hayActivas = $sesiones->contains(fn ($s) => $s->estaActiva());
 
-        $tempPromedio = Medicion::query()
-            ->whereHas('sesion', fn ($q) => $q->where('estado', Sesion::ESTADO_ACTIVA)
-                                               ->where('id_usuario', auth()->id()))
-            ->where('fecha_hora', '>=', now()->subHour())
-            ->avg('temperatura');
-
         $activas = $sesiones->where('estado', Sesion::ESTADO_ACTIVA);
 
         $tempActualPromedio = $activas
@@ -57,8 +50,8 @@ class PanelEstadoController extends Controller
                                             ->filter(fn ($d) => $d->estado_calculado !== 'offline')
                                             ->count(),
                 'dispositivos_total'  => $dispositivos->count(),
-                'temp_promedio'       => $tempPromedio !== null
-                                            ? round((float) $tempPromedio, 1)
+                'temp_promedio'       => $tempActualPromedio !== null
+                                            ? round((float) $tempActualPromedio, 1)
                                             : null,
                 'temp_actual_promedio' => $tempActualPromedio !== null
                                             ? round((float) $tempActualPromedio, 1)
