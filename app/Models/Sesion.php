@@ -79,7 +79,14 @@ class Sesion extends Model
 
     public function dispositivo()
     {
-        return $this->belongsTo(Dispositivo::class, 'id_dispositivo');
+        // Si el dispositivo se eliminó, la sesión conserva su nombre en
+        // dispositivo_nombre. Con este dispositivo "vacío", las vistas
+        // que leen $sesion->dispositivo?->nombre siguen mostrándolo sin
+        // tocar ninguna. Si tampoco hay nombre guardado, nombre es null.
+        return $this->belongsTo(Dispositivo::class, 'id_dispositivo')
+                    ->withDefault(function (Dispositivo $dispositivo, Sesion $sesion) {
+                        $dispositivo->nombre = $sesion->dispositivo_nombre;
+                    });
     }
 
     public function scopeActivas($query)

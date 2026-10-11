@@ -6,6 +6,7 @@ use App\Models\Dispositivo;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 
 class DispositivoController extends Controller
@@ -79,13 +80,27 @@ class DispositivoController extends Controller
     {
         abort_if($dispositivo->id_usuario !== auth()->id(), 403);
 
-        if ($dispositivo->sesiones()->exists()) {
+        // Con una sesión midiendo, borrar el equipo dejaría esa medición
+        // sin dispositivo a mitad de camino. Primero hay que finalizarla.
+        if ($dispositivo->sesionActiva()->exists()) {
             return back()->withErrors([
-                'dispositivo' => 'No se puede eliminar: el dispositivo tiene sesiones registradas.',
+                'dispositivo' => 'No se puede eliminar: el dispositivo tiene una sesión en curso. '
+                               . 'Finalizala primero.',
             ]);
         }
 
-        $dispositivo->delete();
+        // sesiones.id_dispositivo tiene foreign key sin cascada, así que
+        // mientras haya sesiones apuntando al equipo Postgres rechaza el
+        // delete. Las sesiones y sus mediciones se conservan (son datos de
+        // investigación): se les quita la referencia al dispositivo pero
+        // se les deja su nombre, para que el historial siga mostrándolo.
+        DB::transaction(function () use ($dispositivo) {
+            $dispositivo->sesiones()->update([
+                'dispositivo_nombre' => $dispositivo->nombre,
+                'id_dispositivo'     => null,
+            ]);
+            $dispositivo->delete();
+        });
 
         return redirect()->route('dispositivos')->with('exito', 'Dispositivo eliminado.');
     }

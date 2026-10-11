@@ -13,7 +13,7 @@
           <div class="pop-up-card">
             <div><h2>¿Seguro de eliminar el dispositivo {{ $dispositivo->nombre }}?</h2></div>
             <div class="modal-form">
-              <p id="BorrarmensajeDisp">Esta acción no se podrá deshacer</p>
+              <p id="BorrarmensajeDisp">Esta acción no se podrá deshacer. Las sesiones y mediciones de este dispositivo se conservan en el historial, con su nombre.</p>
             </div>
             <!-- Botones de Acción -->
             <div class="modal-footer">
