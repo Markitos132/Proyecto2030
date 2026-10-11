@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Dispositivo;
 use App\Models\Usuario;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -23,29 +22,10 @@ class ConfiguracionController extends Controller
 {
     public function index(Request $request)
     {
-        // estado_calculado consulta la sesión activa y su última medición.
-        // Sin precargarlas, cada dispositivo dispararía dos consultas más.
-        $dispositivos = Dispositivo::where('id_usuario' , $request->user()->id_usuario)
-            ->with('sesionActiva.ultimaMedicion')
-            ->orderBy('nombre')
-            ->get();
-
-        // El estado se calcula por dispositivo (mira última conexión y
-        // ritmo de la sesión), así que el conteo se hace en memoria.
-        $reportando = $dispositivos
-            ->filter(fn ($d) => $d->estado_calculado !== 'offline')
-            ->count();
 
         return view('admin.configuracion', [
             'usuario'         => $request->user(),
             'roles'           => Usuario::ROLES,
-            'totalUnidades'   => $dispositivos->count(),
-            'unidadesActivas' => $reportando,
-            // Del request, no de APP_URL: si esa variable quedó mal cargada
-            // en el servidor, config('app.url') devuelve http://localhost y
-            // el dato que hay que grabar en el firmware saldría equivocado.
-            'urlServidor'     => rtrim($request->getSchemeAndHttpHost(), '/'),
-            'claveIngesta'    => config('bionea.clave_ingesta'),
         ]);
     }
 

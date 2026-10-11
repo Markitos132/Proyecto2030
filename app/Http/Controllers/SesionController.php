@@ -49,7 +49,9 @@ class SesionController extends Controller
         $dispositivosDisponibles = Dispositivo::where('id_usuario', auth()->id())
             ->whereDoesntHave('sesiones', fn ($q) => $q->where('estado', Sesion::ESTADO_ACTIVA))
             ->orderBy('nombre')
-            ->get();
+            ->get()
+            ->filter(fn ($d) => $d->estado_calculado !== 'offline')
+            ->values();
 
         return view('admin.sesiones', [
             'sesionesActivas'         => $sesionesActivas,
@@ -80,7 +82,14 @@ class SesionController extends Controller
         $ocupado = Sesion::activas()
             ->where('id_dispositivo', $datos['dispositivo_id'])
             ->exists();
+        $dispositivo = Dispositivo::where('id_usuario', auth()->id())
+            ->findOrFail($datos['dispositivo_id']);
 
+        if ($dispositivo->estado_calculado === 'offline') {
+            return back()
+            ->withErrors(['dispositivo_id' => 'Ese dispositivo está offline. Encendelo y esperá a que reporte antes de iniciar la sesión.'])
+            ->withInput();
+        }
         if ($ocupado) {
             return back()->withErrors([
                 'dispositivo_id' => 'Ese dispositivo ya tiene una sesión en curso.',
