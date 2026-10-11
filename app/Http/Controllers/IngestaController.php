@@ -182,11 +182,11 @@ class IngestaController extends Controller
         }
 
         return response()->json([
-            'ok'        => true,
-            'tipo'      => 'medicion',
-            'id_sesion' => $sesion->id_sesion,
-            'sesion_id' => $sesion->sesion_externa,
-            'cerrada'   => ! $cerrada,
+            'ok'         => true,
+            'tipo'       => 'medicion',
+            'id_sesion'  => $sesion->id_sesion,
+            'session_id' => (string) $sesion->sesion_externa,
+            'continuar'  => ! $cerrada,
         ]);
     }
 
