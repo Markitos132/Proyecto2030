@@ -54,7 +54,10 @@
     
     <div class="features-grid">
       <div class="features-left">
-        <h2>[Video del ESP32 funcionando]</h2>
+        <video controls playsinline preload="metadata" aria-label="Unidad ESP32 de BIONEA funcionando">
+          <source src="/video/esp32-funcionando.mp4" type="video/mp4">
+          Tu navegador no puede reproducir este video.
+        </video>
       </div>
       <div class="feature-cards">
         <div class="feature-card">
@@ -113,9 +116,7 @@
   <div class="container">
     <div class="case-grid">
       <div class="case-img">
-        <div class="case-img-placeholder">
-          Foto de investigadores trabajando con lagartijas en laboratorio
-        </div>
+        <img src="/imagenes/investigadores.jpg" alt="Investigadores del IIGHI-CONICET trabajando con lagartijas en el laboratorio" loading="lazy">
       </div>
       <div class="case-content">
         <h3>¿Por qué BIONEA para el CONICET?</h3>
