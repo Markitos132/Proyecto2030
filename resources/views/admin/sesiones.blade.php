@@ -32,6 +32,7 @@
                 <label for="dispositivo_id">Dispositivo disponible</label>
                 <select name="dispositivo_id" id="dispositivo_id" required>
                   <option value="" disabled selected>Seleccione un dispositivo</option>
+                  @forelse ($dispositivosOnline as $dispositivo)
                     <option value="{{ $dispositivo->id_dispositivo }}" {{ old('dispositivo_id') == $dispositivo->id_dispositivo ? 'selected' : '' }}>
                       {{ $dispositivo->nombre }} ({{ $dispositivo->estado_calculado === 'warning' ? 'Con demora' : 'Online' }} · Libre)
                     </option>
