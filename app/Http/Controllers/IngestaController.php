@@ -169,7 +169,7 @@ class IngestaController extends Controller
             && $sesion->fecha_fin
             && $momento > $sesion->fecha_fin->copy()->addMinute();
 
-    if (! $fueraDeRango) {
+     if (! $fueraDeRango) {
         Medicion::create([
             'id_sesion'   => $sesion->id_sesion,
             'fecha_hora'  => $momento,
@@ -185,6 +185,8 @@ class IngestaController extends Controller
             'ok'        => true,
             'tipo'      => 'medicion',
             'id_sesion' => $sesion->id_sesion,
+            'sesion_id' => $sesion->sesion_externa,
+            'cerrada'   => ! $cerrada,
         ]);
     }
 
@@ -199,10 +201,6 @@ class IngestaController extends Controller
 
             return response()->json(['ok' => true, 'tipo' => 'fin_sesion', 'aviso' => 'sesión no encontrada']);
         }
-        
-        $fin = ($sesion->fecha_fin && $sesion->fecha_fin->greaterThan($momento))
-            ? $sesion->fecha_fin
-            : $momento;
 
         $sesion->update([
             'fecha_fin'       => $momento,
