@@ -54,7 +54,7 @@
     
     <div class="features-grid">
       <div class="features-left">
-        <video controls playsinline preload="metadata" aria-label="Unidad ESP32 de BIONEA funcionando">
+        <video id="videoEsp32" muted playsinline preload="auto" disablepictureinpicture aria-label="Unidad ESP32 de BIONEA funcionando">
           <source src="/video/esp32-funcionando.mp4" type="video/mp4">
           Tu navegador no puede reproducir este video.
         </video>
@@ -146,6 +146,29 @@
   const links = document.getElementById('navLinks');
   toggle.addEventListener('click', () => links.classList.toggle('open'));
   links.querySelectorAll('a').forEach(a => a.addEventListener('click', () => links.classList.remove('open')));
+
+  // Video del ESP32: sin controles. Arranca solo, una vez, cuando la
+  // sección entra en pantalla, y al terminar queda en el último cuadro
+  // (no tiene loop). Va silenciado porque los navegadores bloquean el
+  // arranque automático de videos con sonido.
+  const video = document.getElementById('videoEsp32');
+  if (video) {
+    // Si no puede arrancar solo (ahorro de datos, preferencia de menos
+    // movimiento, navegador viejo), se muestran los controles para que
+    // el usuario lo inicie a mano en vez de dejar un video trabado.
+    const mostrarControles = () => { video.controls = true; };
+
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches || !('IntersectionObserver' in window)) {
+      mostrarControles();
+    } else {
+      const observador = new IntersectionObserver((entradas) => {
+        if (!entradas[0].isIntersecting) return;
+        observador.disconnect();
+        video.play().catch(mostrarControles);
+      }, { threshold: 0.5 });
+      observador.observe(video);
+    }
+  }
 </script>
 </body>
 </html>
