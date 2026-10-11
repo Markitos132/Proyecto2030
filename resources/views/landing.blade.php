@@ -153,12 +153,17 @@
   // arranque automático de videos con sonido.
   const video = document.getElementById('videoEsp32');
   if (video) {
-    // Si no puede arrancar solo (ahorro de datos, preferencia de menos
-    // movimiento, navegador viejo), se muestran los controles para que
-    // el usuario lo inicie a mano en vez de dejar un video trabado.
+    // Si no puede arrancar solo (el navegador bloquea el autoplay o es
+    // muy viejo), se muestran los controles para que el usuario lo
+    // inicie a mano en vez de dejar un video trabado.
+    //
+    // A propósito NO se respeta prefers-reduced-motion: en muchas PCs
+    // (máquinas virtuales, ahorro de energía) viene activado sin que el
+    // usuario lo haya pedido, y dejaba el video sin arrancar. Es un
+    // video corto, silenciado y de una sola reproducción.
     const mostrarControles = () => { video.controls = true; };
 
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches || !('IntersectionObserver' in window)) {
+    if (!('IntersectionObserver' in window)) {
       mostrarControles();
     } else {
       const observador = new IntersectionObserver((entradas) => {
