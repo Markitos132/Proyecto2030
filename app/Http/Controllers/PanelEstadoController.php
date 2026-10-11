@@ -61,7 +61,7 @@ class PanelEstadoController extends Controller
                                             : null,
             ],
             'sesiones' => $sesiones->map(function ($s) {
-                $temperaturas = $s->mediciones->pluck('temperatura')->filter(fn ($t) => $t !== null);
+                $temperaturas = $s->mediciones->pluck('temperatura')->filter();
 
                 return [
                     'id_sesion'   => $s->id_sesion,
